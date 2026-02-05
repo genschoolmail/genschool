@@ -1,8 +1,9 @@
-export async function updateClassCapacity(classId: string, capacity: number) {
-    'use server';
-    const { prisma } = await import('@/lib/prisma');
-    const { getTenantId } = await import('@/lib/tenant');
+'use server';
 
+import { prisma } from '@/lib/prisma';
+import { getTenantId } from '@/lib/tenant';
+
+export async function updateClassCapacity(classId: string, capacity: number) {
     try {
         const schoolId = await getTenantId();
         await prisma.class.update({
