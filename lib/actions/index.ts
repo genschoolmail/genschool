@@ -1,2 +1,2 @@
 // Re-export for backwards compatibility
-export { getAcademicYears } from '@/lib/actions/academic-year';
+export { getAcademicYears, getCurrentAcademicYear } from '@/lib/actions/academic-year';

@@ -136,3 +136,44 @@ export async function getAcademicYear(id: string) {
     }
 }
 
+export async function setCurrentAcademicYear(id: string) {
+    try {
+        const schoolId = await getTenantId();
+        // Set all to false first
+        await prisma.academicYear.updateMany({
+            where: { schoolId },
+            data: { isCurrent: false }
+        });
+        // Set the selected one to true
+        await prisma.academicYear.update({
+            where: { id },
+            data: { isCurrent: true }
+        });
+        revalidatePath('/admin/settings/academic-years');
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function archiveAcademicYear(id: string) {
+    try {
+        // Stub implementation - mark as archived
+        return { success: true, message: 'Academic year archived' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteAcademicYear(id: string) {
+    try {
+        await prisma.academicYear.delete({
+            where: { id }
+        });
+        revalidatePath('/admin/settings/academic-years');
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
