@@ -31,18 +31,25 @@ export default auth((req) => {
     }
 
     // --- 2. Strict Tenant Isolation & Redirection ---
-    if (isLoggedIn && role !== 'SUPER_ADMIN') {
-        // A. Wrong Subdomain Check
-        if (currentSubdomain && userSubdomain && currentSubdomain !== userSubdomain) {
-            return NextResponse.redirect(new URL('/login?error=TenantMismatch', nextUrl));
-        }
+    if (isLoggedIn) {
+        // SUPER_ADMIN: Can access any domain, no subdomain restrictions
+        if (role === 'SUPER_ADMIN') {
+            // Allow superadmin to access any domain without redirect
+            // They should primarily use the root domain (platform.com)
+        } else {
+            // Other roles: Enforce subdomain matching
+            // A. Wrong Subdomain Check
+            if (currentSubdomain && userSubdomain && currentSubdomain !== userSubdomain) {
+                return NextResponse.redirect(new URL('/login?error=TenantMismatch', nextUrl));
+            }
 
-        // B. Root Domain Check (Redirect school users to their subdomain)
-        if (!currentSubdomain && userSubdomain) {
-            const protocol = isLocalhost ? 'http' : 'https';
-            const port = isLocalhost ? ':3000' : '';
-            const domain = isLocalhost ? 'localhost' : 'platform.com';
-            return NextResponse.redirect(`${protocol}://${userSubdomain}.${domain}${port}${nextUrl.pathname}`);
+            // B. Root Domain Check (Redirect school users to their subdomain)
+            if (!currentSubdomain && userSubdomain) {
+                const protocol = isLocalhost ? 'http' : 'https';
+                const port = isLocalhost ? ':3000' : '';
+                const domain = isLocalhost ? 'localhost' : 'platform.com';
+                return NextResponse.redirect(`${protocol}://${userSubdomain}.${domain}${port}${nextUrl.pathname}`);
+            }
         }
     }
 
