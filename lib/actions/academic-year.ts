@@ -119,3 +119,20 @@ export async function createAcademicYear(formData: FormData) {
         return { success: false, error: error.message || 'Failed to create academic year' };
     }
 }
+
+export async function getAcademicYear(id: string) {
+    try {
+        const schoolId = await getTenantId();
+        const academicYear = await prisma.academicYear.findFirst({
+            where: {
+                id,
+                schoolId
+            }
+        });
+        return academicYear;
+    } catch (error) {
+        console.error('Get academic year error:', error);
+        return null;
+    }
+}
+
