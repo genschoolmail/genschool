@@ -1,14 +1,17 @@
 'use server';
 
-export async function getAuditLogs() {
+export async function getAuditLogs(academicYearId?: string) {
     try {
         // Placeholder implementation
-        return [
-            { id: '1', action: 'Fee Payment', user: 'Admin', timestamp: new Date() },
-            { id: '2', action: 'Salary Disbursement', user: 'Admin', timestamp: new Date() }
-        ];
+        return {
+            success: true,
+            logs: [
+                { id: '1', action: 'Fee Payment', user: { name: 'Admin' }, entityType: 'Transaction', createdAt: new Date(), reason: 'Manual Entry' },
+                { id: '2', action: 'Salary Disbursement', user: { name: 'Admin' }, entityType: 'Payroll', createdAt: new Date() }
+            ]
+        };
     } catch (error) {
-        return [];
+        return { success: false, logs: [] };
     }
 }
 

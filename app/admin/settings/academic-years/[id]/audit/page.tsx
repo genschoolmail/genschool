@@ -1,4 +1,4 @@
-import { getAuditLogs } from '@/lib/actions/audit';
+import { getAuditLogs } from '@/lib/audit-utils';
 import { getAcademicYear } from '@/lib/actions/academic-year';
 import { ArrowLeft, History, User, Clock, FileText } from 'lucide-react';
 import Link from 'next/link';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { previewBulkPromotion, executeBulkPromotion } from '@/lib/actions/promotion';
+import { previewBulkPromotion, executeBulkPromotion } from '@/lib/promotion-actions';
 import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Users, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 

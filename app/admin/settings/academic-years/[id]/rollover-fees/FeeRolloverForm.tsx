@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { previewFeeRollover, executeFeeRollover } from '@/lib/actions/fee-rollover';
+import { previewFeeRollover, executeFeeRollover } from '@/lib/fee-rollover-actions';
 import { DollarSign, ArrowRight, CheckCircle, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -230,8 +230,8 @@ export default function FeeRolloverForm({ toYearId, toYearName, previousYears }:
                             <div>
                                 <p className="text-slate-500 dark:text-slate-400">Adjustment</p>
                                 <p className={`font-semibold ${previewData.adjustmentPercent > 0 ? 'text-green-600' :
-                                        previewData.adjustmentPercent < 0 ? 'text-red-600' :
-                                            'text-slate-800 dark:text-white'
+                                    previewData.adjustmentPercent < 0 ? 'text-red-600' :
+                                        'text-slate-800 dark:text-white'
                                     }`}>
                                     {previewData.adjustmentPercent > 0 ? '+' : ''}{previewData.adjustmentPercent}%
                                 </p>
