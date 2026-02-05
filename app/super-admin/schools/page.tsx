@@ -85,7 +85,7 @@ export default async function SuperAdminSchoolsPage() {
                                                     <span className="text-slate-600 dark:text-slate-400 font-mono text-xs bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded">
                                                         {school.subdomain}
                                                     </span>
-                                                    <a href={`http://${school.subdomain}.localhost:3000`} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 p-1 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors">
+                                                    <a href={`https://${school.subdomain}.${process.env.BASE_DOMAIN || 'genschoolmail.in'}`} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 p-1 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors">
                                                         <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>
                                                 </div>

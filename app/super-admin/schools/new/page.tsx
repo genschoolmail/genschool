@@ -61,7 +61,7 @@ export default async function NewSchoolPage() {
                                         placeholder="e.g., greenwood"
                                         className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-700 dark:text-white"
                                     />
-                                    <span className="text-slate-500">.localhost:3000</span>
+                                    <span className="text-slate-500">.{process.env.BASE_DOMAIN || 'genschoolmail.in'}</span>
                                 </div>
                             </div>
                         </div>
