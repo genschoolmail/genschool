@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Users, Edit2, Save, X, Trash2, Plus } from "lucide-react";
-import { updateClassCapacity } from "@/lib/actions/admission-actions";
+import { updateClassCapacity } from "@/lib/actions/updateClassCapacity";
 import { toast } from "sonner";
 
 interface ClassData {
