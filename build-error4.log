@@ -1,0 +1,382 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm :  ΓÜá Compiled with 
+warnings
+At line:1 char:1
++ npm run build 2>&1 | 
+Out-File -FilePath 
+"build-error4.log" 
+-Encoding  ...
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (   
+  ΓÜá Compiled with war   
+ nings:String) [], Rem    
+oteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+
+./app/admin/communication/
+page.tsx
+Attempted import error: 
+'createAnnouncement' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'createAnnouncement').
+
+Import trace for 
+requested module:
+./app/admin/communication/
+page.tsx
+
+./app/admin/communication/
+page.tsx
+Attempted import error: 
+'deleteAnnouncement' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'deleteAnnouncement').
+
+Import trace for 
+requested module:
+./app/admin/communication/
+page.tsx
+
+./app/admin/communication/
+page.tsx
+Attempted import error: 
+'createPost' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'createPost').
+
+Import trace for 
+requested module:
+./app/admin/communication/
+page.tsx
+
+./app/admin/communication/
+page.tsx
+Attempted import error: 
+'deletePost' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'deletePost').
+
+Import trace for 
+requested module:
+./app/admin/communication/
+page.tsx
+
+./app/admin/communication/
+page.tsx
+Attempted import error: 
+'createComment' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'createComment').
+
+Import trace for 
+requested module:
+./app/admin/communication/
+page.tsx
+
+./app/admin/finance/fees/a
+ssign/page.tsx
+Attempted import error: 
+'getFeeStructures' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'getFeeStructures').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/a
+ssign/page.tsx
+
+./app/admin/finance/fees/a
+ssign/page.tsx
+Attempted import error: 
+'assignFee' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'assignFee').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/a
+ssign/page.tsx
+
+./app/admin/finance/fees/c
+ollect/page.tsx
+Attempted import error: 
+'getStudentFees' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'getStudentFees').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/c
+ollect/page.tsx
+
+./app/admin/finance/fees/c
+ollect/page.tsx
+Attempted import error: 
+'recordPayment' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'recordPayment').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/c
+ollect/page.tsx
+
+./app/admin/finance/fees/n
+ew/page.tsx
+Attempted import error: 
+'createFeeStructure' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'createFeeStructure').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/n
+ew/page.tsx
+
+./app/admin/finance/fees/p
+age.tsx
+Attempted import error: 
+'getFeeStructures' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'getFeeStructures').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/p
+age.tsx
+
+./app/admin/finance/fees/p
+age.tsx
+Attempted import error: 
+'deleteFeeStructure' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'deleteFeeStructure').
+
+Import trace for 
+requested module:
+./app/admin/finance/fees/p
+age.tsx
+
+./app/admin/finance/wallet
+/page.tsx
+Attempted import error: 
+'addWalletBalance' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'addWalletBalance').
+
+Import trace for 
+requested module:
+./app/admin/finance/wallet
+/page.tsx
+
+./app/admin/finance/wallet
+/page.tsx
+Attempted import error: 
+'deductWalletBalance' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'deductWalletBalance').
+
+Import trace for 
+requested module:
+./app/admin/finance/wallet
+/page.tsx
+
+./app/admin/transport/rout
+es/page.tsx
+Attempted import error: 
+'createRoute' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'createRoute').
+
+Import trace for 
+requested module:
+./app/admin/transport/rout
+es/page.tsx
+
+./app/admin/transport/rout
+es/page.tsx
+Attempted import error: 
+'deleteRoute' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'deleteRoute').
+
+Import trace for 
+requested module:
+./app/admin/transport/rout
+es/page.tsx
+
+./app/admin/transport/vehi
+cles/page.tsx
+Attempted import error: 
+'createVehicle' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'createVehicle').
+
+Import trace for 
+requested module:
+./app/admin/transport/vehi
+cles/page.tsx
+
+./app/admin/transport/vehi
+cles/page.tsx
+Attempted import error: 
+'deleteVehicle' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'deleteVehicle').
+
+Import trace for 
+requested module:
+./app/admin/transport/vehi
+cles/page.tsx
+
+./app/admin/visitors/page.
+tsx
+Attempted import error: 
+'createVisitor' is not 
+exported from 
+'@/lib/actions' (imported 
+as 'createVisitor').
+
+Import trace for 
+requested module:
+./app/admin/visitors/page.
+tsx
+
+./app/admin/visitors/page.
+tsx
+Attempted import error: 
+'updateVisitorExit' is 
+not exported from 
+'@/lib/actions' (imported 
+as 'updateVisitorExit').
+
+Import trace for 
+requested module:
+./app/admin/visitors/page.
+tsx
+
+./app/student/result/page.
+tsx
+Attempted import error: 
+'getServerSession' is not 
+exported from 'next-auth' 
+(imported as 
+'getServerSession').
+
+Import trace for 
+requested module:
+./app/student/result/page.
+tsx
+
+./app/student/result/page.
+tsx
+Attempted import error: 
+'authOptions' is not 
+exported from '@/app/api/a
+uth/[...nextauth]/route' 
+(imported as 
+'authOptions').
+
+Import trace for 
+requested module:
+./app/student/result/page.
+tsx
+
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/academics/prom
+ote/page.tsx:33:17
+Type error: Type '({ 
+user: { id: string; name: 
+string | null; createdAt: 
+Date; updatedAt: Date; 
+phone: string; email: 
+string; password: string; 
+role: string; image: 
+string | null; }; class: 
+{ academicYear: string; 
+... 4 more ...; 
+teacherId: string | null; 
+} | null; } & { ...; 
+})[]' is not assignable 
+to type 'Student[]'.
+  Type '{ user: { id: 
+string; name: string | 
+null; createdAt: Date; 
+updatedAt: Date; phone: 
+string; email: string; 
+password: string; role: 
+string; image: string | 
+null; }; class: { 
+academicYear: string; ... 
+4 more ...; teacherId: 
+string | null; } | null; 
+} & { ...; }' is not 
+assignable to type 
+'Student'.
+    The types of 
+'user.name' are 
+incompatible between 
+these types.
+      Type 'string | 
+null' is not assignable 
+to type 'string'.
+        Type 'null' is 
+not assignable to type 
+'string'.
+
+[0m [90m 31 |[39m      
+       [33m<[39m[33mPro
+motionInterface[39m[0m
+[0m [90m 32 |[39m      
+           classes[33m=[
+39m{classes}[0m
+[0m[31m[1m>[22m[39m[
+90m 33 |[39m             
+    students[33m=[39m{st
+udents}[0m
+[0m [90m    |[39m      
+           
+[31m[1m^[22m[39m[0m
+[0m [90m 34 |[39m      
+           currentClassId
+[33m=[39m{searchParams[3
+3m.[39mclassId}[0m
+[0m [90m 35 |[39m      
+       
+[33m/[39m[33m>[39m[0m
+[0m [90m 36 |[39m      
+   [33m<[39m[33m/[39m
+[33mdiv[39m[33m>[39m[0
+m

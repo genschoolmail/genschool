@@ -1,0 +1,21 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/firebase.ts:2:40
+Type error: Cannot find module 'firebase/app' or its corresponding type declarations.
+
+[0m [90m 1 |[39m [90m// Firebase Client Configuration (for browser)[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { initializeApp[33m,[39m getApps } [36mfrom[39m [32m'firebase/app'[39m[33m;[39m[0m
+[0m [90m   |[39m                                        [31m[1m^[22m[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { getMessaging[33m,[39m getToken[33m,[39m onMessage[33m,[39m isSupported } [36mfrom[39m [32m'firebase/messaging'[39m[33m;[39m[0m
+[0m [90m 4 |[39m [36mimport[39m { getDatabase } [36mfrom[39m [32m'firebase/database'[39m[33m;[39m[0m
+[0m [90m 5 |[39m[0m

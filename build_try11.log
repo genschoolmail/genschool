@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/exams/marksheets/[studentId]/[examGroupId]/page.tsx:68:14
+Type error: Property 'summary' is missing in type '{ student: { rollNo: string; class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | { name: string; section: string; }; name: string; ... 4 more ...; profileImage: string | null; }; examGroup: { ...; }; results: { ...; }[]; gradeSystem: { ...; } | nu...' but required in type 'MarksheetTemplateProps'.
+
+[0m [90m 66 |[39m[0m
+[0m [90m 67 |[39m             {[90m/* Marksheet */[39m}[0m
+[0m[31m[1m>[22m[39m[90m 68 |[39m             [33m<[39m[33mMarksheetTemplate[39m[0m
+[0m [90m    |[39m              [31m[1m^[22m[39m[0m
+[0m [90m 69 |[39m                 {[33m...[39mmarksheetData}[0m
+[0m [90m 70 |[39m                 student[33m=[39m{{[0m
+[0m [90m 71 |[39m                     [33m...[39mmarksheetData[33m.[39mstudent[33m,[39m[0m

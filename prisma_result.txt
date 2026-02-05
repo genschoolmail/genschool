@@ -1,0 +1,18 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+[1;91merror[0m: [1mError validating field `sponsorships` in model `School`: The relation field `sponsorships` on model `School` is missing an opposite relation field on the model `StudentSponsorship`. Either run `prisma format` or add it manually.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:42[0m
+[1;94m   | [0m
+[1;94m41 | [0m  hostels      Hostel[]
+[1;94m42 | [0m  [1;91msponsorships StudentSponsorship[][0m
+[1;94m43 | [0m  sponsors     Sponsor[]
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: validate]
+
+Prisma CLI Version : 5.22.0
+

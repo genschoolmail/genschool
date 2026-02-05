@@ -1,0 +1,24 @@
+[
+  {
+    "id": "cmjjpavl6001l13gf66v99kyp",
+    "schoolId": "cmjjp4t4m000113gf1ehmhs9p",
+    "userId": "cmjjpavkz001j13gfnyv7xol8",
+    "admissionNo": "SCS6G9L-AAA000",
+    "rollNo": "1",
+    "dob": "2011-11-11T00:00:00.000Z",
+    "gender": "Male",
+    "address": "Main Bazar Dalsinghsarai",
+    "phone": "7777777701",
+    "documents": "/uploads/students/documents/1766561829645-form_obc_11zon_(1).pdf",
+    "classId": "cmjjp4t86000f13gfbxr3ndir",
+    "parentId": null,
+    "transportId": null,
+    "bloodGroup": null,
+    "admissionYear": null,
+    "user": {
+      "id": "cmjjpavkz001j13gfnyv7xol8",
+      "email": "gautam@gmail.com",
+      "name": "Gautam Kumar "
+    }
+  }
+]

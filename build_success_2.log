@@ -1,0 +1,68 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+Attempted import error: 'processPayment' is not exported from '@/lib/payment-actions' (imported as 'processPayment').
+
+Import trace for requested module:
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+
+ ⚠ Compiled with warnings
+
+./node_modules/bcryptjs/index.js
+A Node.js module is loaded ('crypto' at line 32) which is not supported in the Edge Runtime.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
+
+Import trace for requested module:
+./node_modules/bcryptjs/index.js
+./auth.ts
+
+./node_modules/bcryptjs/index.js
+A Node.js API is used (setImmediate at line: 335) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcryptjs/index.js
+./auth.ts
+
+./node_modules/bcryptjs/index.js
+A Node.js API is used (setImmediate at line: 336) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/bcryptjs/index.js
+./auth.ts
+
+ ⚠ Compiled with warnings
+
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+Attempted import error: 'processPayment' is not exported from '@/lib/payment-actions' (imported as 'processPayment').
+
+Import trace for requested module:
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/communication/page.tsx:125:43
+Type error: Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; }' is not assignable to type 'void'.
+
+[0m [90m 123 |[39m                                     [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 124 |[39m[0m
+[0m[31m[1m>[22m[39m[90m 125 |[39m                                     [33m<[39m[33mform[39m action[33m=[39m{createComment} className[33m=[39m[32m"flex gap-2"[39m[33m>[39m[0m
+[0m [90m     |[39m                                           [31m[1m^[22m[39m[0m
+[0m [90m 126 |[39m                                         [33m<[39m[33minput[39m type[33m=[39m[32m"hidden"[39m name[33m=[39m[32m"postId"[39m value[33m=[39m{post[33m.[39mid} [33m/[39m[33m>[39m[0m
+[0m [90m 127 |[39m                                         [33m<[39m[33minput[39m name[33m=[39m[32m"content"[39m required placeholder[33m=[39m[32m"Write a comment..."[39m className[33m=[39m[32m"flex-1 px-3 py-2 text-sm border rounded-lg dark:bg-slate-700 dark:border-slate-600"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 128 |[39m                                         [33m<[39m[33mbutton[39m type[33m=[39m[32m"submit"[39m className[33m=[39m[32m"text-indigo-600 hover:text-indigo-700 text-sm font-medium"[39m[33m>[39m[33mSend[39m[33m<[39m[33m/[39m[33mbutton[39m[33m>[39m[0m

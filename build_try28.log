@@ -1,0 +1,26 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/users/ResetPasswordForm.tsx:27:15
+Type error: Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; }' is not assignable to type 'void'.
+
+[0m [90m 25 |[39m [36mexport[39m [36mfunction[39m [33mResetPasswordForm[39m({ userId }[33m:[39m { userId[33m:[39m string }) {[0m
+[0m [90m 26 |[39m     [36mreturn[39m ([0m
+[0m[31m[1m>[22m[39m[90m 27 |[39m         [33m<[39m[33mform[39m action[33m=[39m{resetUserPassword} className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m [90m    |[39m               [31m[1m^[22m[39m[0m
+[0m [90m 28 |[39m             [33m<[39m[33minput[39m type[33m=[39m[32m"hidden"[39m name[33m=[39m[32m"userId"[39m value[33m=[39m{userId} [33m/[39m[33m>[39m[0m
+[0m [90m 29 |[39m             [33m<[39m[33minput[39m[0m
+[0m [90m 30 |[39m                 type[33m=[39m[32m"text"[39m[0m

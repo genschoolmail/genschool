@@ -1,0 +1,38 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./app/admin/settings/promotion-rules/PromotionRulesList.tsx
+Attempted import error: 'deletePromotionRule' is not exported from '@/lib/actions/promotion-rules' (imported as 'deletePromotionRule').
+
+Import trace for requested module:
+./app/admin/settings/promotion-rules/PromotionRulesList.tsx
+
+ ⚠ Compiled with warnings
+
+./app/admin/settings/promotion-rules/PromotionRulesList.tsx
+Attempted import error: 'deletePromotionRule' is not exported from '@/lib/actions/promotion-rules' (imported as 'deletePromotionRule').
+
+Import trace for requested module:
+./app/admin/settings/promotion-rules/PromotionRulesList.tsx
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/settings/promotion-rules/PromotionRulesList.tsx:3:10
+Type error: '"@/lib/actions/promotion-rules"' has no exported member named 'deletePromotionRule'. Did you mean 'createPromotionRule'?
+
+[0m [90m 1 |[39m [32m'use client'[39m[33m;[39m[0m
+[0m [90m 2 |[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { deletePromotionRule } [36mfrom[39m [32m'@/lib/actions/promotion-rules'[39m[33m;[39m[0m
+[0m [90m   |[39m          [31m[1m^[22m[39m[0m
+[0m [90m 4 |[39m [36mimport[39m { [33mTrash2[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mXCircle[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m[0m
+[0m [90m 5 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m[0m
+[0m [90m 6 |[39m[0m

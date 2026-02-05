@@ -1,0 +1,17 @@
+@media print {
+    :global(body *) {
+        visibility: hidden;
+    }
+
+    .receiptContent,
+    .receiptContent :global(*) {
+        visibility: visible;
+    }
+
+    .receiptContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}

@@ -1,0 +1,71 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm : Failed to compile.
+At line:1 char:1
++ npm run build 2>&1 | 
+Out-File -FilePath 
+"build-error3.log" 
+-Encoding  ...
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (F  
+  ailed to compile.:Str   
+ ing) [], RemoteExcept    
+ion
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+
+./app/admin/exams/markshee
+ts/[studentId]/[examGroupI
+d]/page.tsx
+Error: 
+  [31mx[0m Unexpected 
+token `div`. Expected jsx 
+identifier
+    ,-[[36;1;4mD:\School 
+Management\app\admin\exams
+\marksheets\[studentId]\[e
+xamGroupId]\page.tsx[0m:3
+8:1]
+ [2m38[0m |     const 
+marksheetData = await gene
+rateMarksheet(params.stude
+ntId, params.examGroupId);
+ [2m39[0m | 
+ [2m40[0m |     return (
+ [2m41[0m |         
+<div 
+className="space-y-6">
+    : [31;1m         
+^^^[0m
+ [2m42[0m |             
+{/* Header */}
+ [2m43[0m |             
+<div className="flex 
+items-center 
+justify-between">
+ [2m43[0m |             
+    <div className="flex 
+items-center gap-4">
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for 
+requested module:
+./app/admin/exams/markshee
+ts/[studentId]/[examGroupI
+d]/page.tsx
+
+
+> Build failed because of 
+webpack errors

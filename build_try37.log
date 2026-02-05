@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./components/transport/TransportMap.tsx:71:37
+Type error: Namespace '"leaflet"' has no exported member 'Map'.
+
+[0m [90m 69 |[39m }[33m:[39m [33mTransportMapProps[39m) {[0m
+[0m [90m 70 |[39m     [36mconst[39m mapRef [33m=[39m useRef[33m<[39m[33mHTMLDivElement[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 71 |[39m     [36mconst[39m mapInstanceRef [33m=[39m useRef[33m<[39m[33mL[39m[33m.[39m[33mMap[39m [33m|[39m [36mnull[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m [90m    |[39m                                     [31m[1m^[22m[39m[0m
+[0m [90m 72 |[39m     [36mconst[39m markersRef [33m=[39m useRef[33m<[39m[33mL[39m[33m.[39m[33mMarker[39m[][33m>[39m([])[33m;[39m[0m
+[0m [90m 73 |[39m     [36mconst[39m polylineRef [33m=[39m useRef[33m<[39m[33mL[39m[33m.[39m[33mPolyline[39m [33m|[39m [36mnull[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m [90m 74 |[39m[0m

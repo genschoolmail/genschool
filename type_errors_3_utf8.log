@@ -1,0 +1,26 @@
+﻿app/admin/library/issue/page.tsx(41,37): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/page.tsx(52,44): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/page.tsx(87,36): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/reports/page.tsx(113,48): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/reports/page.tsx(113,54): error TS7006: Parameter 'index' implicitly has an 'any' type.
+app/admin/notices/create/page.tsx(34,13): error TS2322: Type '{ user: { name: string | null; }; id: string; }[]' is not assignable to type '{ id: string; user: { name: string; }; }[]'.
+  Type '{ user: { name: string | null; }; id: string; }' is not assignable to type '{ id: string; user: { name: string; }; }'.
+    The types of 'user.name' are incompatible between these types.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+app/admin/students/[id]/edit/page.tsx(43,56): error TS2322: Type 'string | null' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'null' is not assignable to type 'string | number | readonly string[] | undefined'.
+app/public-school/page.tsx(105,27): error TS2322: Type '(formData: FormData) => Promise<{ success: boolean; message: string; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; message: string; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; message: string; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; message: string; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; message: string; }' is not assignable to type 'void'.
+auth.ts(72,54): error TS2339: Property 'subdomain' does not exist on type 'Partial<Record<"password" | "identifier", unknown>>'.
+components/NotificationBell.tsx(60,38): error TS7006: Parameter 'n' implicitly has an 'any' type.
+lib/audit-utils.ts(76,21): error TS7006: Parameter 'log' implicitly has an 'any' type.
+lib/expense-actions.ts(297,25): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/finance-actions.ts(362,21): error TS2322: Type '{ source: string; description: string; amount: any; date: any; reference: any; feePayment: { connect: { id: any; }; }; remarks: string; schoolId: string; }' is not assignable to type '(Without<IncomeCreateInput, IncomeUncheckedCreateInput> & IncomeUncheckedCreateInput) | (Without<...> & IncomeCreateInput)'.
+  Types of property 'schoolId' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+lib/payment-actions.ts(200,65): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/payment-actions.ts(200,70): error TS7006: Parameter 'p' implicitly has an 'any' type.

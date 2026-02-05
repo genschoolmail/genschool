@@ -1,0 +1,139 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm : Failed to 
+compile.
+At line:1 char:1
++ npm run build 2>&1 
+| Out-File -FilePath 
+"build-error.log" 
+-Encoding u ...
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (F    
+ailed to 
+compile.:Str    ing) 
+[], RemoteExcept    
+ion
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+
+./app/admin/exams/mar
+ksheets/[studentId]/[
+examGroupId]/page.tsx
+Error: 
+  [31mx[0m 
+Unexpected token 
+`div`. Expected jsx 
+identifier
+    ,-[[36;1;4mD:\Sc
+hool Management\app\a
+dmin\exams\marksheets
+\[studentId]\[examGro
+upId]\page.tsx[0m:38
+:1]
+ [2m38[0m |     
+const marksheetData 
+= await generateMarks
+heet(params.studentId
+, 
+params.examGroupId);
+ [2m39[0m | 
+ [2m40[0m |     
+return (
+ [2m41[0m |        
+ <div className="spac
+e-y-6">
+    : [31;1m        
+ ^^^[0m
+ [2m42[0m |        
+     {/* Header */}
+ [2m43[0m |        
+     <div 
+className="flex 
+items-center 
+justify-between">
+ [2m43[0m |        
+         <div 
+className="flex 
+items-center gap-4">
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for 
+requested module:
+./app/admin/exams/mar
+ksheets/[studentId]/[
+examGroupId]/page.tsx
+
+./app/api/exams/marks
+/save/route.ts
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./app/api/teachers/do
+cuments/[id]/delete/r
+oute.ts
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./app/teacher/marks/e
+ntry/page.tsx
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./node_modules\next\d
+ist\compiled\client-o
+nly\error.js
+'client-only' cannot 
+be imported from a 
+Server Component 
+module. It should 
+only be used from a 
+Client Component.
+
+Import trace for 
+requested module:
+  ./node_modules\next
+\dist\compiled\client
+-only\error.js
+  ./node_modules\styl
+ed-jsx\dist\index\ind
+ex.js
+  ./node_modules\styl
+ed-jsx\style.js
+  ./app\student\finan
+ce\receipts\[id]\page
+.tsx
+
+
+> Build failed 
+because of webpack 
+errors

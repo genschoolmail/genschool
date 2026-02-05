@@ -1,0 +1,48 @@
+{
+  "name": "PrismaClientValidationError",
+  "clientVersion": "5.22.0"
+}
+PrismaClientValidationError: 
+Invalid `prisma.student.findFirst()` invocation in
+D:\School Management\test_profile_crash.js:8:46
+
+  5 async function testProfileLogic() {
+  6     try {
+  7         console.log("Fetching first student...");
+→ 8         const student = await prisma.student.findFirst({
+              include: {
+                user: true,
+                class: true,
+                parent: true,
+                attendances: {
+                  orderBy: {
+                    date: "desc"
+                  },
+                  take: 30
+                },
+                studentFees: {
+                  include: {
+                    feeStructure: true,
+                    payments: {
+                      orderBy: {
+                        date: "desc"
+                      }
+                    }
+                  }
+                },
+                examResults: {
+                  include: {
+                    exam: true,
+                    ~~~~
+            ?       examSchedule?: true,
+            ?       student?: true
+                  },
+                  orderBy: {
+                    enteredAt: "desc"
+                  },
+                  take: 10
+                }
+              }
+            })
+
+Unknown field `exam` for include statement on model `ExamResult`. Available options are marked with ?.

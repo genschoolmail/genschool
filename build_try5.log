@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+Attempted import error: 'processPayment' is not exported from '@/lib/payment-actions' (imported as 'processPayment').
+
+Import trace for requested module:
+./app/student/finance/payments/[id]/PaymentGateway.tsx
+
+uncaughtException [Error: EPERM: operation not permitted, open 'D:\School Management\.next\trace'] {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'open',
+  path: 'D:\\School Management\\.next\\trace'
+}

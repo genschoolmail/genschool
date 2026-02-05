@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/actions/promotion-rules.ts:46:13
+Type error: Type '{ fromClass: { select: { name: true; section: true; }; }; toClass: { select: { name: true; section: true; }; }; }' is not assignable to type 'never'.
+
+[0m [90m 44 |[39m     [36mtry[39m {[0m
+[0m [90m 45 |[39m         [36mconst[39m rules [33m=[39m [36mawait[39m prisma[33m.[39mpromotionRule[33m.[39mfindMany({[0m
+[0m[31m[1m>[22m[39m[90m 46 |[39m             include[33m:[39m {[0m
+[0m [90m    |[39m             [31m[1m^[22m[39m[0m
+[0m [90m 47 |[39m                 fromClass[33m:[39m {[0m
+[0m [90m 48 |[39m                     select[33m:[39m { name[33m:[39m [36mtrue[39m[33m,[39m section[33m:[39m [36mtrue[39m }[0m
+[0m [90m 49 |[39m                 }[33m,[39m[0m

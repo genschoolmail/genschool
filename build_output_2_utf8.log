@@ -1,0 +1,97 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm :  ΓÜá Compiled 
+with warnings
+At line:1 char:1
++ npm run build > 
+build_output_2.log 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ( ΓÜá Co   
+ mpiled with warn    
+ings:String) [],     
+RemoteException
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+./lib/auth-utils.ts
+A Node.js module is 
+loaded ('crypto' at 
+line 1) which is not 
+supported in the 
+Edge Runtime.
+Learn More: https://n
+extjs.org/docs/messag
+es/node-module-in-edg
+e-runtime
+
+Import trace for 
+requested module:
+./lib/auth-utils.ts
+./auth.ts
+
+./node_modules/bcrypt
+js/index.js
+A Node.js module is 
+loaded ('crypto' at 
+line 32) which is 
+not supported in the 
+Edge Runtime.
+Learn More: https://n
+extjs.org/docs/messag
+es/node-module-in-edg
+e-runtime
+
+Import trace for 
+requested module:
+./node_modules/bcrypt
+js/index.js
+./auth.ts
+
+./node_modules/bcrypt
+js/index.js
+A Node.js API is 
+used (setImmediate 
+at line: 335) which 
+is not supported in 
+the Edge Runtime.
+Learn more: https://n
+extjs.org/docs/api-re
+ference/edge-runtime
+
+Import trace for 
+requested module:
+./node_modules/bcrypt
+js/index.js
+./auth.ts
+
+./node_modules/bcrypt
+js/index.js
+A Node.js API is 
+used (setImmediate 
+at line: 336) which 
+is not supported in 
+the Edge Runtime.
+Learn more: https://n
+extjs.org/docs/api-re
+ference/edge-runtime
+
+Import trace for 
+requested module:
+./node_modules/bcrypt
+js/index.js
+./auth.ts
+
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...

@@ -1,0 +1,53 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm : Failed to 
+compile.
+At line:1 char:1
++ npm run build > 
+build_output.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Failed    
+ to compile.:Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+./app/super-admin/adm
+ins/page.tsx
+Module not found: 
+Can't resolve '@/lib/
+actions/subscription-
+management'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./app/super-admin/sch
+ools/[id]/subscriptio
+n/new/page.tsx
+Module not found: 
+Can't resolve '@/lib/
+actions/subscription-
+management'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+
+> Build failed 
+because of webpack 
+errors

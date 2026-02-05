@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/exams/[id]/marks/page.tsx:44:53
+Type error: Property 'workflowStatus' does not exist on type '{ student: { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }; } & { ...; }'.
+
+[0m [90m 42 |[39m[0m
+[0m [90m 43 |[39m     [90m// Get workflow status from first result (all have same status)[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m     [36mconst[39m workflowStatus [33m=[39m schedule[33m.[39mexamResults[[35m0[39m][33m?[39m[33m.[39mworkflowStatus [33m||[39m [32m'DRAFT'[39m[33m;[39m[0m
+[0m [90m    |[39m                                                     [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m     [36mconst[39m isLocked [33m=[39m workflowStatus [33m===[39m [32m'LOCKED'[39m[33m;[39m[0m
+[0m [90m 46 |[39m[0m
+[0m [90m 47 |[39m     [90m// Check permissions[39m[0m

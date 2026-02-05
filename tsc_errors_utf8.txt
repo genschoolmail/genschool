@@ -1,0 +1,126 @@
+﻿app/admin/inventory/page.tsx(39,40): error TS7006: Parameter 'item' implicitly has an 'any' type.
+app/admin/library/issue/page.tsx(41,37): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/page.tsx(52,44): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/page.tsx(87,36): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/reports/page.tsx(113,48): error TS7006: Parameter 'book' implicitly has an 'any' type.
+app/admin/library/reports/page.tsx(113,54): error TS7006: Parameter 'index' implicitly has an 'any' type.
+app/admin/transport/drivers/AddDriverDialog.tsx(54,32): error TS2339: Property 'credentials' does not exist on type '{ success: boolean; error?: undefined; } | { success: boolean; error: any; }'.
+  Property 'credentials' does not exist on type '{ success: boolean; error?: undefined; }'.
+app/admin/transport/drivers/page.tsx(27,82): error TS2339: Property 'user' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+app/admin/transport/drivers/page.tsx(31,93): error TS2339: Property 'user' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+app/admin/transport/drivers/page.tsx(38,79): error TS2339: Property 'vehicle' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+app/admin/transport/drivers/page.tsx(44,79): error TS2339: Property 'route' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+app/admin/transport/vehicles/[id]/page.tsx(78,34): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(81,46): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(83,59): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(83,91): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(89,95): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(90,76): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(93,85): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/[id]/page.tsx(107,27): error TS2339: Property 'routes' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'.
+app/admin/transport/vehicles/[id]/page.tsx(107,45): error TS2339: Property 'routes' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'.
+app/admin/transport/vehicles/[id]/page.tsx(110,66): error TS2339: Property 'routes' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'.
+app/admin/transport/vehicles/[id]/page.tsx(114,42): error TS2339: Property 'routes' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'.
+app/admin/transport/vehicles/page.tsx(13,53): error TS2339: Property 'vehicle' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+app/admin/transport/vehicles/page.tsx(39,50): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/page.tsx(39,67): error TS2551: Property 'driver' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'. Did you mean 'driverId'?
+app/admin/transport/vehicles/page.tsx(50,87): error TS2339: Property 'routes' does not exist on type '{ number: string; model: string | null; id: string; capacity: number; driverId: string | null; }'.
+app/api/exams/marks/route.ts(18,17): error TS2561: Object literal may only specify known properties, but 'examGroupId_classId_subjectId' does not exist in type 'ExamScheduleWhereUniqueInput'. Did you mean to write 'schoolId_examGroupId_classId_subjectId'?
+app/api/exams/marks/save/route.ts(32,25): error TS2353: Object literal may only specify known properties, and 'examScheduleId_studentId' does not exist in type 'ExamResultWhereUniqueInput'.
+app/public-school/page.tsx(105,27): error TS2322: Type '(formData: FormData) => Promise<{ success: boolean; message: string; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; message: string; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; message: string; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; message: string; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; message: string; }' is not assignable to type 'void'.
+app/super-admin/subscriptions/[id]/edit/page.tsx(95,43): error TS2339: Property 'priceOverride' does not exist on type '{ school: { id: string; name: string; status: string; createdAt: Date; updatedAt: Date; address: string | null; subdomain: string; customDomain: string | null; logo: string | null; banner: string | null; themeColor: string | null; contactEmail: string; contactPhone: string | null; }; plan: { ...; }; } & { ...; }'.
+app/super-admin/subscriptions/[id]/edit/page.tsx(96,58): error TS2339: Property 'priceOverride' does not exist on type '{ school: { id: string; name: string; status: string; createdAt: Date; updatedAt: Date; address: string | null; subdomain: string; customDomain: string | null; logo: string | null; banner: string | null; themeColor: string | null; contactEmail: string; contactPhone: string | null; }; plan: { ...; }; } & { ...; }'.
+app/super-admin/subscriptions/[id]/edit/page.tsx(155,60): error TS2339: Property 'priceOverride' does not exist on type '{ school: { id: string; name: string; status: string; createdAt: Date; updatedAt: Date; address: string | null; subdomain: string; customDomain: string | null; logo: string | null; banner: string | null; themeColor: string | null; contactEmail: string; contactPhone: string | null; }; plan: { ...; }; } & { ...; }'.
+auth.ts(72,54): error TS2339: Property 'subdomain' does not exist on type 'Partial<Record<"password" | "identifier", unknown>>'.
+components/NotificationBell.tsx(60,38): error TS7006: Parameter 'n' implicitly has an 'any' type.
+lib/actions.ts(212,49): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'WalletWhereInput'.
+lib/actions.ts(232,63): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'StudentHostelMappingWhereInput'.
+lib/actions.ts(611,72): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'WalletWhereInput'.
+lib/actions.ts(642,72): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'WalletWhereInput'.
+lib/actions.ts(1346,26): error TS2339: Property 'maskSensitiveData' does not exist on type 'typeof import("D:/School Management/lib/crypto")'.
+lib/actions/academics.ts(102,13): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type '(Without<SubjectGroupCreateInput, SubjectGroupUncheckedCreateInput> & SubjectGroupUncheckedCreateInput) | (Without<...> & SubjectGroupCreateInput)'.
+lib/actions/academics.ts(139,18): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'SubjectGroupWhereInput'.
+lib/admin-transport-actions.ts(14,22): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'VehicleWhereInput'.
+lib/admin-transport-actions.ts(21,17): error TS2561: Object literal may only specify known properties, but 'route' does not exist in type 'VehicleInclude<DefaultArgs>'. Did you mean to write 'routes'?
+lib/admin-transport-actions.ts(38,17): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type '(Without<VehicleCreateInput, VehicleUncheckedCreateInput> & VehicleUncheckedCreateInput) | (Without<...> & VehicleCreateInput)'.
+lib/admin-transport-actions.ts(86,26): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'VehicleWhereInput'.
+lib/admin-transport-actions.ts(91,17): error TS2561: Object literal may only specify known properties, but 'route' does not exist in type 'VehicleInclude<DefaultArgs>'. Did you mean to write 'routes'?
+lib/admin-transport-actions.ts(112,24): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'DriverOrderByWithRelationInput | DriverOrderByWithRelationInput[]'.
+lib/admin-transport-actions.ts(168,17): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'Without<DriverCreateInput, DriverUncheckedCreateInput> & DriverUncheckedCreateInput'.
+lib/admin-transport-actions.ts(250,40): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'VehicleWhereInput'.
+lib/admin-transport-actions.ts(466,25): error TS2561: Object literal may only specify known properties, but 'route' does not exist in type 'VehicleInclude<DefaultArgs>'. Did you mean to write 'routes'?
+lib/admin-transport-actions.ts(482,15): error TS2339: Property 'locations' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(483,24): error TS2339: Property 'locations' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(486,27): error TS2339: Property 'name' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(487,25): error TS2339: Property 'locations' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(488,26): error TS2339: Property 'vehicle' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(489,30): error TS2339: Property 'vehicle' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(490,22): error TS2339: Property 'vehicle' does not exist on type '{ salary: number | null; id: string; schoolId: string; userId: string; dob: Date | null; address: string | null; phone: string | null; documents: string | null; licenseNo: string | null; joiningDate: Date; employmentType: string | null; }'.
+lib/admin-transport-actions.ts(631,17): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'StudentInclude<DefaultArgs>'.
+lib/admit-card-actions.ts(47,17): error TS2353: Object literal may only specify known properties, and 'examGroupId_studentId' does not exist in type 'AdmitCardWhereUniqueInput'.
+lib/audit-utils.ts(76,21): error TS7006: Parameter 'log' implicitly has an 'any' type.
+lib/backup/manager.ts(28,17): error TS2353: Object literal may only specify known properties, and 'filename' does not exist in type 'Without<DataBackupCreateInput, DataBackupUncheckedCreateInput> & DataBackupUncheckedCreateInput'.
+lib/driver-transport-actions.ts(442,34): error TS2339: Property 'user' does not exist on type 'never'.
+lib/driver-transport-actions.ts(443,39): error TS2339: Property 'class' does not exist on type 'never'.
+lib/driver-transport-actions.ts(444,35): error TS2339: Property 'user' does not exist on type 'never'.
+lib/driver-transport-actions.ts(535,39): error TS2339: Property 'pickupStop' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'pickupStop' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(536,39): error TS2339: Property 'dropStop' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'dropStop' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(576,37): error TS2339: Property 'name' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'name' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(578,61): error TS2339: Property 'name' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'name' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(578,82): error TS2339: Property 'section' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'section' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(578,112): error TS2339: Property 'section' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'section' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(580,38): error TS2339: Property 'image' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[] | ... 16 more ... | { ...; }[]'.
+  Property 'image' does not exist on type '{ id: string; schoolId: string; studentId: string; remarks: string | null; examScheduleId: string; marksObtained: number; grade: string | null; enteredBy: string; enteredAt: Date; }[]'.
+lib/driver-transport-actions.ts(626,17): error TS2353: Object literal may only specify known properties, and 'routeId' does not exist in type 'Without<StudentUpdateInput, StudentUncheckedUpdateInput> & StudentUncheckedUpdateInput'.
+lib/driver-transport-actions.ts(863,17): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'DriverTripInclude<DefaultArgs>'.
+lib/expense-actions.ts(297,25): error TS7006: Parameter 'e' implicitly has an 'any' type.
+lib/fee-collection-actions.ts(202,93): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'WalletWhereInput'.
+lib/fee-collection-actions.ts(205,71): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'Without<WalletCreateInput, WalletUncheckedCreateInput> & WalletUncheckedCreateInput'.
+lib/fee-collection-actions.ts(246,76): error TS2353: Object literal may only specify known properties, and 'schoolId' does not exist in type 'WalletWhereInput'.
+lib/finance-actions.ts(362,21): error TS2322: Type '{ source: string; description: string; amount: any; date: any; reference: any; feePayment: { connect: { id: any; }; }; remarks: string; schoolId: string; }' is not assignable to type '(Without<IncomeCreateInput, IncomeUncheckedCreateInput> & IncomeUncheckedCreateInput) | (Without<...> & IncomeCreateInput)'.
+  Types of property 'schoolId' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+lib/marks-actions.ts(95,25): error TS2353: Object literal may only specify known properties, and 'examScheduleId_studentId' does not exist in type 'ExamResultWhereUniqueInput'.
+lib/marks-import.ts(71,17): error TS2353: Object literal may only specify known properties, and 'examScheduleId_studentId' does not exist in type 'ExamResultWhereUniqueInput'.
+lib/payment-actions.ts(200,65): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/payment-actions.ts(200,70): error TS7006: Parameter 'p' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(6,52): error TS2307: Cannot find module './admission-actions' or its corresponding type declarations.
+lib/promotion-system-actions.ts(88,25): error TS7006: Parameter 'student' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(90,61): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(95,53): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(95,58): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(96,51): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(96,56): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(111,14): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(111,17): error TS7006: Parameter 'b' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(299,39): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(300,41): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(301,40): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(303,34): error TS7006: Parameter 'c' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(330,40): error TS7006: Parameter 'eg' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(333,55): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(333,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(339,18): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(340,59): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(343,52): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(343,57): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(344,50): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(344,55): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(351,20): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(351,23): error TS7006: Parameter 'b' implicitly has an 'any' type.
+prisma/seed.ts(107,22): error TS2353: Object literal may only specify known properties, and 'name_section' does not exist in type 'ClassWhereUniqueInput'.
+prisma/seed.ts(113,22): error TS2353: Object literal may only specify known properties, and 'name_section' does not exist in type 'ClassWhereUniqueInput'.
+prisma/seed.ts(119,22): error TS2353: Object literal may only specify known properties, and 'name_section' does not exist in type 'ClassWhereUniqueInput'.
+prisma/seed.ts(307,13): error TS2322: Type '{ name: string; }' is not assignable to type 'FeeHeadWhereUniqueInput'.
+  Type '{ name: string; }' is not assignable to type '{ id: string | FeeHeadSchoolIdNameCompoundUniqueInput; schoolId_name: string | FeeHeadSchoolIdNameCompoundUniqueInput; } & { ...; }'.
+    Type '{ name: string; }' is missing the following properties from type '{ id: string | FeeHeadSchoolIdNameCompoundUniqueInput; schoolId_name: string | FeeHeadSchoolIdNameCompoundUniqueInput; }': id, schoolId_name

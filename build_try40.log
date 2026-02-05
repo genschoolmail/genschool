@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/actions/backup-export.ts:62:17
+Type error: Object literal may only specify known properties, but 'academicYearId' does not exist in type '(Without<DataBackupCreateInput, DataBackupUncheckedCreateInput> & DataBackupUncheckedCreateInput) | (Without<...> & DataBackupCreateInput)'. Did you mean to write 'academicYear'?
+
+[0m [90m 60 |[39m         [36mconst[39m backup [33m=[39m [36mawait[39m prisma[33m.[39mdataBackup[33m.[39mcreate({[0m
+[0m [90m 61 |[39m             data[33m:[39m {[0m
+[0m[31m[1m>[22m[39m[90m 62 |[39m                 academicYearId[33m,[39m[0m
+[0m [90m    |[39m                 [31m[1m^[22m[39m[0m
+[0m [90m 63 |[39m                 backupData[33m:[39m [33mJSON[39m[33m.[39mstringify(backupData)[33m,[39m[0m
+[0m [90m 64 |[39m                 fileSize[33m:[39m [33mJSON[39m[33m.[39mstringify(backupData)[33m.[39mlength[33m,[39m[0m
+[0m [90m 65 |[39m                 createdBy[33m:[39m [32m'system'[39m[33m,[39m [90m// Should be actual user ID[39m[0m

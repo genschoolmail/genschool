@@ -1,0 +1,34 @@
+﻿--- Testing getFinancialSummary ---
+prisma:query SELECT `main`.`AcademicYear`.`id`, `main`.`AcademicYear`.`name`, `main`.`AcademicYear`.`startDate`, `main`.`AcademicYear`.`endDate`, `main`.`AcademicYear`.`isActive`, `main`.`AcademicYear`.`isCurrent`, `main`.`AcademicYear`.`status`, `main`.`AcademicYear`.`rolledOverFrom`, `main`.`AcademicYear`.`rolledOverAt`, `main`.`AcademicYear`.`rolledOverBy`, `main`.`AcademicYear`.`createdAt`, `main`.`AcademicYear`.`updatedAt` FROM `main`.`AcademicYear` WHERE `main`.`AcademicYear`.`isCurrent` = ? LIMIT ? OFFSET ?
+DEBUG FINANCE: {
+  yearStart: 2025-04-01T00:00:00.000Z,
+  yearEnd: 2026-03-31T00:00:00.000Z,
+  startDate: 2025-11-30T18:30:00.000Z,
+  endDate: 2025-12-30T18:30:00.000Z,
+  yearFilter: {
+    date: { gte: 2025-04-01T00:00:00.000Z, lte: 2026-03-31T00:00:00.000Z }
+  }
+}
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`Expense`.`amount` FROM `main`.`Expense` WHERE (`main`.`Expense`.`date` >= ? AND `main`.`Expense`.`date` <= ? AND `main`.`Expense`.`status` = ? AND `main`.`Expense`.`salaryId` IS NULL) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`FeePayment`.`amount` FROM `main`.`FeePayment` WHERE (`main`.`FeePayment`.`date` >= ? AND `main`.`FeePayment`.`date` <= ? AND `main`.`FeePayment`.`status` IN (?,?)) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`netSalary`) FROM (SELECT `main`.`Salary`.`netSalary` FROM `main`.`Salary` WHERE (`main`.`Salary`.`status` = ? AND `main`.`Salary`.`month` >= ? AND `main`.`Salary`.`month` <= ?) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`netSalary`) FROM (SELECT `main`.`Salary`.`netSalary` FROM `main`.`Salary` WHERE (`main`.`Salary`.`month` = ? AND `main`.`Salary`.`status` = ?) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`FeePayment`.`amount` FROM `main`.`FeePayment` WHERE (`main`.`FeePayment`.`date` >= ? AND `main`.`FeePayment`.`date` <= ? AND `main`.`FeePayment`.`status` IN (?,?)) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`Expense`.`amount` FROM `main`.`Expense` WHERE (`main`.`Expense`.`date` >= ? AND `main`.`Expense`.`date` <= ? AND `main`.`Expense`.`status` = ? AND `main`.`Expense`.`salaryId` IS NULL) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`Income`.`amount` FROM `main`.`Income` WHERE (`main`.`Income`.`date` >= ? AND `main`.`Income`.`date` <= ? AND `main`.`Income`.`feePaymentId` IS NULL) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`amount`) FROM (SELECT `main`.`Income`.`amount` FROM `main`.`Income` WHERE (`main`.`Income`.`date` >= ? AND `main`.`Income`.`date` <= ? AND `main`.`Income`.`feePaymentId` IS NULL) LIMIT ? OFFSET ?) AS `sub`
+Result: {
+  "totalIncome": 0,
+  "totalExpenses": 0,
+  "netProfit": 0,
+  "feeCollected": 0,
+  "otherIncome": 0,
+  "salariesPaid": 0,
+  "otherExpenses": 0,
+  "allTime": {
+    "totalIncome": 0,
+    "totalExpenses": 0,
+    "netProfit": 0,
+    "feeCollected": 0
+  }
+}

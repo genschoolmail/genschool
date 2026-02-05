@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/marks-entry-actions.ts:46:17
+Type error: Object literal may only specify known properties, and 'workflowStatus' does not exist in type 'Without<ExamResultCreateInput, ExamResultUncheckedCreateInput> & ExamResultUncheckedCreateInput'.
+
+[0m [90m 44 |[39m                 marksObtained[33m:[39m mark[33m.[39mmarksObtained[33m,[39m[0m
+[0m [90m 45 |[39m                 enteredBy[33m:[39m session[33m.[39muser[33m.[39mid[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 46 |[39m                 workflowStatus[33m:[39m [32m'DRAFT'[39m[0m
+[0m [90m    |[39m                 [31m[1m^[22m[39m[0m
+[0m [90m 47 |[39m             }[33m,[39m[0m
+[0m [90m 48 |[39m             update[33m:[39m {[0m
+[0m [90m 49 |[39m                 marksObtained[33m:[39m mark[33m.[39mmarksObtained[33m,[39m[0m

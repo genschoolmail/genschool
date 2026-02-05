@@ -1,0 +1,1263 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/student/finance/StudentFinanceClient.tsx
+Error: 
+  [31mx[0m cannot import as reserved word
+    ,-[[36;1;4mD:\School Management\app\student\finance\StudentFinanceClient.tsx[0m:7:1]
+ [2m 7[0m | import { Badge } from "@/components/ui/badge";
+ [2m 8[0m | import { Button } from "@/components/ui/button";
+ [2m 9[0m | import {
+ [2m10[0m | import {
+    : [31;1m^^^^^^[0m
+ [2m11[0m |     TrendingUp, Wallet, Clock, AlertCircle, CheckCircle2,
+ [2m12[0m |     IndianRupee, Receipt, FileText, Download, Calendar, History,
+ [2m12[0m |     ShieldCheck, Loader2
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/student/finance/StudentFinanceClient.tsx
+./app/student/finance/page.tsx
+
+./lib/receipt-generator.ts
+Error: 
+  [31mx[0m the name `generateReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:14:1]
+ [2m 14[0m |  * 
+ [2m 15[0m |  * @returns Promise<string> Next receipt number
+ [2m 16[0m |  */
+ [2m 17[0m | export async function generateReceiptNumber(): Promise<string> {
+     : [31;1m                      ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                                 [31;1m`-- [31;1mprevious definition of `generateReceiptNumber` here[0m[0m
+ [2m 18[0m |     try {
+ [2m 19[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m 20[0m | 
+ [2m 21[0m |         // Use timestamp + random for uniqueness
+ [2m 22[0m |         // This ensures sequential-like numbers without database dependency
+ [2m 23[0m |         const now = new Date();
+ [2m 24[0m |         const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+ [2m 25[0m |         const timeComponent = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+ [2m 26[0m |         const random = Math.floor(Math.random() * 100);
+ [2m 27[0m | 
+ [2m 28[0m |         // Generate prefix based on day of year (AA for days 1-13, AB for 14-26, etc.)
+ [2m 29[0m |         const prefixIndex = Math.floor(dayOfYear / 14);
+ [2m 30[0m |         const firstLetter = String.fromCharCode(65 + Math.floor(prefixIndex / 26));
+ [2m 31[0m |         const secondLetter = String.fromCharCode(65 + (prefixIndex % 26));
+ [2m 32[0m |         const prefix = `${firstLetter}${secondLetter}`;
+ [2m 33[0m | 
+ [2m 34[0m |         // Number based on time + random (0001-9999)
+ [2m 35[0m |         const number = Math.min(9999, (timeComponent % 9900) + random);
+ [2m 36[0m | 
+ [2m 37[0m |         return formatReceiptNumber(academicYear, prefix, number);
+ [2m 38[0m |     } catch (error) {
+ [2m 39[0m |         console.error('Error generating receipt number:', error);
+ [2m 40[0m |         // Fallback: use old format
+ [2m 41[0m |         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+ [2m 42[0m |         const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+ [2m 43[0m |         return `REC-${dateStr}-${randomSuffix}`;
+ [2m 44[0m |     }
+ [2m 45[0m | }
+ [2m 46[0m | 
+ [2m 47[0m | /**
+ [2m 48[0m |  * Format receipt number
+ [2m 49[0m |  * @param academicYear e.g., "2024-25"
+ [2m 50[0m |  * @param prefix e.g., "AA"
+ [2m 51[0m |  * @param number e.g., 123
+ [2m 52[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m 53[0m |  */
+ [2m 54[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m 55[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m 56[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m 57[0m | }
+ [2m 58[0m | 
+ [2m 59[0m | /**
+ [2m 60[0m |  * Parse receipt number to get components
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+     : [33;1m                      ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                                 [33;1m`-- [33;1m`generateReceiptNumber` redefined here[0m[0m
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m108[0m | 
+     `----
+
+  [31mx[0m the name `formatReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:51:1]
+ [2m 51[0m |  * @param number e.g., 123
+ [2m 52[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m 53[0m |  */
+ [2m 54[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+     : [31;1m         ^^^^^^^^^|^^^^^^^^^[0m
+     :                   [31;1m`-- [31;1mprevious definition of `formatReceiptNumber` here[0m[0m
+ [2m 55[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m 56[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m 57[0m | }
+ [2m 58[0m | 
+ [2m 59[0m | /**
+ [2m 60[0m |  * Parse receipt number to get components
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+     : [33;1m         ^^^^^^^^^|^^^^^^^^^[0m
+     :                   [33;1m`-- [33;1m`formatReceiptNumber` redefined here[0m[0m
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m175[0m | }
+     `----
+
+  [31mx[0m the name `parseReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:61:1]
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [31;1m                ^^^^^^^^^|^^^^^^^^[0m
+     :                          [31;1m`-- [31;1mprevious definition of `parseReceiptNumber` here[0m[0m
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m176[0m | }
+ [2m177[0m | 
+ [2m178[0m | /**
+ [2m179[0m |  * Get next prefix in sequence
+ [2m180[0m |  * AA -> AB -> AC ... -> AZ -> BA -> BB ... -> ZZ
+ [2m181[0m |  * @param current Current prefix
+ [2m182[0m |  * @returns Next prefix or null if limit reached
+ [2m183[0m |  */
+ [2m184[0m | function getNextPrefix(current: string): string | null {
+ [2m185[0m |     if (current === 'ZZ') {
+ [2m186[0m |         return null; // Reached limit
+ [2m187[0m |     }
+ [2m188[0m | 
+ [2m189[0m |     let [first, second] = current.split('');
+ [2m190[0m |     let firstCode = first.charCodeAt(0);
+ [2m191[0m |     let secondCode = second.charCodeAt(0);
+ [2m192[0m | 
+ [2m193[0m |     // Increment second letter
+ [2m194[0m |     if (secondCode < 90) { // Z = 90
+ [2m195[0m |         second = String.fromCharCode(secondCode + 1);
+ [2m196[0m |     } else {
+ [2m197[0m |         // Rollover second letter, increment first
+ [2m198[0m |         second = 'A';
+ [2m199[0m |         firstCode++;
+ [2m200[0m |         first = String.fromCharCode(firstCode);
+ [2m201[0m |     }
+ [2m202[0m | 
+ [2m203[0m |     return `${first}${second}`;
+ [2m204[0m | }
+ [2m205[0m | 
+ [2m206[0m | /**
+ [2m207[0m |  * Parse receipt number to get components
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [33;1m                ^^^^^^^^^|^^^^^^^^[0m
+     :                          [33;1m`-- [33;1m`parseReceiptNumber` redefined here[0m[0m
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m213[0m |     number: number;
+     `----
+
+  [31mx[0m the name `validateReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:85:1]
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [31;1m                ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                           [31;1m`-- [31;1mprevious definition of `validateReceiptNumber` here[0m[0m
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m176[0m | }
+ [2m177[0m | 
+ [2m178[0m | /**
+ [2m179[0m |  * Get next prefix in sequence
+ [2m180[0m |  * AA -> AB -> AC ... -> AZ -> BA -> BB ... -> ZZ
+ [2m181[0m |  * @param current Current prefix
+ [2m182[0m |  * @returns Next prefix or null if limit reached
+ [2m183[0m |  */
+ [2m184[0m | function getNextPrefix(current: string): string | null {
+ [2m185[0m |     if (current === 'ZZ') {
+ [2m186[0m |         return null; // Reached limit
+ [2m187[0m |     }
+ [2m188[0m | 
+ [2m189[0m |     let [first, second] = current.split('');
+ [2m190[0m |     let firstCode = first.charCodeAt(0);
+ [2m191[0m |     let secondCode = second.charCodeAt(0);
+ [2m192[0m | 
+ [2m193[0m |     // Increment second letter
+ [2m194[0m |     if (secondCode < 90) { // Z = 90
+ [2m195[0m |         second = String.fromCharCode(secondCode + 1);
+ [2m196[0m |     } else {
+ [2m197[0m |         // Rollover second letter, increment first
+ [2m198[0m |         second = 'A';
+ [2m199[0m |         firstCode++;
+ [2m200[0m |         first = String.fromCharCode(firstCode);
+ [2m201[0m |     }
+ [2m202[0m | 
+ [2m203[0m |     return `${first}${second}`;
+ [2m204[0m | }
+ [2m205[0m | 
+ [2m206[0m | /**
+ [2m207[0m |  * Parse receipt number to get components
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m214[0m |     number: number;
+ [2m215[0m | } | null {
+ [2m216[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m217[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m218[0m | 
+ [2m219[0m |     if (!match) {
+ [2m220[0m |         return null;
+ [2m221[0m |     }
+ [2m222[0m | 
+ [2m223[0m |     return {
+ [2m224[0m |         academicYear: match[1],
+ [2m225[0m |         prefix: match[2],
+ [2m226[0m |         number: parseInt(match[3], 10)
+ [2m227[0m |     };
+ [2m228[0m | }
+ [2m229[0m | 
+ [2m230[0m | /**
+ [2m231[0m |  * Validate receipt number format
+ [2m232[0m |  * @param receiptNo Receipt number to validate
+ [2m233[0m |  * @returns boolean
+ [2m234[0m |  */
+ [2m235[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [33;1m                ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                           [33;1m`-- [33;1m`validateReceiptNumber` redefined here[0m[0m
+ [2m236[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m237[0m | }
+     `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:61:1]
+ [2m61[0m |  * @param receiptNo Receipt number string
+ [2m62[0m |  * @returns Object with year, prefix, number
+ [2m63[0m |  */
+ [2m64[0m | export function parseReceiptNumber(receiptNo: string): {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m65[0m |     academicYear: string;
+ [2m66[0m |     prefix: string;
+ [2m66[0m |     number: number;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:85:1]
+ [2m85[0m |  * @param receiptNo Receipt number to validate
+ [2m86[0m |  * @returns boolean
+ [2m87[0m |  */
+ [2m88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m90[0m | }
+ [2m90[0m | 
+    `----
+
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:208:1]
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m213[0m |     number: number;
+     `----
+
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:232:1]
+ [2m232[0m |  * @param receiptNo Receipt number to validate
+ [2m233[0m |  * @returns boolean
+ [2m234[0m |  */
+ [2m235[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m236[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m237[0m | }
+     `----
+
+Import trace for requested module:
+./lib/receipt-generator.ts
+./lib/payment-actions.ts
+
+./lib/receipt-generator.ts
+Error: 
+  [31mx[0m the name `generateReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:14:1]
+ [2m 14[0m |  * 
+ [2m 15[0m |  * @returns Promise<string> Next receipt number
+ [2m 16[0m |  */
+ [2m 17[0m | export async function generateReceiptNumber(): Promise<string> {
+     : [31;1m                      ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                                 [31;1m`-- [31;1mprevious definition of `generateReceiptNumber` here[0m[0m
+ [2m 18[0m |     try {
+ [2m 19[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m 20[0m | 
+ [2m 21[0m |         // Use timestamp + random for uniqueness
+ [2m 22[0m |         // This ensures sequential-like numbers without database dependency
+ [2m 23[0m |         const now = new Date();
+ [2m 24[0m |         const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+ [2m 25[0m |         const timeComponent = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+ [2m 26[0m |         const random = Math.floor(Math.random() * 100);
+ [2m 27[0m | 
+ [2m 28[0m |         // Generate prefix based on day of year (AA for days 1-13, AB for 14-26, etc.)
+ [2m 29[0m |         const prefixIndex = Math.floor(dayOfYear / 14);
+ [2m 30[0m |         const firstLetter = String.fromCharCode(65 + Math.floor(prefixIndex / 26));
+ [2m 31[0m |         const secondLetter = String.fromCharCode(65 + (prefixIndex % 26));
+ [2m 32[0m |         const prefix = `${firstLetter}${secondLetter}`;
+ [2m 33[0m | 
+ [2m 34[0m |         // Number based on time + random (0001-9999)
+ [2m 35[0m |         const number = Math.min(9999, (timeComponent % 9900) + random);
+ [2m 36[0m | 
+ [2m 37[0m |         return formatReceiptNumber(academicYear, prefix, number);
+ [2m 38[0m |     } catch (error) {
+ [2m 39[0m |         console.error('Error generating receipt number:', error);
+ [2m 40[0m |         // Fallback: use old format
+ [2m 41[0m |         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+ [2m 42[0m |         const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+ [2m 43[0m |         return `REC-${dateStr}-${randomSuffix}`;
+ [2m 44[0m |     }
+ [2m 45[0m | }
+ [2m 46[0m | 
+ [2m 47[0m | /**
+ [2m 48[0m |  * Format receipt number
+ [2m 49[0m |  * @param academicYear e.g., "2024-25"
+ [2m 50[0m |  * @param prefix e.g., "AA"
+ [2m 51[0m |  * @param number e.g., 123
+ [2m 52[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m 53[0m |  */
+ [2m 54[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m 55[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m 56[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m 57[0m | }
+ [2m 58[0m | 
+ [2m 59[0m | /**
+ [2m 60[0m |  * Parse receipt number to get components
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+     : [33;1m                      ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                                 [33;1m`-- [33;1m`generateReceiptNumber` redefined here[0m[0m
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m108[0m | 
+     `----
+
+  [31mx[0m the name `formatReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:51:1]
+ [2m 51[0m |  * @param number e.g., 123
+ [2m 52[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m 53[0m |  */
+ [2m 54[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+     : [31;1m         ^^^^^^^^^|^^^^^^^^^[0m
+     :                   [31;1m`-- [31;1mprevious definition of `formatReceiptNumber` here[0m[0m
+ [2m 55[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m 56[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m 57[0m | }
+ [2m 58[0m | 
+ [2m 59[0m | /**
+ [2m 60[0m |  * Parse receipt number to get components
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+     : [33;1m         ^^^^^^^^^|^^^^^^^^^[0m
+     :                   [33;1m`-- [33;1m`formatReceiptNumber` redefined here[0m[0m
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m175[0m | }
+     `----
+
+  [31mx[0m the name `parseReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:61:1]
+ [2m 61[0m |  * @param receiptNo Receipt number string
+ [2m 62[0m |  * @returns Object with year, prefix, number
+ [2m 63[0m |  */
+ [2m 64[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [31;1m                ^^^^^^^^^|^^^^^^^^[0m
+     :                          [31;1m`-- [31;1mprevious definition of `parseReceiptNumber` here[0m[0m
+ [2m 65[0m |     academicYear: string;
+ [2m 66[0m |     prefix: string;
+ [2m 67[0m |     number: number;
+ [2m 68[0m | } | null {
+ [2m 69[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m 70[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m 71[0m | 
+ [2m 72[0m |     if (!match) {
+ [2m 73[0m |         return null;
+ [2m 74[0m |     }
+ [2m 75[0m | 
+ [2m 76[0m |     return {
+ [2m 77[0m |         academicYear: match[1],
+ [2m 78[0m |         prefix: match[2],
+ [2m 79[0m |         number: parseInt(match[3], 10)
+ [2m 80[0m |     };
+ [2m 81[0m | }
+ [2m 82[0m | 
+ [2m 83[0m | /**
+ [2m 84[0m |  * Validate receipt number format
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m176[0m | }
+ [2m177[0m | 
+ [2m178[0m | /**
+ [2m179[0m |  * Get next prefix in sequence
+ [2m180[0m |  * AA -> AB -> AC ... -> AZ -> BA -> BB ... -> ZZ
+ [2m181[0m |  * @param current Current prefix
+ [2m182[0m |  * @returns Next prefix or null if limit reached
+ [2m183[0m |  */
+ [2m184[0m | function getNextPrefix(current: string): string | null {
+ [2m185[0m |     if (current === 'ZZ') {
+ [2m186[0m |         return null; // Reached limit
+ [2m187[0m |     }
+ [2m188[0m | 
+ [2m189[0m |     let [first, second] = current.split('');
+ [2m190[0m |     let firstCode = first.charCodeAt(0);
+ [2m191[0m |     let secondCode = second.charCodeAt(0);
+ [2m192[0m | 
+ [2m193[0m |     // Increment second letter
+ [2m194[0m |     if (secondCode < 90) { // Z = 90
+ [2m195[0m |         second = String.fromCharCode(secondCode + 1);
+ [2m196[0m |     } else {
+ [2m197[0m |         // Rollover second letter, increment first
+ [2m198[0m |         second = 'A';
+ [2m199[0m |         firstCode++;
+ [2m200[0m |         first = String.fromCharCode(firstCode);
+ [2m201[0m |     }
+ [2m202[0m | 
+ [2m203[0m |     return `${first}${second}`;
+ [2m204[0m | }
+ [2m205[0m | 
+ [2m206[0m | /**
+ [2m207[0m |  * Parse receipt number to get components
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [33;1m                ^^^^^^^^^|^^^^^^^^[0m
+     :                          [33;1m`-- [33;1m`parseReceiptNumber` redefined here[0m[0m
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m213[0m |     number: number;
+     `----
+
+  [31mx[0m the name `validateReceiptNumber` is defined multiple times
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:85:1]
+ [2m 85[0m |  * @param receiptNo Receipt number to validate
+ [2m 86[0m |  * @returns boolean
+ [2m 87[0m |  */
+ [2m 88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [31;1m                ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                           [31;1m`-- [31;1mprevious definition of `validateReceiptNumber` here[0m[0m
+ [2m 89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m 90[0m | }
+ [2m 91[0m | 
+ [2m 92[0m | 
+ [2m 93[0m | /**
+ [2m 94[0m |  * Receipt Number Generator
+ [2m 95[0m |  * Generates sequential receipt numbers in format: REC-YYYY-YY-AA0001
+ [2m 96[0m |  */
+ [2m 97[0m | 
+ [2m 98[0m | /**
+ [2m 99[0m |  * Generate next receipt number for current academic year
+ [2m100[0m |  * Format: REC-2024-25-AA0001, REC-2024-25-AA0002, etc.
+ [2m101[0m |  * Handles rollover: AA9999 -> AB0001, ZZ9999 -> Error/Alert
+ [2m102[0m |  * 
+ [2m103[0m |  * @returns Promise<string> Next receipt number
+ [2m104[0m |  * @throws Error if receipt limit reached (ZZ9999)
+ [2m105[0m |  */
+ [2m106[0m | export async function generateReceiptNumber(): Promise<string> {
+ [2m107[0m |     try {
+ [2m108[0m |         const academicYear = await getCurrentAcademicYear();
+ [2m109[0m | 
+ [2m110[0m |         // Use transaction to ensure atomicity
+ [2m111[0m |         const result = await prisma.$transaction(async (tx) => {
+ [2m112[0m |             // Get or create counter for this academic year
+ [2m113[0m |             let counter = await tx.receiptCounter.findUnique({
+ [2m114[0m |                 where: { academicYear }
+ [2m115[0m |             });
+ [2m116[0m | 
+ [2m117[0m |             if (!counter) {
+ [2m118[0m |                 // First receipt of this academic year
+ [2m119[0m |                 counter = await tx.receiptCounter.create({
+ [2m120[0m |                     data: {
+ [2m121[0m |                         academicYear,
+ [2m122[0m |                         lastNumber: 1,
+ [2m123[0m |                         prefix: 'AA'
+ [2m124[0m |                     }
+ [2m125[0m |                 });
+ [2m126[0m | 
+ [2m127[0m |                 return formatReceiptNumber(academicYear, 'AA', 1);
+ [2m128[0m |             }
+ [2m129[0m | 
+ [2m130[0m |             // Increment number
+ [2m131[0m |             let newNumber = counter.lastNumber + 1;
+ [2m132[0m |             let newPrefix = counter.prefix;
+ [2m133[0m | 
+ [2m134[0m |             // Check for rollover (9999 -> next prefix)
+ [2m135[0m |             if (newNumber > 9999) {
+ [2m136[0m |                 newPrefix = getNextPrefix(counter.prefix);
+ [2m137[0m |                 newNumber = 1;
+ [2m138[0m | 
+ [2m139[0m |                 if (!newPrefix) {
+ [2m140[0m |                     throw new Error(
+ [2m141[0m |                         `Receipt limit reached for academic year ${academicYear}. ` +
+ [2m142[0m |                         `Maximum ${counter.prefix}9999 receipts generated.`
+ [2m143[0m |                     );
+ [2m144[0m |                 }
+ [2m145[0m |             }
+ [2m146[0m | 
+ [2m147[0m |             // Update counter
+ [2m148[0m |             await tx.receiptCounter.update({
+ [2m149[0m |                 where: { academicYear },
+ [2m150[0m |                 data: {
+ [2m151[0m |                     lastNumber: newNumber,
+ [2m152[0m |                     prefix: newPrefix
+ [2m153[0m |                 }
+ [2m154[0m |             });
+ [2m155[0m | 
+ [2m156[0m |             return formatReceiptNumber(academicYear, newPrefix, newNumber);
+ [2m157[0m |         });
+ [2m158[0m | 
+ [2m159[0m |         return result;
+ [2m160[0m |     } catch (error) {
+ [2m161[0m |         console.error('Error generating receipt number:', error);
+ [2m162[0m |         throw error;
+ [2m163[0m |     }
+ [2m164[0m | }
+ [2m165[0m | 
+ [2m166[0m | /**
+ [2m167[0m |  * Format receipt number
+ [2m168[0m |  * @param academicYear e.g., "2024-25"
+ [2m169[0m |  * @param prefix e.g., "AA"
+ [2m170[0m |  * @param number e.g., 123
+ [2m171[0m |  * @returns Formatted receipt number e.g., "REC-2024-25-AA0123"
+ [2m172[0m |  */
+ [2m173[0m | function formatReceiptNumber(academicYear: string, prefix: string, number: number): string {
+ [2m174[0m |     const paddedNumber = number.toString().padStart(4, '0');
+ [2m175[0m |     return `REC-${academicYear}-${prefix}${paddedNumber}`;
+ [2m176[0m | }
+ [2m177[0m | 
+ [2m178[0m | /**
+ [2m179[0m |  * Get next prefix in sequence
+ [2m180[0m |  * AA -> AB -> AC ... -> AZ -> BA -> BB ... -> ZZ
+ [2m181[0m |  * @param current Current prefix
+ [2m182[0m |  * @returns Next prefix or null if limit reached
+ [2m183[0m |  */
+ [2m184[0m | function getNextPrefix(current: string): string | null {
+ [2m185[0m |     if (current === 'ZZ') {
+ [2m186[0m |         return null; // Reached limit
+ [2m187[0m |     }
+ [2m188[0m | 
+ [2m189[0m |     let [first, second] = current.split('');
+ [2m190[0m |     let firstCode = first.charCodeAt(0);
+ [2m191[0m |     let secondCode = second.charCodeAt(0);
+ [2m192[0m | 
+ [2m193[0m |     // Increment second letter
+ [2m194[0m |     if (secondCode < 90) { // Z = 90
+ [2m195[0m |         second = String.fromCharCode(secondCode + 1);
+ [2m196[0m |     } else {
+ [2m197[0m |         // Rollover second letter, increment first
+ [2m198[0m |         second = 'A';
+ [2m199[0m |         firstCode++;
+ [2m200[0m |         first = String.fromCharCode(firstCode);
+ [2m201[0m |     }
+ [2m202[0m | 
+ [2m203[0m |     return `${first}${second}`;
+ [2m204[0m | }
+ [2m205[0m | 
+ [2m206[0m | /**
+ [2m207[0m |  * Parse receipt number to get components
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m214[0m |     number: number;
+ [2m215[0m | } | null {
+ [2m216[0m |     // Match format: REC-YYYY-YY-AA0001
+ [2m217[0m |     const match = receiptNo.match(/^REC-(\d{4}-\d{2})-([A-Z]{2})(\d{4})$/);
+ [2m218[0m | 
+ [2m219[0m |     if (!match) {
+ [2m220[0m |         return null;
+ [2m221[0m |     }
+ [2m222[0m | 
+ [2m223[0m |     return {
+ [2m224[0m |         academicYear: match[1],
+ [2m225[0m |         prefix: match[2],
+ [2m226[0m |         number: parseInt(match[3], 10)
+ [2m227[0m |     };
+ [2m228[0m | }
+ [2m229[0m | 
+ [2m230[0m | /**
+ [2m231[0m |  * Validate receipt number format
+ [2m232[0m |  * @param receiptNo Receipt number to validate
+ [2m233[0m |  * @returns boolean
+ [2m234[0m |  */
+ [2m235[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [33;1m                ^^^^^^^^^^|^^^^^^^^^^[0m
+     :                           [33;1m`-- [33;1m`validateReceiptNumber` redefined here[0m[0m
+ [2m236[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m237[0m | }
+     `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:61:1]
+ [2m61[0m |  * @param receiptNo Receipt number string
+ [2m62[0m |  * @returns Object with year, prefix, number
+ [2m63[0m |  */
+ [2m64[0m | export function parseReceiptNumber(receiptNo: string): {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m65[0m |     academicYear: string;
+ [2m66[0m |     prefix: string;
+ [2m66[0m |     number: number;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:85:1]
+ [2m85[0m |  * @param receiptNo Receipt number to validate
+ [2m86[0m |  * @returns boolean
+ [2m87[0m |  */
+ [2m88[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m89[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m90[0m | }
+ [2m90[0m | 
+    `----
+
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:208:1]
+ [2m208[0m |  * @param receiptNo Receipt number string
+ [2m209[0m |  * @returns Object with year, prefix, number
+ [2m210[0m |  */
+ [2m211[0m | export function parseReceiptNumber(receiptNo: string): {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m212[0m |     academicYear: string;
+ [2m213[0m |     prefix: string;
+ [2m213[0m |     number: number;
+     `----
+
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:232:1]
+ [2m232[0m |  * @param receiptNo Receipt number to validate
+ [2m233[0m |  * @returns boolean
+ [2m234[0m |  */
+ [2m235[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m236[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m237[0m | }
+     `----
+
+Import trace for requested module:
+./lib/receipt-generator.ts
+./lib/debt-actions.ts
+./lib/fee-master-actions.ts
+./app/admin/finance/fees/page.tsx
+
+
+> Build failed because of webpack errors

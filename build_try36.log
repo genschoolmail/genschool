@@ -1,0 +1,23 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./components/transport/TransportMap.tsx:4:15
+Type error: Could not find a declaration file for module 'leaflet'. 'D:/School Management/node_modules/leaflet/dist/leaflet-src.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/leaflet` if it exists or add a new declaration (.d.ts) file containing `declare module 'leaflet';`
+
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useEffect[33m,[39m useRef[33m,[39m useState } [36mfrom[39m [32m"react"[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33mL[39m [36mfrom[39m [32m"leaflet"[39m[33m;[39m[0m
+[0m [90m   |[39m               [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m [36mimport[39m [32m"leaflet/dist/leaflet.css"[39m[33m;[39m[0m
+[0m [90m 6 |[39m[0m
+[0m [90m 7 |[39m [90m// Fix for default marker icons in Leaflet with Next.js[39m[0m

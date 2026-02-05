@@ -1,0 +1,72 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./lib/receipt-generator.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:55:1]
+ [2m55[0m |  * @param receiptNo Receipt number string
+ [2m56[0m |  * @returns Object with year, prefix, number
+ [2m57[0m |  */
+ [2m58[0m | export function parseReceiptNumber(receiptNo: string): {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m59[0m |     academicYear: string;
+ [2m60[0m |     prefix: string;
+ [2m60[0m |     number: number;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:79:1]
+ [2m79[0m |  * @param receiptNo Receipt number to validate
+ [2m80[0m |  * @returns boolean
+ [2m81[0m |  */
+ [2m82[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m83[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m84[0m | }
+    `----
+
+Import trace for requested module:
+./lib/receipt-generator.ts
+./lib/payment-actions.ts
+
+./lib/receipt-generator.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:55:1]
+ [2m55[0m |  * @param receiptNo Receipt number string
+ [2m56[0m |  * @returns Object with year, prefix, number
+ [2m57[0m |  */
+ [2m58[0m | export function parseReceiptNumber(receiptNo: string): {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m59[0m |     academicYear: string;
+ [2m60[0m |     prefix: string;
+ [2m60[0m |     number: number;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\receipt-generator.ts[0m:79:1]
+ [2m79[0m |  * @param receiptNo Receipt number to validate
+ [2m80[0m |  * @returns boolean
+ [2m81[0m |  */
+ [2m82[0m | export function validateReceiptNumber(receiptNo: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m83[0m |     return /^REC-\d{4}-\d{2}-[A-Z]{2}\d{4}$/.test(receiptNo);
+ [2m84[0m | }
+    `----
+
+Import trace for requested module:
+./lib/receipt-generator.ts
+./lib/debt-actions.ts
+./lib/fee-master-actions.ts
+./app/admin/finance/fees/page.tsx
+
+
+> Build failed because of webpack errors

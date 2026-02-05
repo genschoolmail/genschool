@@ -1,0 +1,75 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./lib/academic-year-helper.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\academic-year-helper.ts[0m:69:1]
+ [2m69[0m |  * @param year Academic year string
+ [2m70[0m |  * @returns Formatted string
+ [2m71[0m |  */
+ [2m72[0m | export function formatAcademicYear(year: string): string {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m73[0m |     if (/^\d{4}-\d{2}$/.test(year)) {
+ [2m74[0m |         const [start, end] = year.split('-');
+ [2m74[0m |         return `${start}-20${end}`;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\academic-year-helper.ts[0m:83:1]
+ [2m83[0m |  * @param academicYear Academic year string
+ [2m84[0m |  * @returns boolean
+ [2m85[0m |  */
+ [2m86[0m | export function isDateInAcademicYear(date: Date, academicYear: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^[0m
+ [2m87[0m |     const [startYear] = academicYear.split('-').map(y =>
+ [2m88[0m |         y.length === 2 ? `20${y}` : y
+ [2m88[0m |     );
+    `----
+
+Import trace for requested module:
+./lib/academic-year-helper.ts
+./lib/receipt-generator.ts
+./lib/payment-actions.ts
+
+./lib/academic-year-helper.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\academic-year-helper.ts[0m:69:1]
+ [2m69[0m |  * @param year Academic year string
+ [2m70[0m |  * @returns Formatted string
+ [2m71[0m |  */
+ [2m72[0m | export function formatAcademicYear(year: string): string {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^[0m
+ [2m73[0m |     if (/^\d{4}-\d{2}$/.test(year)) {
+ [2m74[0m |         const [start, end] = year.split('-');
+ [2m74[0m |         return `${start}-20${end}`;
+    `----
+
+  [31mx[0m Server actions must be async functions
+    ,-[[36;1;4mD:\School Management\lib\academic-year-helper.ts[0m:83:1]
+ [2m83[0m |  * @param academicYear Academic year string
+ [2m84[0m |  * @returns boolean
+ [2m85[0m |  */
+ [2m86[0m | export function isDateInAcademicYear(date: Date, academicYear: string): boolean {
+    : [31;1m                ^^^^^^^^^^^^^^^^^^^^[0m
+ [2m87[0m |     const [startYear] = academicYear.split('-').map(y =>
+ [2m88[0m |         y.length === 2 ? `20${y}` : y
+ [2m88[0m |     );
+    `----
+
+Import trace for requested module:
+./lib/academic-year-helper.ts
+./lib/receipt-generator.ts
+./lib/payment-actions.ts
+./app/student/finance/payment/callback/[paymentId]/page.tsx
+
+
+> Build failed because of webpack errors

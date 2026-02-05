@@ -1,0 +1,143 @@
+﻿app/admin/academics/page.tsx(14,47): error TS2339: Property 'academicYear' does not exist on type '{ id: string; address: string; email: string; createdAt: Date; updatedAt: Date; schoolName: string; schoolCode: string | null; motto: string | null; establishedYear: string | null; ... 14 more ...; affiliatedTo: string | null; }'.
+app/admin/AdminLayoutClient.tsx(115,10): error TS2304: Cannot find name 'setIsMenuOpen'.
+app/admin/communication/page.tsx(125,43): error TS2322: Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; }' is not assignable to type 'void'.
+app/admin/exams/[id]/marks/page.tsx(44,53): error TS2339: Property 'workflowStatus' does not exist on type '{ student: { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }; } & { ...; }'.
+app/admin/exams/[id]/marks/page.tsx(130,21): error TS2322: Type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }[]' is not assignable to type 'Student[]'.
+  Property 'name' is missing in type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }' but required in type 'Student'.
+app/admin/exams/[id]/marks/page.tsx(134,21): error TS2322: Type '({ student: { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }; } & { ...; })[]' is not assignable to type 'ExamResult[]'.
+  Property 'status' is missing in type '{ student: { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }; } & { ...; }' but required in type 'ExamResult'.
+app/admin/exams/admit-cards/[id]/edit/page.tsx(74,34): error TS18047: 'admitCard.student.class' is possibly 'null'.
+app/admin/exams/admit-cards/[id]/edit/page.tsx(74,65): error TS18047: 'admitCard.student.class' is possibly 'null'.
+app/admin/exams/marksheets/[studentId]/[examGroupId]/page.tsx(70,17): error TS2739: Type '{ rollNo: string; class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | { name: string; section: string; }; name: string | null; fatherName: string; motherName: string; dateOfBirth: Date | null; }' is missing the following properties from type '{ name: string; rollNo: string; admissionNo: string; fatherName?: string | undefined; class: { name: string; section: string; }; profileImage: string | null; }': admissionNo, profileImage
+app/admin/finance/discounts/new/page.tsx(38,33): error TS2322: Type '{ id: string; name: string | null; admissionNo: string; fees: { id: string; name: string; amount: number; }[]; }[]' is not assignable to type 'StudentData[]'.
+  Type '{ id: string; name: string | null; admissionNo: string; fees: { id: string; name: string; amount: number; }[]; }' is not assignable to type 'StudentData'.
+    Types of property 'name' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+app/admin/finance/reports/defaulters/page.tsx(84,77): error TS7006: Parameter 'fee' implicitly has an 'any' type.
+app/admin/finance/wallet/page.tsx(36,43): error TS7006: Parameter 'student' implicitly has an 'any' type.
+app/admin/finance/wallet/page.tsx(143,79): error TS7006: Parameter 'txn' implicitly has an 'any' type.
+app/admin/settings/academic-years/[id]/audit/page.tsx(40,18): error TS18048: 'logs' is possibly 'undefined'.
+app/admin/settings/academic-years/[id]/audit/page.tsx(42,26): error TS18048: 'logs' is possibly 'undefined'.
+app/admin/settings/academic-years/[id]/backup/page.tsx(43,17): error TS2322: Type '{ academicYear: string; id: string; name: string; createdAt: Date; backupType: string; backupData: string; fileSize: number; createdBy: string; }[] | undefined' is not assignable to type 'Backup[]'.
+  Type 'undefined' is not assignable to type 'Backup[]'.
+app/admin/settings/app-updates/page.tsx(11,31): error TS2322: Type '{ id: string; createdAt: Date; updatedAt: Date; version: string; isCurrent: boolean; buildNumber: number; releaseDate: Date; installedDate: Date | null; changelog: string | null; ... 6 more ...; updateStatus: string | null; } | null' is not assignable to type 'AppVersion | null'.
+  Type '{ id: string; createdAt: Date; updatedAt: Date; version: string; isCurrent: boolean; buildNumber: number; releaseDate: Date; installedDate: Date | null; changelog: string | null; ... 6 more ...; updateStatus: string | null; }' is not assignable to type 'AppVersion'.
+    Types of property 'releaseDate' are incompatible.
+      Type 'Date' is not assignable to type 'string'.
+app/admin/settings/app-updates/page.tsx(11,63): error TS2322: Type '{ id: string; createdAt: Date; updatedAt: Date; version: string; isCurrent: boolean; buildNumber: number; releaseDate: Date; installedDate: Date | null; changelog: string | null; ... 6 more ...; updateStatus: string | null; }[]' is not assignable to type 'AppVersion[]'.
+  Type '{ id: string; createdAt: Date; updatedAt: Date; version: string; isCurrent: boolean; buildNumber: number; releaseDate: Date; installedDate: Date | null; changelog: string | null; ... 6 more ...; updateStatus: string | null; }' is not assignable to type 'AppVersion'.
+    Types of property 'releaseDate' are incompatible.
+      Type 'Date' is not assignable to type 'string'.
+app/admin/settings/promotion-rules/new/page.tsx(30,19): error TS2322: Type '(formData: FormData) => Promise<{ success: boolean; error: string; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; error: string; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; error: string; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; error: string; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; error: string; }' is not assignable to type 'void'.
+app/admin/students/page.tsx(8,28): error TS2322: Type '({ user: { id: string; name: string | null; role: string; image: string | null; phone: string; email: string; password: string; createdAt: Date; updatedAt: Date; }; class: { academicYear: string; ... 4 more ...; teacherId: string | null; } | null; } & { ...; })[]' is not assignable to type 'Student[]'.
+  Type '{ user: { id: string; name: string | null; role: string; image: string | null; phone: string; email: string; password: string; createdAt: Date; updatedAt: Date; }; class: { academicYear: string; ... 4 more ...; teacherId: string | null; } | null; } & { ...; }' is not assignable to type 'Student'.
+    Types of property 'gender' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+app/admin/teachers/TeachersClient.tsx(262,95): error TS2322: Type '{ label: string; value: string; icon: Element; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; className?: string | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; className?: string | undefined; }'.
+app/admin/teachers/TeachersClient.tsx(263,91): error TS2322: Type '{ label: string; value: string; icon: Element; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: ReactNode; className?: string | undefined; }'.
+  Property 'icon' does not exist on type 'IntrinsicAttributes & { label: string; value: ReactNode; className?: string | undefined; }'.
+app/admin/transport/routes/[id]/page.tsx(112,33): error TS2322: Type '({ user: { id: string; phone: string; name: string | null; email: string; password: string; role: string; image: string | null; createdAt: Date; updatedAt: Date; }; class: { academicYear: string; ... 4 more ...; teacherId: string | null; } | null; transportMapping: ({ ...; } & { ...; }) | null; } & { ...; })[]' is not assignable to type 'Student[]'.
+  Type '{ user: { id: string; phone: string; name: string | null; email: string; password: string; role: string; image: string | null; createdAt: Date; updatedAt: Date; }; class: { academicYear: string; ... 4 more ...; teacherId: string | null; } | null; transportMapping: ({ ...; } & { ...; }) | null; } & { ...; }' is not assignable to type 'Student'.
+    Types of property 'class' are incompatible.
+      Type '{ academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | null' is not assignable to type '{ name: string; } | undefined'.
+        Type 'null' is not assignable to type '{ name: string; } | undefined'.
+app/admin/users/ResetPasswordForm.tsx(27,15): error TS2322: Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; }' is not assignable to type 'void'.
+app/api/admin/academic-year/create/route.ts(26,26): error TS2339: Property 'academicYear' does not exist on type '{ success: boolean; error: string; message?: undefined; data?: undefined; } | { success: boolean; message: string; data: { id: string; name: string; createdAt: Date; updatedAt: Date; status: string; ... 6 more ...; rolledOverBy: string | null; }; error?: undefined; }'.
+  Property 'academicYear' does not exist on type '{ success: boolean; error: string; message?: undefined; data?: undefined; }'.
+app/api/marksheets/list/route.ts(36,17): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'StudentSelect<DefaultArgs>'.
+app/student/result/page.tsx(29,25): error TS2322: Type 'string | null' is not assignable to type 'string | StringFilter<"ExamSchedule"> | undefined'.
+  Type 'null' is not assignable to type 'string | StringFilter<"ExamSchedule"> | undefined'.
+app/student/result/page.tsx(106,39): error TS2339: Property 'name' does not exist on type '{ class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | null; } & { id: string; userId: string; admissionNo: string; rollNo: string | null; ... 9 more ...; transportId: string | null; }'.
+app/student/result/page.tsx(109,45): error TS2339: Property 'fatherName' does not exist on type '{ class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | null; } & { id: string; userId: string; admissionNo: string; rollNo: string | null; ... 9 more ...; transportId: string | null; }'.
+app/student/result/page.tsx(114,47): error TS2339: Property 'profileImage' does not exist on type '{ class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | null; } & { id: string; userId: string; admissionNo: string; rollNo: string | null; ... 9 more ...; transportId: string | null; }'.
+components/DynamicLoaders.tsx(5,50): error TS2307: Cannot find module './Chart' or its corresponding type declarations.
+components/DynamicLoaders.tsx(10,54): error TS2307: Cannot find module './DataTable' or its corresponding type declarations.
+components/transport/TransportMap.tsx(4,15): error TS7016: Could not find a declaration file for module 'leaflet'. 'D:/School Management/node_modules/leaflet/dist/leaflet-src.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/leaflet` if it exists or add a new declaration (.d.ts) file containing `declare module 'leaflet';`
+lib/actions.ts(391,13): error TS2353: Object literal may only specify known properties, and 'student' does not exist in type 'FeePaymentInclude<DefaultArgs>'.
+lib/actions.ts(413,9): error TS2322: Type '{ name: string; amount: number; frequency: string; }' is not assignable to type '(Without<FeeStructureCreateInput, FeeStructureUncheckedCreateInput> & FeeStructureUncheckedCreateInput) | (Without<...> & FeeStructureCreateInput)'.
+  Type '{ name: string; amount: number; frequency: string; }' is not assignable to type 'Without<FeeStructureUncheckedCreateInput, FeeStructureCreateInput> & FeeStructureCreateInput'.
+    Property 'feeHead' is missing in type '{ name: string; amount: number; frequency: string; }' but required in type 'FeeStructureCreateInput'.
+lib/actions/academics.ts(598,21): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+lib/actions/backup-export.ts(62,17): error TS2561: Object literal may only specify known properties, but 'academicYearId' does not exist in type '(Without<DataBackupCreateInput, DataBackupUncheckedCreateInput> & DataBackupUncheckedCreateInput) | (Without<...> & DataBackupCreateInput)'. Did you mean to write 'academicYear'?
+lib/actions/backup-export.ts(155,32): error TS2339: Property 'dateOfBirth' does not exist on type '{ user: { name: string | null; email: string; }; class: { name: string; section: string; } | null; } & { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; ... 8 more ...; transportId: string | null; }'.
+lib/actions/backup-export.ts(213,131): error TS2339: Property 'dateOfBirth' does not exist on type '{ user: { name: string | null; email: string; }; class: { name: string; section: string; } | null; } & { id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; ... 8 more ...; transportId: string | null; }'.
+lib/actions/backup-export.ts(266,22): error TS2561: Object literal may only specify known properties, but 'academicYearId' does not exist in type 'DataBackupWhereInput'. Did you mean to write 'academicYear'?
+lib/actions/fee-rollover.ts(111,21): error TS2353: Object literal may only specify known properties, and 'dueDate' does not exist in type 'Without<FeeStructureCreateInput, FeeStructureUncheckedCreateInput> & FeeStructureUncheckedCreateInput'.
+lib/actions/fee-rollover.ts(111,34): error TS2339: Property 'dueDate' does not exist on type '{ id: string; classId: string | null; name: string; createdAt: Date; updatedAt: Date; feeHeadId: string; amount: number; frequency: string; months: string | null; priority: number; taxId: string | null; }'.
+lib/actions/promotion-rules.ts(46,13): error TS2322: Type '{ fromClass: { select: { name: true; section: true; }; }; toClass: { select: { name: true; section: true; }; }; }' is not assignable to type 'never'.
+lib/actions/promotion-rules.ts(98,17): error TS2353: Object literal may only specify known properties, and 'results' does not exist in type 'StudentInclude<DefaultArgs>'.
+lib/actions/promotion-rules.ts(115,39): error TS2339: Property 'attendances' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(116,41): error TS2339: Property 'attendances' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(116,60): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(126,54): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(127,40): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(127,56): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(127,61): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(128,38): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(128,54): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(128,59): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(140,40): error TS2339: Property 'attendances' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(141,29): error TS2339: Property 'attendances' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(141,48): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(141,94): error TS2339: Property 'attendances' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(143,35): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(144,29): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(144,45): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(144,50): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(144,84): error TS2339: Property 'results' does not exist on type '{ id: string; userId: string; admissionNo: string; rollNo: string | null; dob: Date | null; gender: string | null; address: string | null; phone: string | null; bloodGroup: string | null; ... 4 more ...; transportId: string | null; }'.
+lib/actions/promotion-rules.ts(144,100): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/actions/promotion-rules.ts(144,105): error TS7006: Parameter 'r' implicitly has an 'any' type.
+lib/backup-actions.ts(161,35): error TS2339: Property 'success' does not exist on type 'string'.
+lib/backup-actions.ts(161,60): error TS2339: Property 'encryptedPath' does not exist on type 'string'.
+lib/backup-actions.ts(164,47): error TS2339: Property 'encryptedPath' does not exist on type 'string'.
+lib/backup-actions.ts(178,70): error TS2339: Property 'recordCount' does not exist on type '{ success: boolean; message: string; filePath?: string | undefined; fileSize?: number | undefined; checksum?: string | undefined; } | { success: boolean; message: string; filePath?: string | undefined; fileSize?: number | undefined; recordCount?: number | undefined; }'.
+  Property 'recordCount' does not exist on type '{ success: boolean; message: string; filePath?: string | undefined; fileSize?: number | undefined; checksum?: string | undefined; }'.
+lib/backup-actions.ts(305,45): error TS2304: Cannot find name 'decryptBackup'.
+lib/finance-phase2-actions.ts(147,27): error TS2304: Cannot find name 'getFinancialSummary'.
+lib/firebase-admin.ts(2,51): error TS2307: Cannot find module 'firebase-admin/app' or its corresponding type declarations.
+lib/firebase-admin.ts(3,30): error TS2307: Cannot find module 'firebase-admin/messaging' or its corresponding type declarations.
+lib/firebase-admin.ts(4,29): error TS2307: Cannot find module 'firebase-admin/database' or its corresponding type declarations.
+lib/firebase.ts(2,40): error TS2307: Cannot find module 'firebase/app' or its corresponding type declarations.
+lib/firebase.ts(3,64): error TS2307: Cannot find module 'firebase/messaging' or its corresponding type declarations.
+lib/firebase.ts(4,29): error TS2307: Cannot find module 'firebase/database' or its corresponding type declarations.
+lib/firebase.ts(19,5): error TS7034: Variable 'app' implicitly has type 'any' in some locations where its type cannot be determined.
+lib/firebase.ts(29,25): error TS7006: Parameter 'supported' implicitly has an 'any' type.
+lib/firebase.ts(31,38): error TS7005: Variable 'app' implicitly has an 'any' type.
+lib/firebase.ts(74,34): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+lib/marks-entry-actions.ts(45,17): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'Without<ExamResultCreateInput, ExamResultUncheckedCreateInput> & ExamResultUncheckedCreateInput'.
+lib/marks-entry-actions.ts(51,17): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type '(Without<ExamResultUpdateInput, ExamResultUncheckedUpdateInput> & ExamResultUncheckedUpdateInput) | (Without<...> & ExamResultUpdateInput)'.
+lib/marks-entry-actions.ts(72,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type 'ExamResultWhereInput'.
+lib/marks-entry-actions.ts(75,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type '(Without<ExamResultUpdateManyMutationInput, ExamResultUncheckedUpdateManyInput> & ExamResultUncheckedUpdateManyInput) | (Without<...> & ExamResultUpdateManyMutationInput)'.
+lib/marks-entry-actions.ts(94,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type 'ExamResultWhereInput'.
+lib/marks-entry-actions.ts(97,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type '(Without<ExamResultUpdateManyMutationInput, ExamResultUncheckedUpdateManyInput> & ExamResultUncheckedUpdateManyInput) | (Without<...> & ExamResultUpdateManyMutationInput)'.
+lib/marks-entry-actions.ts(116,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type 'ExamResultWhereInput'.
+lib/marks-entry-actions.ts(119,13): error TS2353: Object literal may only specify known properties, and 'workflowStatus' does not exist in type '(Without<ExamResultUpdateManyMutationInput, ExamResultUncheckedUpdateManyInput> & ExamResultUncheckedUpdateManyInput) | (Without<...> & ExamResultUpdateManyMutationInput)'.
+lib/marks-import.ts(80,17): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'Without<ExamResultCreateInput, ExamResultUncheckedCreateInput> & ExamResultUncheckedCreateInput'.
+lib/marks-import.ts(86,17): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type '(Without<ExamResultUpdateInput, ExamResultUncheckedUpdateInput> & ExamResultUncheckedUpdateInput) | (Without<...> & ExamResultUpdateInput)'.
+lib/promotion-system-actions.ts(243,21): error TS2353: Object literal may only specify known properties, and 'results' does not exist in type 'ExamScheduleInclude<DefaultArgs>'.
+lib/promotion-system-actions.ts(290,35): error TS2339: Property 'examSchedules' does not exist on type '{ academicYear: string; id: string; name: string; createdAt: Date; updatedAt: Date; description: string | null; order: number; status: string; examStartDate: Date | null; ... 6 more ...; resultsPublished: boolean; }'.
+lib/promotion-system-actions.ts(291,33): error TS2339: Property 'examSchedules' does not exist on type '{ academicYear: string; id: string; name: string; createdAt: Date; updatedAt: Date; description: string | null; order: number; status: string; examStartDate: Date | null; ... 6 more ...; resultsPublished: boolean; }'.
+lib/promotion-system-actions.ts(291,55): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+lib/promotion-system-actions.ts(291,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/teacher-actions.ts(140,34): error TS2322: Type 'string | null' is not assignable to type 'string | StringFieldUpdateOperationsInput | undefined'.
+  Type 'null' is not assignable to type 'string | StringFieldUpdateOperationsInput | undefined'.
+prisma/seed.ts(33,22): error TS2339: Property 'result' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(34,22): error TS2339: Property 'exam' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(334,21): error TS2322: Type 'number[]' is not assignable to type 'string'.

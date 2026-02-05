@@ -1,0 +1,6 @@
+app/admin/finance/transactions/TransactionsClient.tsx(50,60): error TS2554: Expected 2 arguments, but got 3.
+components/finance/LedgerClientActions.tsx(5,23): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.
+components/finance/ManagePaymentButton.tsx(25,60): error TS2554: Expected 2 arguments, but got 3.
+lib/payment-actions.ts(68,9): error TS18004: No value exists in scope for the shorthand property 'receiptNo'. Either declare one or provide an initializer.
+lib/payment-actions.ts(117,59): error TS2554: Expected 0 arguments, but got 1.
+lib/transaction-actions.ts(137,59): error TS2554: Expected 0 arguments, but got 1.

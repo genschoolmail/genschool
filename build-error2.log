@@ -1,0 +1,179 @@
+﻿
+> app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+npm : <w> [webpack.ca
+che.PackFileCacheStra
+tegy] Skipped not 
+serializable cache 
+item 'Compilation/mod
+ules|javascript/auto|
+D:\School Management\
+node_modules\next\dis
+t\build\webpack\loade
+rs\next-flight-css-lo
+ader.js??ruleSet[1].r
+ules[14].oneOf[7].use
+[0]!D:\School Managem
+ent\node_modules\next
+\dist\build\webpack\l
+oaders\css-loader\src
+\index.js??ruleSet[1]
+.rules[14].oneOf[7].u
+se[1]!D:\School Manag
+ement\node_modules\ne
+xt\dist\build\webpack
+\loaders\postcss-load
+er\src\index.js??rule
+Set[1].rules[14].oneO
+f[7].use[2]!D:\School
+ Management\app\stude
+nt\finance\receipts\[
+id]\receipt.module.cs
+s|rsc': No 
+serializer 
+registered for 
+CssSyntaxError
+At line:1 char:1
++ npm run build 2>&1 
+| Out-File -FilePath 
+"build-error2.log" 
+-Encoding  ...
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (<    
+w> [webpack.ca... 
+Css    
+SyntaxError:String) 
+[    ], 
+RemoteException
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+<w> while 
+serializing webpack/l
+ib/cache/PackFileCach
+eStrategy.PackContent
+Items -> webpack/lib/
+NormalModule -> webpa
+ck/lib/ModuleBuildErr
+or -> CssSyntaxError
+Failed to compile.
+
+./app/student/finance
+/receipts/[id]/receip
+t.module.css:2:5
+Syntax error: 
+Selector "body *" is 
+not pure (pure 
+selectors must 
+contain at least one 
+local class or id)
+
+ [90m 1 | [39m[36m
+@media[39m print 
+[33m{[39m
+[1m[31m>[39m[22m
+[90m 2 | [39m    
+body * [33m{[39m
+ [90m   | [39m    
+[1m[31m^[39m[22m
+ [90m 3 | [39m     
+   visibility[33m:[
+39m hidden[33m;[39m
+ [90m 4 | [39m    
+[33m}[39m
+
+./app/admin/exams/mar
+ksheets/[studentId]/[
+examGroupId]/page.tsx
+Error: 
+  [31mx[0m 
+Unexpected token 
+`div`. Expected jsx 
+identifier
+    ,-[[36;1;4mD:\Sc
+hool Management\app\a
+dmin\exams\marksheets
+\[studentId]\[examGro
+upId]\page.tsx[0m:38
+:1]
+ [2m38[0m |     
+const marksheetData 
+= await generateMarks
+heet(params.studentId
+, 
+params.examGroupId);
+ [2m39[0m | 
+ [2m40[0m |     
+return (
+ [2m41[0m |        
+ <div className="spac
+e-y-6">
+    : [31;1m        
+ ^^^[0m
+ [2m42[0m |        
+     {/* Header */}
+ [2m43[0m |        
+     <div 
+className="flex 
+items-center 
+justify-between">
+ [2m43[0m |        
+         <div 
+className="flex 
+items-center gap-4">
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for 
+requested module:
+./app/admin/exams/mar
+ksheets/[studentId]/[
+examGroupId]/page.tsx
+
+./app/api/exams/marks
+/save/route.ts
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./app/api/teachers/do
+cuments/[id]/delete/r
+oute.ts
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+./app/teacher/marks/e
+ntry/page.tsx
+Module not found: 
+Can't resolve 
+'@/lib/auth'
+
+https://nextjs.org/do
+cs/messages/module-no
+t-found
+
+
+> Build failed 
+because of webpack 
+errors

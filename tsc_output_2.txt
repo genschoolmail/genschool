@@ -1,0 +1,1 @@
+components/finance/LedgerClientActions.tsx(5,23): error TS2307: Cannot find module 'xlsx' or its corresponding type declarations.

@@ -1,0 +1,26 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/settings/promotion-rules/new/page.tsx:30:19
+Type error: Type '(formData: FormData) => Promise<{ success: boolean; error: string; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '(formData: FormData) => Promise<{ success: boolean; error: string; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ success: boolean; error: string; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ success: boolean; error: string; }>' is not assignable to type 'Promise<void>'.
+        Type '{ success: boolean; error: string; }' is not assignable to type 'void'.
+
+[0m [90m 28 |[39m[0m
+[0m [90m 29 |[39m             {[90m/* Form */[39m}[0m
+[0m[31m[1m>[22m[39m[90m 30 |[39m             [33m<[39m[33mform[39m action[33m=[39m{createPromotionRule} className[33m=[39m[32m"bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-6"[39m[33m>[39m[0m
+[0m [90m    |[39m                   [31m[1m^[22m[39m[0m
+[0m [90m 31 |[39m                 {[90m/* Rule Name */[39m}[0m
+[0m [90m 32 |[39m                 [33m<[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 33 |[39m                     [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"[39m[33m>[39m[0m

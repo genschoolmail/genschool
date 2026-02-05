@@ -1,0 +1,23 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/student/result/page.tsx:129:25
+Type error: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+
+[0m [90m 127 |[39m                         rollNo[33m:[39m student[33m.[39mrollNo [33m||[39m [32m''[39m[33m,[39m[0m
+[0m [90m 128 |[39m                         admissionNo[33m:[39m student[33m.[39madmissionNo[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 129 |[39m                         fatherName[33m:[39m student[33m.[39mparent[33m?[39m[33m.[39muser[33m.[39mname [33m||[39m [36mnull[39m[33m,[39m[0m
+[0m [90m     |[39m                         [31m[1m^[22m[39m[0m
+[0m [90m 130 |[39m                         [36mclass[39m[33m:[39m {[0m
+[0m [90m 131 |[39m                             name[33m:[39m student[33m.[39m[36mclass[39m[33m?[39m[33m.[39mname [33m||[39m [32m''[39m[33m,[39m[0m
+[0m [90m 132 |[39m                             section[33m:[39m student[33m.[39m[36mclass[39m[33m?[39m[33m.[39msection [33m||[39m [32m''[39m[0m

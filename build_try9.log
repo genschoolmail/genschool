@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/admin/exams/marksheets/[studentId]/[examGroupId]/page.tsx:70:17
+Type error: Type '{ rollNo: string; class: { academicYear: string; id: string; name: string; section: string; capacity: number; teacherId: string | null; } | { name: string; section: string; }; name: string | null; fatherName: string; motherName: string; dateOfBirth: Date | null; }' is missing the following properties from type '{ name: string; rollNo: string; admissionNo: string; fatherName?: string | undefined; class: { name: string; section: string; }; profileImage: string | null; }': admissionNo, profileImage
+
+[0m [90m 68 |[39m             [33m<[39m[33mMarksheetTemplate[39m[0m
+[0m [90m 69 |[39m                 {[33m...[39mmarksheetData}[0m
+[0m[31m[1m>[22m[39m[90m 70 |[39m                 student[33m=[39m{{[0m
+[0m [90m    |[39m                 [31m[1m^[22m[39m[0m
+[0m [90m 71 |[39m                     [33m...[39mmarksheetData[33m.[39mstudent[33m,[39m[0m
+[0m [90m 72 |[39m                     rollNo[33m:[39m marksheetData[33m.[39mstudent[33m.[39mrollNo [33m||[39m [32m''[39m[33m,[39m[0m
+[0m [90m 73 |[39m                     [36mclass[39m[33m:[39m marksheetData[33m.[39mstudent[33m.[39m[36mclass[39m [33m||[39m { name[33m:[39m [32m''[39m[33m,[39m section[33m:[39m [32m''[39m }[0m

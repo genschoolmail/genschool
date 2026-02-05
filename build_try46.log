@@ -1,0 +1,22 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/backup-actions.ts:161:35
+Type error: Property 'success' does not exist on type 'string'.
+
+[0m [90m 159 |[39m             [36mif[39m (options[33m?[39m[33m.[39mencrypt [33m?[39m[33m?[39m config[33m.[39mencryptionEnabled) {[0m
+[0m [90m 160 |[39m                 [36mconst[39m encryptResult [33m=[39m [36mawait[39m encrypt(finalPath)[0m
+[0m[31m[1m>[22m[39m[90m 161 |[39m                 [36mif[39m (encryptResult[33m.[39msuccess [33m&&[39m encryptResult[33m.[39mencryptedPath) {[0m
+[0m [90m     |[39m                                   [31m[1m^[22m[39m[0m
+[0m [90m 162 |[39m                     [90m// Delete unencrypted file[39m[0m
+[0m [90m 163 |[39m                     [36mawait[39m fs[33m.[39munlink(finalPath)[0m
+[0m [90m 164 |[39m                     finalPath [33m=[39m encryptResult[33m.[39mencryptedPath[0m

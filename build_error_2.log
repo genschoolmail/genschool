@@ -1,0 +1,33 @@
+
+> app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+  - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/admin/finance/fees/receipt/[id]/ReceiptPrintStyles.tsx
+Error: 
+  [31mx[0m Expression expected
+   ,-[[36;1;4mD:\School Management\app\admin\finance\fees\receipt\[id]\ReceiptPrintStyles.tsx[0m:4:1]
+ [2m4[0m | export default function ReceiptPrintStyles() {
+ [2m5[0m |     return (
+ [2m6[0m |         <style jsx global>{`
+ [2m7[0m | @media print {
+   : [31;1m^[0m
+ [2m8[0m |     @page { size: A4; margin: 10mm; }
+ [2m9[0m |                 body {
+ [2m9[0m |         -webkit - print - color - adjust: exact!important;
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/finance/fees/receipt/[id]/ReceiptPrintStyles.tsx
+./app/admin/finance/fees/receipt/[id]/page.tsx
+
+
+> Build failed because of webpack errors

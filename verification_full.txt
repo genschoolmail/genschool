@@ -1,0 +1,102 @@
+﻿≡ƒÜÇ Starting Exam Module Verification...
+
+1∩╕ÅΓâú  Setting up Test Data...
+prisma:query INSERT INTO `main`.`Class` (`id`, `name`, `section`, `capacity`, `academicYear`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `name` AS `name`, `section` AS `section`, `capacity` AS `capacity`, `academicYear` AS `academicYear`, `teacherId` AS `teacherId`
+Γ£à Class Created: TestClass1764491156322
+prisma:query INSERT INTO `main`.`User` (`id`, `name`, `email`, `phone`, `password`, `role`, `createdAt`, `updatedAt`) VALUES (?,?,?,?,?,?,?,?) RETURNING `id` AS `id`, `name` AS `name`, `email` AS `email`, `phone` AS `phone`, `password` AS `password`, `role` AS `role`, `image` AS `image`, `createdAt` AS `createdAt`, `updatedAt` AS `updatedAt`
+prisma:query INSERT INTO `main`.`Student` (`id`, `userId`, `admissionNo`, `rollNo`, `dob`, `gender`, `address`, `classId`) VALUES (?,?,?,?,?,?,?,?) RETURNING `id` AS `id`, `userId` AS `userId`, `admissionNo` AS `admissionNo`, `rollNo` AS `rollNo`, `dob` AS `dob`, `gender` AS `gender`, `address` AS `address`, `phone` AS `phone`, `bloodGroup` AS `bloodGroup`, `documents` AS `documents`, `admissionYear` AS `admissionYear`, `classId` AS `classId`, `parentId` AS `parentId`, `transportId` AS `transportId`
+Γ£à Student Created: ADM-1764491156322
+prisma:query INSERT INTO `main`.`Subject` (`id`, `name`, `code`, `credits`, `classId`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `name` AS `name`, `code` AS `code`, `credits` AS `credits`, `classId` AS `classId`, `teacherId` AS `teacherId`, `subjectGroupId` AS `subjectGroupId`
+Γ£à Subject Created: Math Test
+
+2∩╕ÅΓâú  Creating Exam Configuration...
+prisma:query INSERT INTO `main`.`ExamGroup` (`id`, `name`, `academicYear`, `order`, `createdAt`, `updatedAt`) VALUES (?,?,?,?,?,?) RETURNING `id` AS `id`, `name` AS `name`, `description` AS `description`, `academicYear` AS `academicYear`, `order` AS `order`, `createdAt` AS `createdAt`, `updatedAt` AS `updatedAt`
+Γ£à Exam Group Created: TestTerm1764491156322
+prisma:query SELECT `main`.`GradeSystem`.`id`, `main`.`GradeSystem`.`grade`, `main`.`GradeSystem`.`minMarks`, `main`.`GradeSystem`.`maxMarks`, `main`.`GradeSystem`.`gradePoint`, `main`.`GradeSystem`.`description`, `main`.`GradeSystem`.`order`, `main`.`GradeSystem`.`academicYear`, `main`.`GradeSystem`.`createdAt`, `main`.`GradeSystem`.`updatedAt` FROM `main`.`GradeSystem` WHERE (`main`.`GradeSystem`.`grade` = ? AND `main`.`GradeSystem`.`academicYear` = ?) LIMIT ? OFFSET ?
+Γä╣∩╕Å  Using existing Grade: A+
+prisma:query INSERT INTO `main`.`ExamSchedule` (`id`, `examGroupId`, `classId`, `subjectId`, `examDate`, `startTime`, `duration`, `maxMarks`, `passingMarks`, `createdAt`) VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING `id` AS `id`, `examGroupId` AS `examGroupId`, `classId` AS `classId`, `subjectId` AS `subjectId`, `examDate` AS `examDate`, `startTime` AS `startTime`, `duration` AS `duration`, `maxMarks` AS `maxMarks`, `passingMarks` AS `passingMarks`, `createdAt` AS `createdAt`
+Γ£à Exam Scheduled
+
+3∩╕ÅΓâú  Generating Admit Cards...
+prisma:query SELECT `main`.`Student`.`id` FROM `main`.`Student` WHERE `main`.`Student`.`classId` = ? LIMIT ? OFFSET ?
+prisma:query BEGIN IMMEDIATE
+prisma:query SELECT `main`.`AdmitCard`.`id`, `main`.`AdmitCard`.`examGroupId`, `main`.`AdmitCard`.`studentId`, `main`.`AdmitCard`.`generatedAt`, `main`.`AdmitCard`.`downloadedAt`, `main`.`AdmitCard`.`status` FROM `main`.`AdmitCard` WHERE ((`main`.`AdmitCard`.`examGroupId` = ? AND `main`.`AdmitCard`.`studentId` = ?) AND 1=1) LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`AdmitCard` (`id`, `examGroupId`, `studentId`, `generatedAt`, `status`) VALUES (?,?,?,?,?) RETURNING `id` AS `id`, `examGroupId` AS `examGroupId`, `studentId` AS `studentId`, `generatedAt` AS `generatedAt`, `downloadedAt` AS `downloadedAt`, `status` AS `status`
+prisma:query COMMIT
+npx : Error generating 
+admit cards: Error: 
+Invariant: static 
+generation store missing 
+in revalidatePath 
+/admin/exams/admit-cards
+At line:1 char:1
++ npx tsx scripts/verify-e
+xam-module.ts 2>&1 | 
+Out-File -FilePath verif 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (E  
+  rror generatin...ams/   
+ admit-cards:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+    at revalidate 
+(D:\School Management\node
+_modules\next\src\server\w
+eb\spec-extension\revalida
+te.ts:47:11)
+    at revalidatePath 
+(D:\School Management\node
+_modules\next\src\server\w
+eb\spec-extension\revalida
+te.ts:41:10)
+    at generateAdmitCardsF
+orClass (d:\School Managem
+ent\lib\actions\exams.ts:2
+98:9)
+    at verifyExamModule 
+(d:\School Management\scri
+pts\verify-exam-module.ts:
+120:33)
+Γ£à Admit Cards Generated: {
+  error: 'Invariant: static generation store missing in revalidatePath /admin/exams/admit-cards'
+}
+prisma:query SELECT `main`.`AdmitCard`.`id`, `main`.`AdmitCard`.`examGroupId`, `main`.`AdmitCard`.`studentId`, `main`.`AdmitCard`.`generatedAt`, `main`.`AdmitCard`.`downloadedAt`, `main`.`AdmitCard`.`status` FROM `main`.`AdmitCard` WHERE ((`main`.`AdmitCard`.`examGroupId` = ? AND `main`.`AdmitCard`.`studentId` = ?) AND 1=1) LIMIT ? OFFSET ?
+Γ£à Admit Card Verified in DB
+
+4∩╕ÅΓâú  Entering Marks...
+prisma:query SELECT `main`.`GradeSystem`.`id`, `main`.`GradeSystem`.`grade`, `main`.`GradeSystem`.`minMarks`, `main`.`GradeSystem`.`maxMarks`, `main`.`GradeSystem`.`gradePoint`, `main`.`GradeSystem`.`description`, `main`.`GradeSystem`.`order`, `main`.`GradeSystem`.`academicYear`, `main`.`GradeSystem`.`createdAt`, `main`.`GradeSystem`.`updatedAt` FROM `main`.`GradeSystem` WHERE 1=1 ORDER BY `main`.`GradeSystem`.`order` ASC LIMIT ? OFFSET ?
+prisma:query INSERT INTO `main`.`ExamResult` (`id`, `examScheduleId`, `studentId`, `marksObtained`, `grade`, `remarks`, `enteredBy`, `enteredAt`) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT  (`examScheduleId`,`studentId`) DO UPDATE SET `examScheduleId` = ?, `studentId` = ?, `marksObtained` = ?, `grade` = ?, `remarks` = ?, `enteredBy` = ? WHERE ((`main`.`ExamResult`.`examScheduleId` = ? AND `main`.`ExamResult`.`studentId` = ?) AND 1=1) RETURNING `id` AS `id`, `examScheduleId` AS `examScheduleId`, `studentId` AS `studentId`, `marksObtained` AS `marksObtained`, `grade` AS `grade`, `remarks` AS `remarks`, `enteredBy` AS `enteredBy`, `enteredAt` AS `enteredAt`
+
+Γ¥î VERIFICATION FAILED: 
+Error: Invariant: static 
+generation store missing 
+in revalidatePath 
+/admin/exams/marks
+    at revalidate 
+(D:\School Management\node
+_modules\next\src\server\w
+eb\spec-extension\revalida
+te.ts:47:11)
+    at revalidatePath 
+(D:\School Management\node
+_modules\next\src\server\w
+eb\spec-extension\revalida
+te.ts:41:10)
+    at enterMarks 
+(d:\School Management\lib\
+actions\exams.ts:211:5)
+    at verifyExamModule 
+(d:\School Management\scri
+pts\verify-exam-module.ts:
+156:13)
+prisma:query DELETE FROM `main`.`ExamGroup` WHERE `main`.`ExamGroup`.`name` = ?
+prisma:query DELETE FROM `main`.`Subject` WHERE `main`.`Subject`.`code` = ?
+prisma:query DELETE FROM `main`.`Student` WHERE `main`.`Student`.`admissionNo` = ?
+prisma:query DELETE FROM `main`.`User` WHERE `main`.`User`.`email` = ?
+prisma:query DELETE FROM `main`.`Class` WHERE `main`.`Class`.`name` = ?
