@@ -141,7 +141,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                domain: process.env.NODE_ENV === 'production' ? '.platform.com' : undefined,
+                domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Vercel handles this automatically for .vercel.app
                 secure: process.env.NODE_ENV === 'production',
             },
         },
