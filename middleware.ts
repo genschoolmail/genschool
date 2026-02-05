@@ -18,9 +18,11 @@ export default auth((req) => {
     // Local: school1.localhost -> school1
     // Prod: school1.platform.com -> school1
     // Root: localhost, platform.com -> null
-    const currentSubdomain = isLocalhost
+    let currentSubdomain = isLocalhost
         ? (hostParts.length > 1 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
         : (hostParts.length > 2 ? hostParts[0] : null);
+
+    if (currentSubdomain === 'www') currentSubdomain = null;
 
     // Prepare response and headers
     const requestHeaders = new Headers(req.headers);
