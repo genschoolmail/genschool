@@ -1,4 +1,4 @@
-import { getRecentPromotions, rollbackPromotion } from '@/lib/actions/promotion';
+import { getRecentPromotions, rollbackPromotion } from '@/lib/promotion-actions';
 import { getAcademicYear } from '@/lib/actions/academic-year';
 import { ArrowLeft, RotateCcw, AlertTriangle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';

@@ -30,9 +30,32 @@ export async function executeBulkPromotion(
             error: 'Invalid input parameters'
         };
     }
-    
+
     return {
         success: true,
         message: `Successfully promoted ${studentIds.length} student(s)`
+    };
+}
+
+export async function getRecentPromotions(academicYearId: string) {
+    // Stub implementation
+    return {
+        success: true,
+        promotions: []
+    };
+}
+
+export async function rollbackPromotion(promotionId: string, reason: string) {
+    // Stub implementation
+    if (!promotionId) {
+        return {
+            success: false,
+            error: 'Invalid promotion ID'
+        };
+    }
+
+    return {
+        success: true,
+        message: 'Promotion rolled back successfully'
     };
 }
