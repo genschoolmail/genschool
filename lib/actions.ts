@@ -1845,3 +1845,5 @@ export async function updateSystemSetting(key: string, value: string) {
         throw new Error('Failed to update system setting');
     }
 }
+
+export { getAcademicYears } from './actions/academic-year';
