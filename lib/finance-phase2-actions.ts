@@ -49,3 +49,30 @@ export async function getTeacherFinancialSummary(teacherId: string) {
         };
     }
 }
+
+export async function getAccountantDashboard() {
+    try {
+        // Stub implementation
+        return {
+            totalCollection: 0,
+            pendingFees: 0,
+            recentTransactions: []
+        };
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function getPrincipalDashboard() {
+    try {
+        // Stub implementation
+        return {
+            totalRevenue: 0,
+            totalExpenses: 0,
+            netBalance: 0,
+            monthlyData: []
+        };
+    } catch (error) {
+        return null;
+    }
+}

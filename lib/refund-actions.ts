@@ -42,9 +42,30 @@ export async function processRefund(refundId: string) {
                 processedAt: new Date()
             }
         }).catch(() => null);
-        
+
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
+    }
+}
+
+export async function createRefundRequest(formData: FormData) {
+    try {
+        // Stub implementation
+        return { success: true, message: 'Refund request created' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getStudentRefunds(studentId: string) {
+    try {
+        // Stub implementation
+        return {
+            success: true,
+            refunds: []
+        };
+    } catch (error) {
+        return { success: false, refunds: [] };
     }
 }

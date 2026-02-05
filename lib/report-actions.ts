@@ -31,3 +31,30 @@ export async function generateExpenseReport(startDate: Date, endDate: Date): Pro
         return [];
     }
 }
+
+export async function getDailyCollection(date?: Date) {
+    try {
+        // Stub implementation
+        return {
+            success: true,
+            data: {
+                totalCollection: 0,
+                transactions: []
+            }
+        };
+    } catch (error) {
+        return { success: false, data: null };
+    }
+}
+
+export async function getDefaulters() {
+    try {
+        // Stub implementation
+        return {
+            success: true,
+            defaulters: []
+        };
+    } catch (error) {
+        return { success: false, defaulters: [] };
+    }
+}

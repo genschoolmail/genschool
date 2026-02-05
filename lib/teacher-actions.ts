@@ -205,3 +205,15 @@ export async function updateTeacherBasicInfo(formData: FormData) {
     const id = formData.get('id') as string;
     return await updateTeacher(id, formData);
 }
+
+export async function deleteTeacherDocument(documentId: string) {
+    try {
+        const schoolId = await getTenantId();
+        await prisma.teacherDocument.deleteMany({
+            where: { id: documentId, schoolId }
+        });
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
