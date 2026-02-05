@@ -1846,4 +1846,9 @@ export async function updateSystemSetting(key: string, value: string) {
     }
 }
 
-export { getAcademicYears } from './actions/academic-year';
+
+import { getAcademicYears as _getAcademicYears } from './actions/academic-year';
+
+export async function getAcademicYears() {
+    return await _getAcademicYears();
+}
