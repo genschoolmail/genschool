@@ -47,8 +47,8 @@ export default auth((req) => {
             if (!currentSubdomain && userSubdomain) {
                 const protocol = isLocalhost ? 'http' : 'https';
                 const port = isLocalhost ? ':3000' : '';
-                const domain = isLocalhost ? 'localhost' : 'platform.com';
-                return NextResponse.redirect(`${protocol}://${userSubdomain}.${domain}${port}${nextUrl.pathname}`);
+                const baseDomain = process.env.BASE_DOMAIN || (isLocalhost ? 'localhost' : 'platform.com');
+                return NextResponse.redirect(`${protocol}://${userSubdomain}.${baseDomain}${port}${nextUrl.pathname}`);
             }
         }
     }
@@ -64,8 +64,8 @@ export default auth((req) => {
         if (currentSubdomain) {
             const protocol = isLocalhost ? 'http' : 'https';
             const port = isLocalhost ? ':3000' : '';
-            const domain = isLocalhost ? 'localhost' : 'platform.com';
-            return NextResponse.redirect(`${protocol}://${domain}${port}${nextUrl.pathname}`);
+            const baseDomain = process.env.BASE_DOMAIN || (isLocalhost ? 'localhost' : 'platform.com');
+            return NextResponse.redirect(`${protocol}://${baseDomain}${port}${nextUrl.pathname}`);
         }
     }
 
