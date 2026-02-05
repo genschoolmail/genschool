@@ -16,16 +16,16 @@ export default async function AllAdminsPage() {
 
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[600px]">
                         <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
                             <tr>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Name</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Email</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Phone</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Password</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">School</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Role</th>
-                                <th className="text-left p-4 font-semibold text-slate-700 dark:text-slate-300">Created</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm">Name</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm hidden md:table-cell">Email</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm hidden lg:table-cell">Phone</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm">Password</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm">School</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm hidden sm:table-cell">Role</th>
+                                <th className="text-left p-3 sm:p-4 font-semibold text-slate-700 dark:text-slate-300 text-sm hidden xl:table-cell">Created</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -38,44 +38,44 @@ export default async function AllAdminsPage() {
                             ) : (
                                 admins.map((admin) => (
                                     <tr key={admin.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center font-semibold">
+                                                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                                                     {admin.name?.charAt(0) || 'A'}
                                                 </div>
-                                                <span className="font-medium text-slate-800 dark:text-white">{admin.name}</span>
+                                                <span className="font-medium text-slate-800 dark:text-white text-sm">{admin.name}</span>
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                        <td className="p-3 sm:p-4 hidden md:table-cell">
+                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
                                                 <Mail className="w-4 h-4" />
-                                                {admin.email}
+                                                <span className="truncate max-w-[150px]">{admin.email}</span>
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                        <td className="p-3 sm:p-4 hidden lg:table-cell">
+                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
                                                 <Phone className="w-4 h-4" />
                                                 {admin.phone}
                                             </div>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4">
                                             <PasswordViewer password={(admin as any).tempPassword} />
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4">
                                             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                                <Building className="w-4 h-4" />
+                                                <Building className="w-4 h-4 hidden sm:block" />
                                                 <div>
-                                                    <div className="font-medium text-slate-800 dark:text-white">{admin.school?.name}</div>
-                                                    <div className="text-xs text-slate-500">{admin.school?.subdomain}</div>
+                                                    <div className="font-medium text-slate-800 dark:text-white text-sm">{admin.school?.name}</div>
+                                                    <div className="text-[10px] sm:text-xs text-slate-500">{admin.school?.subdomain}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs rounded-full font-medium">
+                                        <td className="p-3 sm:p-4 hidden sm:table-cell">
+                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-[10px] rounded-full font-medium">
                                                 {admin.role}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-sm text-slate-500">
+                                        <td className="p-3 sm:p-4 text-sm text-slate-500 hidden xl:table-cell">
                                             {new Date(admin.createdAt).toLocaleDateString()}
                                         </td>
                                     </tr>

@@ -8,14 +8,14 @@ export default async function SuperAdminSchoolsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Schools Management</h1>
-                    <p className="text-slate-500 mt-1">Manage tenant schools, subscriptions, and platform access.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Schools Management</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Manage tenant schools, subscriptions, and platform access.</p>
                 </div>
                 <Link
                     href="/super-admin/schools/new"
-                    className="flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all font-semibold"
+                    className="flex items-center px-4 sm:px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all font-semibold text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     Onboard New School
@@ -43,16 +43,16 @@ export default async function SuperAdminSchoolsPage() {
             {/* Schools Grid/Table */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left min-w-[800px]">
                         <thead className="bg-slate-50/50 dark:bg-slate-700/30 border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">School ID</th>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">Institution Details</th>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">Access & URL</th>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">Plan</th>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">Utilization</th>
-                                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-sm">Status</th>
-                                <th className="p-4 text-right font-semibold text-slate-600 dark:text-slate-300 text-sm">Actions</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm hidden lg:table-cell">School ID</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm">Institution Details</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm hidden md:table-cell">Access & URL</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm hidden xl:table-cell">Plan</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm hidden xl:table-cell">Utilization</th>
+                                <th className="p-3 sm:p-4 font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm">Status</th>
+                                <th className="p-3 sm:p-4 text-right font-semibold text-slate-600 dark:text-slate-300 text-xs sm:text-sm">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -65,21 +65,21 @@ export default async function SuperAdminSchoolsPage() {
                             ) : (
                                 schools.map((school) => (
                                     <tr key={school.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
-                                        <td className="p-4 font-mono text-xs text-indigo-600 dark:text-indigo-400 font-bold">
+                                        <td className="p-3 sm:p-4 font-mono text-xs text-indigo-600 dark:text-indigo-400 font-bold hidden lg:table-cell">
                                             {school.schoolId || 'N/A'}
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                                                     <School className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-slate-800 dark:text-white">{school.name}</div>
+                                                    <div className="font-bold text-slate-800 dark:text-white text-sm">{school.name}</div>
                                                     <div className="text-xs text-slate-500">{school.contactEmail}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4 hidden md:table-cell">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-slate-600 dark:text-slate-400 font-mono text-xs bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded">
@@ -92,13 +92,13 @@ export default async function SuperAdminSchoolsPage() {
                                                 <span className="text-[10px] text-slate-400 uppercase tracking-tighter">Joined {new Date(school.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        <td className="p-3 sm:p-4 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hidden xl:table-cell">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                                                 {school.subscription?.plan?.name || 'TRIAL'}
                                             </div>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4 hidden xl:table-cell">
                                             <div className="flex items-center gap-4 text-xs">
                                                 <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
                                                     <Users className="w-3.5 h-3.5" />
@@ -110,10 +110,10 @@ export default async function SuperAdminSchoolsPage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-3 sm:p-4">
                                             <StatusBadge status={school.status} />
                                         </td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-3 sm:p-4 text-right">
                                             <div className="flex justify-end">
                                                 <SchoolActions
                                                     schoolId={school.id}

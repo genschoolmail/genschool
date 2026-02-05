@@ -7,6 +7,7 @@ import {
 import { auth, signOut } from '@/auth';
 import { redirect } from 'next/navigation';
 import { Providers } from '@/components/Providers';
+import { MobileNav } from './MobileNav';
 
 export default async function SuperAdminLayout({
     children,
@@ -28,7 +29,7 @@ export default async function SuperAdminLayout({
         <Providers>
             <div className="flex h-screen bg-slate-50 dark:bg-slate-900 font-sans overflow-hidden">
                 {/* Desktop Sidebar */}
-                <aside className="w-64 lg:w-72 bg-slate-900 dark:bg-slate-950 flex flex-col shadow-2xl z-20 border-r border-slate-800">
+                <aside className="hidden lg:flex w-64 lg:w-72 bg-slate-900 dark:bg-slate-950 flex-col shadow-2xl z-20 border-r border-slate-800">
                     <div className="p-6 lg:p-8 flex items-center justify-center border-b border-slate-800/50">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -68,8 +69,12 @@ export default async function SuperAdminLayout({
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col overflow-hidden relative">
                     {/* Header */}
-                    <header className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 lg:px-8 z-30 flex justify-between items-center h-20">
-                        <div className="flex items-center gap-4 flex-1">
+                    <header className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 lg:px-8 z-30 flex justify-between items-center h-16 lg:h-20">
+                        <div className="flex items-center gap-3 lg:gap-4 flex-1">
+                            {/* Mobile Menu Button */}
+                            <MobileNav userName={session?.user?.name || 'Super Admin'} signOutAction={signOutAction} />
+
+                            {/* Search Bar */}
                             <div className="relative max-w-md w-full hidden md:block">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input

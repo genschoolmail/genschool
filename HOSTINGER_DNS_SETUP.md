@@ -99,6 +99,9 @@ If Option A doesn't work, use Vercel nameservers:
 7. Click **Add** again
 8. Enter: `www.genschoolmail.in`
 9. Click **Add**
+10. **CRITICAL:** Click **Add** again
+11. Enter: `*.genschoolmail.in`
+12. Click **Add** (This enables subdomains)
 
 ### **Step 2: Verify Domain**
 - Vercel will check DNS configuration

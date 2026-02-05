@@ -47,6 +47,11 @@
 2. Enter: `www.genschoolmail.in`
 3. Click **Add**
 
+**Add Wildcard (IMPORTANT):**
+1. Click **Add** again
+2. Enter: `*.genschoolmail.in`
+3. Click **Add**
+
 ---
 
 ### 3️⃣ **Environment Variables** (2 minutes)

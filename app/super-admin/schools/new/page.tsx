@@ -8,13 +8,13 @@ export default async function NewSchoolPage() {
     const plans = await getPlans();
     return (
         <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center gap-4">
-                <Link href="/super-admin/schools" className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <div className="flex items-center gap-3 sm:gap-4 px-1 sm:px-0">
+                <Link href="/super-admin/schools" className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Onboard New School</h1>
-                    <p className="text-slate-500 mt-1">Create a new tenant school with admin account.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">Onboard New School</h1>
+                    <p className="text-xs sm:text-slate-500 mt-0.5 sm:mt-1">Create a new tenant school with admin account.</p>
                 </div>
             </div>
 
@@ -24,7 +24,7 @@ export default async function NewSchoolPage() {
                     await createSchoolWithAdmin(formData);
                     redirect('/super-admin/schools');
                 }}
-                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-6"
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 space-y-6"
             >
                 {/* School Information Section */}
                 <div className="border-b border-slate-200 dark:border-slate-700 pb-4">

@@ -10,18 +10,18 @@ export default async function PlatformSettingsPage() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-4 px-1 sm:px-0">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                         Platform Settings
                     </h1>
-                    <p className="text-slate-500 mt-1 text-lg">
+                    <p className="text-slate-500 mt-1 text-sm sm:text-lg">
                         Manage global integrations and system-wide configurations.
                     </p>
                 </div>
                 <Link
                     href="/super-admin/settings/profile"
-                    className="flex items-center px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm hover:shadow-md"
+                    className="flex items-center px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm hover:shadow-md w-full sm:w-auto justify-center text-sm sm:text-base"
                 >
                     <UserCircle className="w-5 h-5 mr-2 text-indigo-600" />
                     My Profile
