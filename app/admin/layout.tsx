@@ -7,6 +7,8 @@ import AdminMobileNav from './AdminMobileNav';
 import { Providers } from '@/components/Providers';
 import SignOutButton from '@/components/SignOutButton';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({
   children,
 }: {

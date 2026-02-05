@@ -4,8 +4,17 @@ import { FileText, User, Calendar, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AuditTrailPage() {
-    const logs = await getAuditLogs({ limit: 50 });
+    const { logs } = await getAuditLogs(undefined);
     const stats = await getAuditLogStats();
+
+    // Mapping stats to match the component's expected keys if necessary, or just use them directly.
+    // The component uses: totalToday, totalAllTime. 
+    // The utility returns: todayActions, totalActions.
+    const displayStats = {
+        totalToday: stats.todayActions,
+        totalAllTime: stats.totalActions,
+        // ... mapped values
+    };
 
     const getActionColor = (action: string) => {
         switch (action) {
@@ -37,13 +46,13 @@ export default async function AuditTrailPage() {
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                     <Activity className="w-8 h-8 text-indigo-600 mb-2" />
                     <p className="text-sm text-slate-500">Today's Actions</p>
-                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{stats.totalToday}</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{displayStats.totalToday}</p>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                     <FileText className="w-8 h-8 text-blue-600 mb-2" />
                     <p className="text-sm text-slate-500">Total Records</p>
-                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{stats.totalAllTime}</p>
+                    <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">{displayStats.totalAllTime}</p>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
