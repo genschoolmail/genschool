@@ -423,7 +423,8 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                             } catch (err) {
                                                 toast.error('Upload error', { id: toastId });
                                             } finally {
-                                                // Reset input
+                                                // Reset local state and input
+                                                setUploadingImage(false);
                                                 e.target.value = '';
                                             }
                                         }}

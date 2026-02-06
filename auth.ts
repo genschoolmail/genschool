@@ -39,7 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return null;
                 }
 
-                const identifier = credentials.identifier as string;
+                const identifier = (credentials.identifier as string).trim();
 
                 // Check if identifier is an email or phone
                 const isEmail = identifier.includes('@');

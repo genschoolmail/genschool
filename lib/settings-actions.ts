@@ -8,6 +8,16 @@ import { join } from 'path';
 
 const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
 
+// Helper to prevent indefinite hangs in server actions
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+        )
+    ]);
+}
+
 function logAction(message: string) {
     try {
         const timestamp = new Date().toISOString();
@@ -290,30 +300,34 @@ export async function submitKYC(formData: FormData) {
 export async function uploadSchoolLogo(formData: FormData) {
     logAction('Logo upload started');
     try {
-        const schoolId = await getTenantId();
-        const file = formData.get('file') as File;
+        const result = await withTimeout((async () => {
+            const schoolId = await getTenantId();
+            const file = formData.get('file') as File;
 
-        if (!file || file.size === 0) {
-            logAction('No file or empty file provided');
-            return { success: false, error: 'No file provided' };
-        }
+            if (!file || file.size === 0) {
+                logAction('No file or empty file provided');
+                return { success: false, error: 'No file provided' };
+            }
 
-        logAction(`Logo file received: ${file.name}, Size: ${file.size} bytes`);
+            logAction(`Logo file received: ${file.name}, Size: ${file.size} bytes`);
 
-        const { saveFile } = await import('./upload');
-        const logoUrl = await saveFile(file, `schools/${schoolId}/logo`);
+            const { saveFile } = await import('./upload');
+            const logoUrl = await saveFile(file, `schools/${schoolId}/logo`);
 
-        await prisma.school.update({
-            where: { id: schoolId },
-            data: { logo: logoUrl }
-        });
+            await prisma.school.update({
+                where: { id: schoolId },
+                data: { logo: logoUrl }
+            });
 
-        revalidatePath('/admin/settings/school-info');
-        logAction('Logo updated in DB and revalidated');
-        return { success: true, url: logoUrl };
+            logAction('Logo updated in DB and revalidated');
+            revalidatePath('/admin/settings/school-info');
+            return { success: true, url: logoUrl };
+        })());
+
+        return result;
     } catch (error: any) {
         logAction(`Logo Error: ${error.message}`);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || 'Failed to upload logo' };
     }
 }
 
@@ -321,29 +335,33 @@ export async function uploadSchoolLogo(formData: FormData) {
 export async function uploadSchoolBanner(formData: FormData) {
     logAction('Banner upload started');
     try {
-        const schoolId = await getTenantId();
-        const file = formData.get('file') as File;
+        const result = await withTimeout((async () => {
+            const schoolId = await getTenantId();
+            const file = formData.get('file') as File;
 
-        if (!file || file.size === 0) {
-            logAction('No file or empty file provided');
-            return { success: false, error: 'No file provided' };
-        }
+            if (!file || file.size === 0) {
+                logAction('No file or empty file provided');
+                return { success: false, error: 'No file provided' };
+            }
 
-        logAction(`Banner file received: ${file.name}, Size: ${file.size} bytes`);
+            logAction(`Banner file received: ${file.name}, Size: ${file.size} bytes`);
 
-        const { saveFile } = await import('./upload');
-        const bannerUrl = await saveFile(file, `schools/${schoolId}/banner`);
+            const { saveFile } = await import('./upload');
+            const bannerUrl = await saveFile(file, `schools/${schoolId}/banner`);
 
-        await prisma.school.update({
-            where: { id: schoolId },
-            data: { banner: bannerUrl }
-        });
+            await prisma.school.update({
+                where: { id: schoolId },
+                data: { banner: bannerUrl }
+            });
 
-        revalidatePath('/admin/settings/school-info');
-        logAction('Banner updated in DB and revalidated');
-        return { success: true, url: bannerUrl };
+            logAction('Banner updated in DB and revalidated');
+            revalidatePath('/admin/settings/school-info');
+            return { success: true, url: bannerUrl };
+        })());
+
+        return result;
     } catch (error: any) {
         logAction(`Banner Error: ${error.message}`);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || 'Failed to upload banner' };
     }
 }

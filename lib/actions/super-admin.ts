@@ -5,6 +5,16 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 
+// Helper to prevent indefinite hangs in server actions
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+        )
+    ]);
+}
+
 // Auth check for Super Admin
 export async function ensureSuperAdmin() {
     const session = await auth();
@@ -80,14 +90,15 @@ export async function getAllSchools() {
     }
 }
 
-// --- Status & Impersonation ---
-
+// Status & Impersonation
 export async function updateSchoolStatus(schoolId: string, status: string) {
     try {
-        await prisma.school.update({
-            where: { id: schoolId },
-            data: { status }
-        });
+        await withTimeout((async () => {
+            await prisma.school.update({
+                where: { id: schoolId },
+                data: { status }
+            });
+        })());
         revalidatePath('/super-admin/schools');
         return { success: true };
     } catch (error: any) {
@@ -97,22 +108,29 @@ export async function updateSchoolStatus(schoolId: string, status: string) {
 }
 
 export async function impersonateSchoolAdmin(schoolId: string) {
-    const school = await prisma.school.findUnique({
-        where: { id: schoolId },
-        include: {
-            users: {
-                where: { role: 'ADMIN' },
-                take: 1
+    try {
+        await withTimeout((async () => {
+            const school = await prisma.school.findUnique({
+                where: { id: schoolId },
+                include: {
+                    users: {
+                        where: { role: 'ADMIN' },
+                        take: 1
+                    }
+                }
+            });
+
+            if (!school || school.users.length === 0) {
+                throw new Error("No admin found for this school to impersonate");
             }
-        }
-    });
 
-    if (!school || school.users.length === 0) {
-        throw new Error("No admin found for this school to impersonate");
+            console.log(`Impersonating admin for school ${school.name}`);
+        })());
+        return { success: true };
+    } catch (error: any) {
+        console.error('Impersonation error:', error);
+        throw error;
     }
-
-    console.log(`Impersonating admin for school ${school.name}`);
-    return { success: true };
 }
 
 // --- Settings & Plans ---

@@ -9,6 +9,20 @@ import { join } from 'path';
 
 const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
 
+// Helper to prevent indefinite hangs in server actions
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+        )
+    ]);
+}
+
+export type ActionResponse =
+    | { success: true; url: string; gallery?: any[] }
+    | { success: false; error: string };
+
 function logAction(message: string) {
     console.log(`[CRITICAL_LOG] ${message}`);
 }
@@ -149,7 +163,7 @@ export async function updateWebsiteConfig(data: {
 }
 
 // Upload hero image file
-export async function uploadHeroImage(formData: FormData) {
+export async function uploadHeroImage(formData: FormData): Promise<ActionResponse> {
     function logAction(message: string) {
         try {
             const timestamp = new Date().toISOString();
@@ -162,39 +176,45 @@ export async function uploadHeroImage(formData: FormData) {
     }
     logAction('Hero upload started');
     try {
-        const schoolId = await ensureTenantId();
-        const file = formData.get('file') as File;
+        const result = await withTimeout((async () => {
+            const schoolId = await ensureTenantId();
+            const file = formData.get('file') as File;
 
-        if (!file || file.size === 0) {
-            console.warn('[UploadAction] No file provided for hero');
-            return { success: false, error: 'No file provided' };
-        }
+            if (!file || file.size === 0) {
+                console.warn('[UploadAction] No file provided for hero');
+                return { success: false, error: 'No file provided' };
+            }
 
-        console.log(`[UploadAction] Hero File: ${file.name}, Size: ${file.size}`);
+            console.log(`[UploadAction] Hero File: ${file.name}, Size: ${file.size}`);
 
-        const imageUrl = await saveFile(file, 'website/hero');
+            const imageUrl = await saveFile(file, 'website/hero');
 
-        await (prisma.schoolSettings as any).upsert({
-            where: { schoolId },
-            create: {
-                schoolId,
-                heroImage: imageUrl,
-                schoolName: 'School',
-                contactNumber: 'N/A',
-                email: 'N/A',
-                address: 'N/A'
-            },
-            update: { heroImage: imageUrl }
-        });
+            await (prisma.schoolSettings as any).upsert({
+                where: { schoolId },
+                create: {
+                    schoolId,
+                    heroImage: imageUrl,
+                    schoolName: 'School',
+                    contactNumber: 'N/A',
+                    email: 'N/A',
+                    address: 'N/A'
+                },
+                update: { heroImage: imageUrl }
+            });
 
-        logAction('Hero updated in schoolSettings');
-        revalidatePath('/admin/settings/website');
-        revalidatePath('/', 'layout');
-        revalidatePath('/', 'page');
-        return { success: true, url: imageUrl };
+            logAction('Hero updated in schoolSettings');
+
+            revalidatePath('/admin/settings/website');
+            revalidatePath('/', 'layout');
+            revalidatePath('/', 'page');
+
+            return { success: true, url: imageUrl };
+        })());
+
+        return result as ActionResponse;
     } catch (error: any) {
         logAction(`Hero Error: ${error.message}`);
-        return { success: false, error: error.message || 'Failed to upload image' };
+        return { success: false, error: error.message || 'Failed to upload image' } as ActionResponse;
     }
 }
 
@@ -310,29 +330,33 @@ export async function manageGallery(action: 'add' | 'remove', item: { url: strin
 }
 
 // Upload gallery image file
-export async function uploadGalleryImage(formData: FormData) {
+export async function uploadGalleryImage(formData: FormData): Promise<ActionResponse> {
     logAction('Gallery upload started');
-    const schoolId = await ensureTenantId();
-    const file = formData.get('file') as File;
-    const caption = formData.get('caption') as string || '';
-
-    if (!file || file.size === 0) {
-        console.warn('[UploadAction] No file provided for gallery');
-        return { success: false, error: 'No file provided' };
-    }
-
-    console.log(`[UploadAction] Gallery File: ${file.name}, Size: ${file.size}`);
-
     try {
-        const imageUrl = await saveFile(file, `gallery/${schoolId}`);
-        console.log('[UploadAction] Gallery file saved, updating galleryJson');
+        const result = await withTimeout((async () => {
+            const schoolId = await ensureTenantId();
+            const file = formData.get('file') as File;
+            const caption = formData.get('caption') as string || '';
 
-        // Add to gallery
-        const result = await manageGallery('add', { url: imageUrl, caption });
-        return { success: true, url: imageUrl, gallery: result.gallery };
-    } catch (error) {
+            if (!file || file.size === 0) {
+                console.warn('[UploadAction] No file provided for gallery');
+                return { success: false, error: 'No file provided' };
+            }
+
+            console.log(`[UploadAction] Gallery File: ${file.name}, Size: ${file.size}`);
+
+            const imageUrl = await saveFile(file, `gallery/${schoolId}`);
+            console.log('[UploadAction] Gallery file saved, updating galleryJson');
+
+            // Add to gallery
+            const galleryResult = await manageGallery('add', { url: imageUrl, caption });
+            return { success: true, url: imageUrl, gallery: galleryResult.gallery };
+        })());
+
+        return result as ActionResponse;
+    } catch (error: any) {
         console.error('[UploadAction] Gallery Error:', error);
-        return { success: false, error: 'Failed to upload image' };
+        return { success: false, error: error.message || 'Failed to upload image' } as ActionResponse;
     }
 }
 

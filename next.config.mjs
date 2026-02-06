@@ -22,6 +22,11 @@ const nextConfig = {
                 protocol: 'http',
                 hostname: '**',
             },
+            // Explicitly allow Google domains to ensure stability
+            { protocol: 'https', hostname: '**.google.com' },
+            { protocol: 'https', hostname: '**.googleusercontent.com' },
+            { protocol: 'https', hostname: '**.gstatic.com' },
+            { protocol: 'https', hostname: '**.googleapis.com' },
         ],
     },
     typescript: {
