@@ -322,7 +322,7 @@ export async function uploadSchoolLogo(formData: FormData) {
             logAction('Logo updated in DB and revalidated');
             revalidatePath('/admin/settings/school-info');
             return { success: true, url: logoUrl };
-        })());
+        })(), 60000); // Increased to 60s for Google Drive uploads
 
         return result;
     } catch (error: any) {
@@ -357,7 +357,7 @@ export async function uploadSchoolBanner(formData: FormData) {
             logAction('Banner updated in DB and revalidated');
             revalidatePath('/admin/settings/school-info');
             return { success: true, url: bannerUrl };
-        })());
+        })(), 60000); // Increased to 60s for Google Drive uploads
 
         return result;
     } catch (error: any) {
