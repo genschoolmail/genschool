@@ -19,32 +19,44 @@ export default function SignOutButton({ className, collapsed, userRole, subdomai
         try {
             let callbackUrl = '/';
 
-            // Determine the base domain (localhost or production platform)
-            const isLocalhost = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1';
+            // Determine the base domain dynamically from current location
             const protocol = window.location.protocol;
-            const baseDomain = isLocalhost ? 'localhost:3000' : 'platform.com'; // Adjust 'platform.com' to your actual production root domain if different
+            const host = window.location.host; // e.g. success.localhost:3000 or school.genschoolmail.in
+            const hostname = window.location.hostname;
+
+            // Clean host of 'www.' for base domain calculation
+            const cleanHost = host.replace(/^www\./, '');
+
+            // If we are on a subdomain (parts > 2 or parts > 1 for localhost), extract the base domain
+            const parts = hostname.split('.');
+            let baseDomain = '';
+
+            if (hostname.includes('localhost')) {
+                // school.localhost:3000 -> localhost:3000
+                baseDomain = parts.length > 1 ? `localhost:${window.location.port}` : host;
+            } else {
+                // school.genschoolmail.in -> genschoolmail.in
+                baseDomain = parts.length > 2 ? parts.slice(1).join('.') : cleanHost;
+            }
 
             if (userRole === 'SUPER_ADMIN') {
                 // Super Admin -> Root Domain
                 callbackUrl = `${protocol}//${baseDomain}`;
             } else if (subdomain) {
-                // School Users (with known subdomain) -> School Subdomain Landing Page
+                // School Users -> School Subdomain Landing Page
                 callbackUrl = `${protocol}//${subdomain}.${baseDomain}`;
-                if (isLocalhost) {
-                    // Handle localhost specific case to avoid double subdomain if baseDomain is localhost:3000
-                    // If baseDomain is 'localhost:3000', then subdomain.localhost:3000 is correct.
-                }
             } else {
-                // Fallback: If we are already on a subdomain (e.g. success.localhost), stay there!
-                // Don't default to origin if origin is root, but if origin is subdomain, keep it.
+                // Fallback: stay on current origin
                 callbackUrl = window.location.origin;
             }
+
+            console.log(`[SignOut] Redirecting to: ${callbackUrl}`);
 
             // Perform signout with redirect: false so we can manually handle the navigation
             await signOut({ redirect: false });
 
             // Force full page navigation to the callback URL
-            window.location.href = callbackUrl;
+            window.location.assign(callbackUrl);
 
         } catch (error) {
             console.error("Signout error:", error);

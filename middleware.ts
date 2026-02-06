@@ -16,13 +16,32 @@ export default auth((req) => {
 
     // Subdomain logic:
     // Local: school1.localhost -> school1
-    // Prod: school1.platform.com -> school1
-    // Root: localhost, platform.com -> null
-    let currentSubdomain = isLocalhost
-        ? (hostParts.length > 1 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
-        : (hostParts.length > 2 ? hostParts[0] : null);
+    // Prod: school1.genschoolmail.in -> school1
+    // Root: localhost, genschoolmail.in -> null
+
+    // Determine parts for subdomain detection
+    const parts = host.split(".");
+    let currentSubdomain = null;
+
+    if (isLocalhost) {
+        // school1.localhost -> school1
+        if (parts.length > 1 && parts[parts.length - 1] === 'localhost') {
+            currentSubdomain = parts[0] === 'localhost' ? null : parts[0];
+        }
+    } else {
+        // school1.genschoolmail.in -> school1
+        // we assume the top 2 parts are the domain (e.g. genschoolmail.in)
+        if (parts.length > 2) {
+            currentSubdomain = parts[0];
+        }
+    }
 
     if (currentSubdomain === 'www') currentSubdomain = null;
+
+    // Determine Base Domain for redirects
+    const protocol = isLocalhost ? 'http' : 'https';
+    const port = isLocalhost ? ':3000' : '';
+    const baseDomain = process.env.BASE_DOMAIN || (isLocalhost ? 'localhost' : (parts.length > 2 ? parts.slice(1).join('.') : host));
 
     // Prepare response and headers
     const requestHeaders = new Headers(req.headers);
@@ -47,9 +66,6 @@ export default auth((req) => {
 
             // B. Root Domain Check (Redirect school users to their subdomain)
             if (!currentSubdomain && userSubdomain) {
-                const protocol = isLocalhost ? 'http' : 'https';
-                const port = isLocalhost ? ':3000' : '';
-                const baseDomain = process.env.BASE_DOMAIN || (isLocalhost ? 'localhost' : 'platform.com');
                 return NextResponse.redirect(`${protocol}://${userSubdomain}.${baseDomain}${port}${nextUrl.pathname}`);
             }
         }
@@ -64,9 +80,6 @@ export default auth((req) => {
         }
         // Super Admins should ideally be on the root domain
         if (currentSubdomain) {
-            const protocol = isLocalhost ? 'http' : 'https';
-            const port = isLocalhost ? ':3000' : '';
-            const baseDomain = process.env.BASE_DOMAIN || (isLocalhost ? 'localhost' : 'platform.com');
             return NextResponse.redirect(`${protocol}://${baseDomain}${port}${nextUrl.pathname}`);
         }
     }

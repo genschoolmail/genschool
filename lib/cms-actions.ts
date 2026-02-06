@@ -4,6 +4,16 @@ import { prisma } from '@/lib/prisma';
 import { ensureTenantId } from './tenant';
 import { revalidatePath } from 'next/cache';
 import { saveFile } from './upload';
+import { appendFileSync } from 'fs';
+import { join } from 'path';
+
+const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
+
+function logAction(message: string) {
+    const timestamp = new Date().toISOString();
+    appendFileSync(DEBUG_LOG, `[${timestamp}] [CMS-Action] ${message}\n`);
+    console.log(message);
+}
 
 export interface WebsiteConfig {
     schoolId: string;
@@ -142,29 +152,41 @@ export async function updateWebsiteConfig(data: {
 
 // Upload hero image file
 export async function uploadHeroImage(formData: FormData) {
-    const schoolId = await ensureTenantId();
-    const file = formData.get('file') as File;
-
-    if (!file || file.size === 0) {
-        return { success: false, error: 'No file provided' };
-    }
-
+    logAction('Hero upload started');
     try {
-        const imageUrl = await saveFile(file, `website/${schoolId}`);
+        const schoolId = await ensureTenantId();
+        const file = formData.get('file') as File;
 
-        await (prisma.schoolSettings as any).update({
+        if (!file || file.size === 0) {
+            console.warn('[UploadAction] No file provided for hero');
+            return { success: false, error: 'No file provided' };
+        }
+
+        console.log(`[UploadAction] Hero File: ${file.name}, Size: ${file.size}`);
+
+        const imageUrl = await saveFile(file, 'website/hero');
+
+        await (prisma.schoolSettings as any).upsert({
             where: { schoolId },
-            data: { heroImage: imageUrl }
+            create: {
+                schoolId,
+                heroImage: imageUrl,
+                schoolName: 'School',
+                contactNumber: 'N/A',
+                email: 'N/A',
+                address: 'N/A'
+            },
+            update: { heroImage: imageUrl }
         });
 
+        logAction('Hero updated in schoolSettings');
         revalidatePath('/admin/settings/website');
         revalidatePath('/', 'layout');
         revalidatePath('/', 'page');
-        revalidatePath('/', 'page');
         return { success: true, url: imageUrl };
-    } catch (error) {
-        console.error('Error uploading hero image:', error);
-        return { success: false, error: 'Failed to upload image' };
+    } catch (error: any) {
+        logAction(`Hero Error: ${error.message}`);
+        return { success: false, error: error.message || 'Failed to upload image' };
     }
 }
 
@@ -281,22 +303,27 @@ export async function manageGallery(action: 'add' | 'remove', item: { url: strin
 
 // Upload gallery image file
 export async function uploadGalleryImage(formData: FormData) {
+    logAction('Gallery upload started');
     const schoolId = await ensureTenantId();
     const file = formData.get('file') as File;
     const caption = formData.get('caption') as string || '';
 
     if (!file || file.size === 0) {
+        console.warn('[UploadAction] No file provided for gallery');
         return { success: false, error: 'No file provided' };
     }
 
+    console.log(`[UploadAction] Gallery File: ${file.name}, Size: ${file.size}`);
+
     try {
         const imageUrl = await saveFile(file, `gallery/${schoolId}`);
+        console.log('[UploadAction] Gallery file saved, updating galleryJson');
 
         // Add to gallery
         const result = await manageGallery('add', { url: imageUrl, caption });
         return { success: true, url: imageUrl, gallery: result.gallery };
     } catch (error) {
-        console.error('Error uploading gallery image:', error);
+        console.error('[UploadAction] Gallery Error:', error);
         return { success: false, error: 'Failed to upload image' };
     }
 }

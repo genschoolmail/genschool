@@ -3,6 +3,16 @@
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/tenant';
 import { revalidatePath } from 'next/cache';
+import { appendFileSync } from 'fs';
+import { join } from 'path';
+
+const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
+
+function logAction(message: string) {
+    const timestamp = new Date().toISOString();
+    appendFileSync(DEBUG_LOG, `[${timestamp}] [Action] ${message}\n`);
+    console.log(message);
+}
 
 // Get current school information
 export async function getCurrentSchoolInfo() {
@@ -273,11 +283,17 @@ export async function submitKYC(formData: FormData) {
 }
 // Upload school logo
 export async function uploadSchoolLogo(formData: FormData) {
+    logAction('Logo upload started');
     try {
         const schoolId = await getTenantId();
         const file = formData.get('file') as File;
 
-        if (!file || file.size === 0) return { success: false, error: 'No file provided' };
+        if (!file || file.size === 0) {
+            logAction('No file or empty file provided');
+            return { success: false, error: 'No file provided' };
+        }
+
+        logAction(`Logo file received: ${file.name}, Size: ${file.size} bytes`);
 
         const { saveFile } = await import('./upload');
         const logoUrl = await saveFile(file, `schools/${schoolId}/logo`);
@@ -288,19 +304,27 @@ export async function uploadSchoolLogo(formData: FormData) {
         });
 
         revalidatePath('/admin/settings/school-info');
+        logAction('Logo updated in DB and revalidated');
         return { success: true, url: logoUrl };
     } catch (error: any) {
+        logAction(`Logo Error: ${error.message}`);
         return { success: false, error: error.message };
     }
 }
 
 // Upload school banner/watermark
 export async function uploadSchoolBanner(formData: FormData) {
+    logAction('Banner upload started');
     try {
         const schoolId = await getTenantId();
         const file = formData.get('file') as File;
 
-        if (!file || file.size === 0) return { success: false, error: 'No file provided' };
+        if (!file || file.size === 0) {
+            logAction('No file or empty file provided');
+            return { success: false, error: 'No file provided' };
+        }
+
+        logAction(`Banner file received: ${file.name}, Size: ${file.size} bytes`);
 
         const { saveFile } = await import('./upload');
         const bannerUrl = await saveFile(file, `schools/${schoolId}/banner`);
@@ -311,8 +335,10 @@ export async function uploadSchoolBanner(formData: FormData) {
         });
 
         revalidatePath('/admin/settings/school-info');
+        logAction('Banner updated in DB and revalidated');
         return { success: true, url: bannerUrl };
     } catch (error: any) {
+        logAction(`Banner Error: ${error.message}`);
         return { success: false, error: error.message };
     }
 }
