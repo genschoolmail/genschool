@@ -1,0 +1,12 @@
+[2026-02-06T17:01:39.721Z] [Upload] [Upload] Starting saveFile for: WhatsApp Image 2023-07-05 at 18.59.01.jpg, Folder: students
+[2026-02-06T17:01:39.725Z] [Upload] [Upload] Attempting Google Drive upload...
+[2026-02-06T17:01:47.734Z] [Upload] [Upload] Google Drive Failed: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.. Falling back to local storage.
+[2026-02-06T17:01:47.738Z] [Upload] [Upload] Saving to physical path: D:\School Management\public\uploads\students
+[2026-02-06T17:01:47.746Z] [Upload] [Upload] File written to disk: D:\School Management\public\uploads\students\1770397307738-WhatsApp_Image_2023-07-05_at_18.59.01.jpg
+[2026-02-06T17:01:47.747Z] [Upload] [Upload] Success! Public URL: /uploads/students/1770397307738-WhatsApp_Image_2023-07-05_at_18.59.01.jpg
+[2026-02-06T17:01:47.748Z] [Upload] [Upload] Starting saveFile for: OMR.pdf, Folder: students/documents
+[2026-02-06T17:01:47.748Z] [Upload] [Upload] Attempting Google Drive upload...
+[2026-02-06T17:01:50.060Z] [Upload] [Upload] Google Drive Failed: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.. Falling back to local storage.
+[2026-02-06T17:01:50.083Z] [Upload] [Upload] Saving to physical path: D:\School Management\public\uploads\students\documents
+[2026-02-06T17:01:50.086Z] [Upload] [Upload] File written to disk: D:\School Management\public\uploads\students\documents\1770397310083-OMR.pdf
+[2026-02-06T17:01:50.086Z] [Upload] [Upload] Success! Public URL: /uploads/students/documents/1770397310083-OMR.pdf

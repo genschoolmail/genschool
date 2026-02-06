@@ -5,7 +5,16 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 // Initialize Google Drive Client
 const getDriveClient = () => {
     const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
-    const key = process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    // Robust Key Handling:
+    // 1. Handle json-escaped newlines (\n)
+    // 2. Remove accidental quotes around the key
+    // 3. Trim whitespace
+    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+    const key = keyRaw
+        ?.replace(/\\n/g, '\n')
+        ?.replace(/^"|"$/g, '')
+        ?.trim();
 
     if (!email || !key) {
         throw new Error('Missing Google Drive credentials');
