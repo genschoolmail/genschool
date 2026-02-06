@@ -2,12 +2,16 @@ import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 
 export default auth((req) => {
-    const { nextUrl } = req
+    const { nextUrl, method } = req
     const hostname = req.headers.get("host") || ""
     const isLoggedIn = !!req.auth
     const user = req.auth?.user as any;
     const role = user?.role;
     const userSubdomain = user?.subdomain;
+
+    if (method === 'POST') {
+        console.log(`[MIDDLEWARE_TRACE] POST ${nextUrl.pathname} | Host: ${hostname} | LoggedIn: ${isLoggedIn} | Role: ${role} | UserSubdomain: ${userSubdomain}`);
+    }
 
     // --- 1. Subdomain Detection (Centralized) ---
     const host = hostname.split(":")[0]; // Remove port
