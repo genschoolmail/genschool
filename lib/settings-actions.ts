@@ -6,9 +6,16 @@ import { revalidatePath } from 'next/cache';
 import { appendFileSync } from 'fs';
 import { join } from 'path';
 
-const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
+const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
 
 function logAction(message: string) {
+    try {
+        const timestamp = new Date().toISOString();
+        const logLine = `[${timestamp}] [Action] ${message}\n`;
+        appendFileSync(DEBUG_LOG, logLine);
+    } catch (e) {
+        console.error('Action logging failed:', e);
+    }
     console.log(`[CRITICAL_LOG] ${message}`);
 }
 

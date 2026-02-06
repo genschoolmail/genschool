@@ -2,9 +2,16 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join, extname } from 'path';
 import { existsSync, appendFileSync } from 'fs';
 
-const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
+const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
 
 function logDebug(message: string) {
+    try {
+        const timestamp = new Date().toISOString();
+        const logLine = `[${timestamp}] [Upload] ${message}\n`;
+        appendFileSync(DEBUG_LOG, logLine);
+    } catch (e) {
+        console.error('Upload logging failed:', e);
+    }
     console.log(`[CRITICAL_LOG] [Upload] ${message}`);
 }
 
