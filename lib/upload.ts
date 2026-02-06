@@ -15,14 +15,39 @@ function logDebug(message: string) {
     console.log(`[CRITICAL_LOG] [Upload] ${message}`);
 }
 
+const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
 export async function saveFile(file: File, folder: string = 'uploads'): Promise<string> {
     logDebug(`[Upload] Starting saveFile for: ${file.name}, Folder: ${folder}`);
+
+    // 1. Try Google Drive Upload (If credentials exist)
+    if (process.env.GOOGLE_DRIVE_CLIENT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY && FOLDER_ID) {
+        try {
+            logDebug(`[Upload] Attempting Google Drive upload...`);
+            const { uploadToDrive } = await import('./drive');
+            const driveFile = await uploadToDrive(file, FOLDER_ID);
+
+            if (driveFile && driveFile.id) {
+                const publicUrl = `/api/files/${driveFile.id}`;
+                logDebug(`[Upload] Google Drive Success! Public Proxy URL: ${publicUrl}`);
+                return publicUrl;
+            }
+        } catch (error: any) {
+            logDebug(`[Upload] Google Drive Failed: ${error.message}. Falling back to local storage.`);
+            console.error('Google Drive Upload Failed:', error);
+            // Fallback to local storage if Drive fails
+        }
+    }
+
+    // 2. Fallback to Local Storage (Development / No Credentials)
     try {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
         const extension = extname(file.name);
-        const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}${extension}`;
+        // Sanitize filename for local storage
+        const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filename = `${Date.now()}-${sanitizedOriginalName}`;
 
         // Normalize folder for Windows
         const isWindows = process.platform === 'win32' || join(' ', ' ').includes('\\');
