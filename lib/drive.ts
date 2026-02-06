@@ -50,12 +50,19 @@ export async function uploadToDrive(file: File, folderId: string) {
                 body: stream,
             },
             fields: 'id, webContentLink, webViewLink',
+            supportsAllDrives: true,
         });
 
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Google Drive Upload Error:', error);
-        throw error;
+        console.error('Error Details:', {
+            message: error.message,
+            code: error.code,
+            errors: error.errors,
+            stack: error.stack
+        });
+        throw new Error(`Drive Upload Failed: ${error.message || 'Unknown error'}`);
     }
 }
 
