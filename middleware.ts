@@ -1,9 +1,5 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
-import { appendFileSync } from 'fs'
-import { join } from 'path'
-
-const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
 
 export default auth((req) => {
     const { nextUrl, method } = req
@@ -14,11 +10,7 @@ export default auth((req) => {
     const userSubdomain = user?.subdomain;
 
     if (method === 'POST') {
-        const trace = `[MIDDLEWARE_TRACE] POST ${nextUrl.pathname} | Host: ${hostname} | LoggedIn: ${isLoggedIn} | Role: ${role} | UserSubdomain: ${userSubdomain}\n`;
-        try {
-            appendFileSync(DEBUG_LOG, `[${new Date().toISOString()}] ${trace}`);
-        } catch (e) { }
-        console.log(trace);
+        console.log(`[MIDDLEWARE_TRACE] POST ${nextUrl.pathname} | Host: ${hostname} | LoggedIn: ${isLoggedIn} | Role: ${role} | UserSubdomain: ${userSubdomain}`);
     }
 
     // --- 1. Subdomain Detection (Centralized) ---
