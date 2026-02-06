@@ -35,6 +35,7 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
         if (!file) return;
 
         setUploadingLogo(true);
+        toast.loading('Uploading logo to cloud storage...', { id: 'logo-upload' });
         const data = new FormData();
         data.append('file', file);
 
@@ -47,6 +48,7 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
                 toast.error(result.error || 'Failed to upload logo');
             }
         } catch (error) {
+            toast.dismiss('logo-upload');
             console.error('Logo upload error:', error);
             toast.error('Logo upload failed (Network Error)');
         } finally {
@@ -59,6 +61,7 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
         if (!file) return;
 
         setUploadingBanner(true);
+        toast.loading('Uploading banner to cloud storage...', { id: 'banner-upload' });
         const data = new FormData();
         data.append('file', file);
 
@@ -71,6 +74,7 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
                 toast.error(result.error || 'Failed to upload banner');
             }
         } catch (error) {
+            toast.dismiss('banner-upload');
             console.error('Banner upload error:', error);
             toast.error('Banner upload failed (Network Error)');
         } finally {
