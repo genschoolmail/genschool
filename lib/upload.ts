@@ -15,7 +15,7 @@ function logDebug(message: string) {
     console.log(`[CRITICAL_LOG] [Upload] ${message}`);
 }
 
-const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID;
+const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
 
 export async function saveFile(file: File, folder: string = 'uploads'): Promise<string> {
     logDebug(`[Upload] Starting saveFile for: ${file.name}, Folder: ${folder}`);

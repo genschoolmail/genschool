@@ -39,10 +39,12 @@ export async function GET() {
         const drive = google.drive({ version: 'v3', auth });
 
         if (folderId) {
-            status.folder_access = `Checking Folder: ${folderId}`;
+            const cleanFolderId = folderId.trim();
+            status.folder_access = `Checking Folder: ${cleanFolderId}`;
             const res = await drive.files.get({
-                fileId: folderId,
-                fields: 'name, trashed'
+                fileId: cleanFolderId,
+                fields: 'name, trashed',
+                supportsAllDrives: true
             });
             status.folder_access = `Success! Connected to Folder: "${res.data.name}"`;
         } else {
