@@ -5,14 +5,7 @@ import { existsSync, appendFileSync } from 'fs';
 const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
 
 function logDebug(message: string) {
-    const timestamp = new Date().toISOString();
-    const logLine = `[${timestamp}] ${message}\n`;
-    try {
-        appendFileSync(DEBUG_LOG, logLine);
-    } catch (e) {
-        console.error('Failed to write to debug log:', e);
-    }
-    console.log(message);
+    console.log(`[CRITICAL_LOG] [Upload] ${message}`);
 }
 
 export async function saveFile(file: File, folder: string = 'uploads'): Promise<string> {
