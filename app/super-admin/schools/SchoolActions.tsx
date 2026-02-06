@@ -137,14 +137,16 @@ export default function SchoolActions({ schoolId, subdomain, currentStatus }: Sc
                             <button
                                 onClick={() => {
                                     const protocol = window.location.protocol;
+                                    const rawHost = window.location.host;
+                                    const cleanHost = rawHost.replace(/^www\./, '');
                                     const hostname = window.location.hostname;
                                     const port = window.location.port ? `:${window.location.port}` : '';
 
                                     // If we are on localhost, use subdomain.localhost:port
-                                    // Otherwise use subdomain.baseDomain (where baseDomain is window.location.host)
+                                    // Otherwise use subdomain.baseDomain (where baseDomain is cleanHost)
                                     const redirectUrl = hostname.includes('localhost')
                                         ? `${protocol}//${subdomain}.localhost${port}`
-                                        : `${protocol}//${subdomain}.${window.location.host}`;
+                                        : `${protocol}//${subdomain}.${cleanHost}`;
 
                                     window.open(redirectUrl, '_blank');
                                 }}

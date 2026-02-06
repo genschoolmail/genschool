@@ -8,9 +8,10 @@ export default async function SuperAdminSchoolsPage() {
     const schools = await getAllSchools();
     const headersList = headers();
     const host = headersList.get('host') || '';
-    const isLocalhost = host.includes('localhost');
+    const cleanHost = host.replace(/^www\./, '');
+    const isLocalhost = cleanHost.includes('localhost');
     const protocol = isLocalhost ? 'http' : 'https';
-    const baseDomain = host; // The middleware ensures host is the root domain for super-admin
+    const baseDomain = cleanHost; // The middleware ensures host is the root domain for super-admin
 
     return (
         <div className="space-y-10 sm:space-y-12 pb-12">
