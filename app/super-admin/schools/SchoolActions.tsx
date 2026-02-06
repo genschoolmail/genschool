@@ -135,7 +135,19 @@ export default function SchoolActions({ schoolId, subdomain, currentStatus }: Sc
                             </button>
 
                             <button
-                                onClick={() => window.open(`http://${subdomain}.localhost:3000`, '_blank')}
+                                onClick={() => {
+                                    const protocol = window.location.protocol;
+                                    const hostname = window.location.hostname;
+                                    const port = window.location.port ? `:${window.location.port}` : '';
+
+                                    // If we are on localhost, use subdomain.localhost:port
+                                    // Otherwise use subdomain.baseDomain (where baseDomain is window.location.host)
+                                    const redirectUrl = hostname.includes('localhost')
+                                        ? `${protocol}//${subdomain}.localhost${port}`
+                                        : `${protocol}//${subdomain}.${window.location.host}`;
+
+                                    window.open(redirectUrl, '_blank');
+                                }}
                                 className="w-full flex items-center px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                             >
                                 <ExternalLink className="w-4 h-4 mr-2" />

@@ -2,9 +2,15 @@ import Link from 'next/link';
 import { getAllSchools } from '@/lib/actions/super-admin';
 import { Plus, Search, ExternalLink, School, Users, Settings, Activity } from 'lucide-react';
 import SchoolActions from './SchoolActions';
+import { headers } from 'next/headers';
 
 export default async function SuperAdminSchoolsPage() {
     const schools = await getAllSchools();
+    const headersList = headers();
+    const host = headersList.get('host') || '';
+    const isLocalhost = host.includes('localhost');
+    const protocol = isLocalhost ? 'http' : 'https';
+    const baseDomain = host; // The middleware ensures host is the root domain for super-admin
 
     return (
         <div className="space-y-10 sm:space-y-12 pb-12">
@@ -99,7 +105,7 @@ export default async function SuperAdminSchoolsPage() {
                                                         {school.subdomain}
                                                     </span>
                                                     <a
-                                                        href={`https://${school.subdomain}.${process.env.BASE_DOMAIN || 'genschoolmail.in'}`}
+                                                        href={`${protocol}://${school.subdomain}.${baseDomain}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-indigo-500"
