@@ -66,7 +66,11 @@ export async function getAllSchools() {
                         teachers: true
                     }
                 },
-                subscription: true
+                subscription: {
+                    include: {
+                        plan: true
+                    }
+                }
             }
         });
         return schools;
