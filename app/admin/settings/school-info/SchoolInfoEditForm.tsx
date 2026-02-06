@@ -38,14 +38,20 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
         const data = new FormData();
         data.append('file', file);
 
-        const result = await uploadSchoolLogo(data);
-        if (result.success) {
-            setFormData(prev => ({ ...prev, logo: result.url! }));
-            toast.success('Logo uploaded successfully');
-        } else {
-            toast.error(result.error || 'Failed to upload logo');
+        try {
+            const result = await uploadSchoolLogo(data);
+            if (result.success) {
+                setFormData(prev => ({ ...prev, logo: result.url! }));
+                toast.success('Logo uploaded successfully');
+            } else {
+                toast.error(result.error || 'Failed to upload logo');
+            }
+        } catch (error) {
+            console.error('Logo upload error:', error);
+            toast.error('Logo upload failed (Network Error)');
+        } finally {
+            setUploadingLogo(false);
         }
-        setUploadingLogo(false);
     };
 
     const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,14 +62,20 @@ export default function SchoolInfoEditForm({ school }: SchoolInfoEditFormProps) 
         const data = new FormData();
         data.append('file', file);
 
-        const result = await uploadSchoolBanner(data);
-        if (result.success) {
-            setFormData(prev => ({ ...prev, banner: result.url! }));
-            toast.success('Banner uploaded successfully');
-        } else {
-            toast.error(result.error || 'Failed to upload banner');
+        try {
+            const result = await uploadSchoolBanner(data);
+            if (result.success) {
+                setFormData(prev => ({ ...prev, banner: result.url! }));
+                toast.success('Banner uploaded successfully');
+            } else {
+                toast.error(result.error || 'Failed to upload banner');
+            }
+        } catch (error) {
+            console.error('Banner upload error:', error);
+            toast.error('Banner upload failed (Network Error)');
+        } finally {
+            setUploadingBanner(false);
         }
-        setUploadingBanner(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

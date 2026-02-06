@@ -9,8 +9,12 @@ import { join } from 'path';
 const DEBUG_LOG = join(process.cwd(), 'upload_debug.log');
 
 function logAction(message: string) {
-    const timestamp = new Date().toISOString();
-    appendFileSync(DEBUG_LOG, `[${timestamp}] [Action] ${message}\n`);
+    try {
+        const timestamp = new Date().toISOString();
+        appendFileSync(DEBUG_LOG, `[${timestamp}] [Action] ${message}\n`);
+    } catch (e) {
+        console.error('Logging failed:', e);
+    }
     console.log(message);
 }
 
