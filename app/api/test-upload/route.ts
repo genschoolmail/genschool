@@ -6,8 +6,9 @@ import { Readable } from 'stream';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
-    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
 
     const status = {
@@ -17,33 +18,28 @@ export async function GET() {
     };
 
     try {
-        if (!email || !keyRaw || !folderId) throw new Error('Missing Credentials');
-
-        // Robust Key Handling
-        const key = keyRaw.replace(/\\n/g, '\n').replace(/^"|"$/g, '').trim();
-
-        const auth = new google.auth.JWT({
-            email,
-            key,
-            scopes: ['https://www.googleapis.com/auth/drive'],
-        });
+        if (!clientId || !clientSecret || !refreshToken || !folderId) {
+            throw new Error('Missing OAuth Credentials');
+        }
 
         status.step = 'Authenticating';
-        await auth.authorize();
+
+        const auth = new google.auth.OAuth2(clientId, clientSecret);
+        auth.setCredentials({ refresh_token: refreshToken });
 
         const drive = google.drive({ version: 'v3', auth });
 
-        // 1. Try to CREATE a file (Write Permission Test)
+        // 1. Try to CREATE a file (Using User's Quota)
         status.step = 'Uploading Test File';
 
         const fileMetadata = {
-            name: `test_upload_${Date.now()}.txt`,
+            name: `oauth_test_${Date.now()}.txt`,
             parents: [folderId],
         };
 
         const media = {
             mimeType: 'text/plain',
-            body: Readable.from(['Hello World! verification id: ' + Date.now()]),
+            body: Readable.from(['Success! OAuth upload working. ' + Date.now()]),
         };
 
         const file = await drive.files.create({
@@ -55,7 +51,7 @@ export async function GET() {
 
         return NextResponse.json({
             success: true,
-            message: 'Write permission confirmed!',
+            message: 'Write permission confirmed with OAuth 2.0!',
             fileId: file.data.id,
             fileName: file.data.name
         });
