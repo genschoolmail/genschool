@@ -42,6 +42,7 @@ export async function uploadToDrive(file: File, folderId: string) {
         const response = await drive.files.create({
             requestBody: {
                 name: file.name,
+                // CRITICAL: File MUST be created inside the shared folder to use the owner's quota
                 parents: [folderId],
                 mimeType: file.type,
             },
@@ -50,7 +51,7 @@ export async function uploadToDrive(file: File, folderId: string) {
                 body: stream,
             },
             fields: 'id, webContentLink, webViewLink',
-            supportsAllDrives: true,
+            supportsAllDrives: true, // Needed for Shared Drives
         });
 
         return response.data;
