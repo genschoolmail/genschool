@@ -1,30 +1,18 @@
+
 import { google } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/drive'];
-
-// Initialize Google Drive Client
+// Initialize Google Drive Client (OAuth 2.0)
 const getDriveClient = () => {
-    const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-    // Robust Key Handling:
-    // 1. Handle json-escaped newlines (\n)
-    // 2. Remove accidental quotes around the key
-    // 3. Trim whitespace
-    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
-    const key = keyRaw
-        ?.replace(/\\n/g, '\n')
-        ?.replace(/^"|"$/g, '')
-        ?.trim();
-
-    if (!email || !key) {
-        throw new Error('Missing Google Drive credentials');
+    if (!clientId || !clientSecret || !refreshToken) {
+        throw new Error('Missing Google Drive OAuth credentials');
     }
 
-    const auth = new google.auth.JWT({
-        email,
-        key,
-        scopes: SCOPES,
-    });
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
+    auth.setCredentials({ refresh_token: refreshToken });
 
     return google.drive({ version: 'v3', auth });
 };
@@ -42,7 +30,6 @@ export async function uploadToDrive(file: File, folderId: string) {
         const response = await drive.files.create({
             requestBody: {
                 name: file.name,
-                // CRITICAL: File MUST be created inside the shared folder to use the owner's quota
                 parents: [folderId],
                 mimeType: file.type,
             },
@@ -51,7 +38,7 @@ export async function uploadToDrive(file: File, folderId: string) {
                 body: stream,
             },
             fields: 'id, webContentLink, webViewLink',
-            supportsAllDrives: true, // Needed for Shared Drives
+            supportsAllDrives: true,
         });
 
         return response.data;
@@ -60,8 +47,7 @@ export async function uploadToDrive(file: File, folderId: string) {
         console.error('Error Details:', {
             message: error.message,
             code: error.code,
-            errors: error.errors,
-            stack: error.stack
+            errors: error.errors
         });
         throw new Error(`Drive Upload Failed: ${error.message || 'Unknown error'}`);
     }
