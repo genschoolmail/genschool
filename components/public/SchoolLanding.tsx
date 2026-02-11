@@ -146,7 +146,14 @@ export default function SchoolLanding({ school, publicNotices, session, dashboar
                     <div className="relative group animate-in slide-in-from-right duration-1000 delay-300">
                         <div className="aspect-[4/5] bg-slate-100 dark:bg-slate-800 rounded-[60px] overflow-hidden border-8 border-white dark:border-slate-700 shadow-3xl rotate-2 group-hover:rotate-0 transition-transform duration-500">
                             {settings.heroImage ? (
-                                <Image src={settings.heroImage} alt="Hero" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                                <Image
+                                    src={settings.heroImage}
+                                    alt="Hero"
+                                    fill
+                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    priority
+                                />
                             ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
                                     <GraduationCap className="w-32 h-32 opacity-20 animate-pulse" />

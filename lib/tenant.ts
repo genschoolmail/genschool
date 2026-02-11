@@ -28,7 +28,9 @@ export function getSubdomain() {
     }
 }
 
-export async function getPublicSchool() {
+import { cache } from 'react';
+
+export const getPublicSchool = cache(async () => {
     const subdomain = getSubdomain();
     if (!subdomain) return null;
 
@@ -45,7 +47,7 @@ export async function getPublicSchool() {
         console.error("Error fetching public school:", error);
         return null;
     }
-}
+});
 
 export async function ensureTenantId() {
     const subdomain = getSubdomain();

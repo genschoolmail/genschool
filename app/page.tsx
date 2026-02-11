@@ -12,6 +12,28 @@ import SchoolLanding from '@/components/public/SchoolLanding';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+    const school = await getPublicSchool();
+
+    if (school) {
+        const settings = (school.schoolSettings || {}) as any;
+        return {
+            title: settings.schoolName || school.name,
+            description: settings.heroDescription || `Welcome to ${school.name}`,
+            icons: {
+                icon: settings.logoUrl || school.logo || '/favicon.ico',
+            }
+        };
+    }
+
+    return {
+        title: "SchoolERP - Modern School Management System",
+        description: "The unified platform to manage every aspect of your school, from admissions to finance, powered by robust multi-tenancy.",
+    };
+}
+
 export default async function Home({ searchParams }: { searchParams: { preview?: string } }) {
     const session = await auth();
     const subdomain = getSubdomain();
@@ -61,21 +83,58 @@ export default async function Home({ searchParams }: { searchParams: { preview?:
         }[(session.user as any).role as string] || '/login'
     ) : '/login';
 
+    // JSON-LD Structured Data
+    const jsonLd = school ? {
+        '@context': 'https://schema.org',
+        '@type': 'School',
+        name: school.name,
+        image: school.logo,
+        description: school.schoolSettings?.heroDescription || `Welcome to ${school.name}`,
+        address: {
+            '@type': 'PostalAddress',
+            streetAddress: school.address,
+            // Add more address fields if available in your schema/settings
+        },
+        telephone: school.contactPhone,
+        email: school.contactEmail,
+        url: `https://${school.subdomain}.genschoolmail.in`, // Dynamically get base domain ideally
+    } : {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'SchoolERP',
+        url: 'https://genschoolmail.in',
+        logo: 'https://genschoolmail.in/logo.png', // Replace with actual logo URL
+        sameAs: [
+            // 'https://facebook.com/schoolerp',
+            // 'https://twitter.com/schoolerp'
+        ]
+    };
+
     // 3. Render School Specific Landing Page if on subdomain
     if (school) {
         return (
-            <SchoolLanding
-                school={school}
-                publicNotices={publicNotices}
-                session={session}
-                dashboardUrl={dashboardUrl}
-            />
+            <>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+                <SchoolLanding
+                    school={school}
+                    publicNotices={publicNotices}
+                    session={session}
+                    dashboardUrl={dashboardUrl}
+                />
+            </>
         );
     }
 
     // 4. Default SaaS Platform Homepage (Root Domain)
     return (
         <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
