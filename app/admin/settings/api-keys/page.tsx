@@ -197,7 +197,7 @@ export default async function ApiKeysPage() {
                                         No API Keys Yet
                                     </h3>
                                     <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                                        Start by adding your first API key to integrate third-party services with your school management system
+                                        Start by adding your first API key to integrate third-party services with Gen School Mail
                                     </p>
                                     <AddApiKeyDialog />
                                 </CardContent>

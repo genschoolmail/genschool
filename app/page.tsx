@@ -58,26 +58,26 @@ export async function generateMetadata(): Promise<Metadata> {
     }
 
     // Main Platform (Super Admin)
-    const platformTitle = "SchoolERP - Smart Multi-School Management Software";
-    const platformDescription = "A powerful, unified platform for managing multiple schools, admissions, fees, exams, and more. scalable and secure School ERP solution.";
+    const platformTitle = "Gen School Mail - Smart Multi-School Management Software";
+    const platformDescription = "A powerful, unified platform for managing multiple schools, admissions, fees, exams, and more. scalable and secure Gen School Mail solution.";
     const platformUrl = "https://genschoolmail.in";
     const platformImage = "/images/platform-hero.jpg";
 
     return {
         title: platformTitle,
         description: platformDescription,
-        keywords: ['School Management System', 'Multi School ERP', 'Education Software', 'Student Information System'],
+        keywords: ['Gen School Mail', 'Multi School ERP', 'Education Software', 'Student Information System'],
         openGraph: {
             title: platformTitle,
             description: platformDescription,
             url: platformUrl,
-            siteName: 'SchoolERP',
+            siteName: 'Gen School Mail',
             images: [
                 {
                     url: platformImage,
                     width: 1200,
                     height: 630,
-                    alt: 'SchoolERP Platform',
+                    alt: 'Gen School Mail Platform',
                 },
             ],
             type: 'website',
@@ -161,12 +161,12 @@ export default async function Home({ searchParams }: { searchParams: { preview?:
     } : {
         '@context': 'https://schema.org',
         '@type': 'Organization',
-        name: 'SchoolERP',
+        name: 'Gen School Mail',
         url: 'https://genschoolmail.in',
         logo: 'https://genschoolmail.in/logo.png', // Replace with actual logo URL
         sameAs: [
-            // 'https://facebook.com/schoolerp',
-            // 'https://twitter.com/schoolerp'
+            // 'https://facebook.com/genschoolmail',
+            // 'https://twitter.com/genschoolmail'
         ]
     };
 
@@ -203,7 +203,7 @@ export default async function Home({ searchParams }: { searchParams: { preview?:
                             <GraduationCap className="w-6 h-6 text-white" />
                         </div>
                         <span className="text-2xl font-black text-slate-900">
-                            School<span className="text-indigo-600">ERP</span>
+                            Gen School<span className="text-indigo-600">Mail</span>
                         </span>
                     </div>
 

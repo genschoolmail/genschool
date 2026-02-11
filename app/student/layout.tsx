@@ -48,7 +48,7 @@ export default async function StudentLayout({
                         </div>
                         <div>
                             <h1 className="text-lg lg:text-xl font-bold text-slate-800 dark:text-white tracking-tight">Student Portal</h1>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">School ERP</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Gen School Mail</p>
                         </div>
                     </div>
                 </div>

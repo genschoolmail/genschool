@@ -54,7 +54,7 @@ export default function PaymentGateway({ feeId, studentId, amount, walletBalance
                     key: result.checkoutData.key,
                     amount: result.checkoutData.amount,
                     currency: result.checkoutData.currency,
-                    name: "School Management System",
+                    name: "Gen School Mail",
                     description: "Fee Payment",
                     order_id: result.checkoutData.orderId,
                     handler: async function (response: any) {

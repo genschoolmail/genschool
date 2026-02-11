@@ -107,7 +107,7 @@ export default function AdminLayoutClient({ signOutAction }: AdminLayoutClientPr
             onClose={() => setIsMenuOpen(false)}
             sections={navSections}
             signOutAction={signOutAction}
-            portalName="School ERP"
+            portalName="Gen School Mail"
         />
     );
 }

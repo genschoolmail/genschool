@@ -19,7 +19,7 @@ export function PrintButton() {
             try {
                 await navigator.share({
                     title: 'Student ID Card',
-                    text: 'Student ID Card from School Management System',
+                    text: 'Student ID Card from Gen School Mail',
                     url: window.location.href
                 });
             } catch (err) {

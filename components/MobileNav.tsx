@@ -123,7 +123,7 @@ export default function MobileNav({
                                         {portalName}
                                     </h1>
                                     <p className="text-xs text-indigo-100 font-medium">
-                                        School ERP
+                                        Gen School Mail
                                     </p>
                                 </div>
                             </div>

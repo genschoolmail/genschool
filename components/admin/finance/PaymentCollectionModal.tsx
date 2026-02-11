@@ -184,7 +184,7 @@ export default function PaymentCollectionModal({ isOpen, onClose, fee, onSuccess
                     <div class="receipt-container">
                         <div class="header">
                             <div>
-                                <h1 class="school-name">School Management System</h1>
+                                <h1 class="school-name">Gen School Mail</h1>
                                 <p class="school-info">Excellence in Education</p>
                             </div>
                             <div class="receipt-title">
@@ -251,7 +251,7 @@ export default function PaymentCollectionModal({ isOpen, onClose, fee, onSuccess
 
                         <div class="footer">
                             <p>This is a computer-generated receipt. No signature is required.</p>
-                            <p>&copy; ${new Date().getFullYear()} School Management System</p>
+                            <p>&copy; ${new Date().getFullYear()} Gen School Mail</p>
                         </div>
                     </div>
                 </body>

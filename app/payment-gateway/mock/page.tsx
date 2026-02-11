@@ -47,7 +47,7 @@ function MockGatewayContent() {
             <div className="p-6 bg-gray-50 border-b">
                 <div className="flex justify-between mb-2">
                     <span className="text-gray-500">Merchant</span>
-                    <span className="font-semibold text-gray-700">School Management System</span>
+                    <span className="font-semibold text-gray-700">Gen School Mail</span>
                 </div>
                 <div className="flex justify-between mb-2">
                     <span className="text-gray-500">Description</span>
