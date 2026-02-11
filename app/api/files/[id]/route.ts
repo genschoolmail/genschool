@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFileStream } from '@/lib/drive';
-import { google } from 'googleapis';
+import { getFileStream, getDriveClient } from '@/lib/drive';
 
 export async function GET(
     req: NextRequest,
@@ -13,20 +12,7 @@ export async function GET(
         }
 
         // Get file metadata to determine MIME type
-        const clientId = process.env.GOOGLE_CLIENT_ID;
-        const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-        const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-
-        if (!clientId || !clientSecret || !refreshToken) {
-            console.error('Missing Google Drive credentials');
-            return new NextResponse('Server configuration error', { status: 500 });
-        }
-
-        const auth = new google.auth.OAuth2(clientId, clientSecret);
-        auth.setCredentials({ refresh_token: refreshToken });
-        const drive = google.drive({ version: 'v3', auth });
-
-        // Get file metadata
+        const drive = getDriveClient();
         const metadata = await drive.files.get({
             fileId: fileId,
             fields: 'mimeType, name',
@@ -38,9 +24,19 @@ export async function GET(
         // Get file stream from Google Drive
         const stream = await getFileStream(fileId);
 
-        // Create a new response with the stream
-        // @ts-ignore - ReadableStream type mismatch workaround
-        return new NextResponse(stream, {
+        // Convert Node.js Readable stream to Web ReadableStream
+        // Next.js Response expects a Web Stream in newer versions
+        const webStream = new ReadableStream({
+            async start(controller) {
+                // @ts-ignore
+                for await (const chunk of stream) {
+                    controller.enqueue(chunk);
+                }
+                controller.close();
+            }
+        });
+
+        return new NextResponse(webStream, {
             headers: {
                 'Content-Type': mimeType,
                 'Cache-Control': 'public, max-age=31536000, immutable',
@@ -48,11 +44,6 @@ export async function GET(
         });
     } catch (error: any) {
         console.error('Error serving file from Drive:', error);
-        console.error('Error details:', {
-            message: error.message,
-            code: error.code,
-            errors: error.errors,
-        });
         return new NextResponse(`File not found: ${error.message}`, { status: 404 });
     }
 }
