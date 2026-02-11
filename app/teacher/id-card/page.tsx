@@ -12,7 +12,7 @@ export default async function TeacherIdCardPage() {
         redirect('/login');
     }
 
-    const [teacher, schoolSettings, emergencyContacts] = await Promise.all([
+    const [teacher, schoolSettings, emergencyContacts, school] = await Promise.all([
         prisma.teacher.findUnique({
             where: { userId: session.user.id },
             include: {
@@ -26,6 +26,9 @@ export default async function TeacherIdCardPage() {
         }),
         getSchoolSettings(),
         getEmergencyContacts(),
+        prisma.school.findFirst({
+            where: { id: session.user.schoolId as string }
+        })
     ]);
 
     if (!teacher) {
@@ -237,7 +240,7 @@ export default async function TeacherIdCardPage() {
                             </h1>
                         </div>
                         <p className="text-white/80 text-[7px] uppercase tracking-wider font-medium text-center line-clamp-1 h-3 flex items-center">
-                            {schoolSettings?.address || 'School Address'}
+                            {schoolSettings?.address || school?.address || 'School Address Not Configured'}
                         </p>
                     </div>
 

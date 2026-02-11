@@ -231,7 +231,7 @@ export default async function IDCardPage({ params }: { params: { id: string } })
                                 </h1>
                             </div>
                             <p className="text-white/80 text-[7px] uppercase tracking-wider font-medium text-center line-clamp-1 h-3 flex items-center">
-                                {schoolSettings?.address || 'School Address Not Configured'}
+                                {schoolSettings?.address || school?.address || 'School Address Not Configured'}
                             </p>
                         </div>
 
