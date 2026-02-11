@@ -19,18 +19,78 @@ export async function generateMetadata(): Promise<Metadata> {
 
     if (school) {
         const settings = (school.schoolSettings || {}) as any;
+        const schoolName = settings.schoolName || school.name;
+        const schoolDescription = settings.heroDescription || `Welcome to ${schoolName}. A center for educational excellence.`;
+        const schoolImage = settings.logoUrl || school.logo || '/images/school-placeholder.jpg';
+        const schoolUrl = `https://${school.subdomain}.genschoolmail.in`;
+
         return {
-            title: settings.schoolName || school.name,
-            description: settings.heroDescription || `Welcome to ${school.name}`,
+            title: schoolName,
+            description: schoolDescription,
             icons: {
                 icon: settings.logoUrl || school.logo || '/favicon.ico',
+            },
+            openGraph: {
+                title: schoolName,
+                description: schoolDescription,
+                url: schoolUrl,
+                siteName: schoolName,
+                images: [
+                    {
+                        url: schoolImage,
+                        width: 800,
+                        height: 600,
+                        alt: schoolName,
+                    },
+                ],
+                type: 'website',
+            },
+            twitter: {
+                card: 'summary_large_image',
+                title: schoolName,
+                description: schoolDescription,
+                images: [schoolImage],
+            },
+            alternates: {
+                canonical: schoolUrl,
             }
         };
     }
 
+    // Main Platform (Super Admin)
+    const platformTitle = "SchoolERP - Smart Multi-School Management Software";
+    const platformDescription = "A powerful, unified platform for managing multiple schools, admissions, fees, exams, and more. scalable and secure School ERP solution.";
+    const platformUrl = "https://genschoolmail.in";
+    const platformImage = "/images/platform-hero.jpg";
+
     return {
-        title: "SchoolERP - Modern School Management System",
-        description: "The unified platform to manage every aspect of your school, from admissions to finance, powered by robust multi-tenancy.",
+        title: platformTitle,
+        description: platformDescription,
+        keywords: ['School Management System', 'Multi School ERP', 'Education Software', 'Student Information System'],
+        openGraph: {
+            title: platformTitle,
+            description: platformDescription,
+            url: platformUrl,
+            siteName: 'SchoolERP',
+            images: [
+                {
+                    url: platformImage,
+                    width: 1200,
+                    height: 630,
+                    alt: 'SchoolERP Platform',
+                },
+            ],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: platformTitle,
+            description: platformDescription,
+            images: [platformImage],
+        },
+        alternates: {
+            canonical: platformUrl,
+        }
     };
 }
 
