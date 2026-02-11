@@ -28,7 +28,7 @@ export default function MainLanding() {
                     <Link href="/" className="flex items-center space-x-3 group">
                         <div className="relative w-12 h-12 transition-transform duration-300 group-hover:scale-105">
                             <Image
-                                src="/images/gsm-logo.png"
+                                src="/api/files/1yEgE0CwFxIh1FZP0q2mZ0eZEtqgW_ZI_"
                                 alt="Gen School Mail Logo"
                                 fill
                                 className="object-contain"
@@ -140,45 +140,31 @@ export default function MainLanding() {
                             {/* Decorative Blobs */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-amber-200/40 via-purple-200/40 to-blue-200/40 rounded-full blur-[100px] animate-pulse"></div>
 
-                            {/* Main Dashboard Mockup Card */}
-                            <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 p-4 transform lg:rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-                                <div className="absolute -top-4 -right-4 bg-amber-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transform rotate-6 z-10">
-                                    New V2.0
-                                </div>
-                                <div className="bg-slate-50 rounded-2xl overflow-hidden aspect-[4/3] relative border border-slate-200">
-                                    {/* Sidebar Mockup */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-16 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-4">
-                                        <div className="w-8 h-8 bg-amber-500 rounded-lg"></div>
-                                        <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
-                                        <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
-                                        <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
-                                    </div>
-                                    {/* Header Mockup */}
-                                    <div className="absolute left-16 top-0 right-0 h-16 bg-white border-b border-slate-200 flex items-center px-6 justify-between">
-                                        <div className="w-32 h-4 bg-slate-100 rounded-full"></div>
-                                        <div className="flex gap-2">
-                                            <div className="w-8 h-8 bg-slate-100 rounded-full"></div>
-                                            <div className="w-8 h-8 bg-purple-100 rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    {/* Content Mockup */}
-                                    <div className="absolute left-16 top-16 right-0 bottom-0 p-6 overflow-hidden">
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div className="h-24 bg-blue-50 rounded-xl border border-blue-100"></div>
-                                            <div className="h-24 bg-green-50 rounded-xl border border-green-100"></div>
-                                        </div>
-                                        <div className="h-full bg-slate-100 rounded-xl border border-slate-200"></div>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Main Dashboard Screenshot */}
+                            <div className="relative w-full max-w-2xl transform lg:perspective-[2000px] lg:rotate-y-[-12deg] lg:rotate-x-[5deg] hover:rotate-0 transition-all duration-700 ease-out z-20">
+                                <div className="relative bg-white rounded-xl shadow-2xl border-4 border-slate-900/5 overflow-hidden ring-1 ring-slate-900/10">
+                                    <Image
+                                        src="/api/files/1u1TUVm5ddXwItnnXC5GWKHRpT8C-OiSI"
+                                        alt="Gen School Mail Dashboard"
+                                        width={1200}
+                                        height={800}
+                                        className="w-full h-auto object-cover"
+                                        priority
+                                    />
 
-                            {/* Floating Elements */}
-                            <div className="absolute bottom-10 -left-4 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce delay-700 max-w-[200px]">
-                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <LayoutDashboard className="w-5 h-5 text-green-600" />
+                                    {/* Overlay Gradient for depth */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent pointer-events-none mix-blend-overlay"></div>
                                 </div>
-                                <div className="text-xs font-bold text-slate-700">
-                                    Everything in one place
+
+                                {/* Floating Elements - Repositioned */}
+                                <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce delay-700 border border-slate-100 z-30">
+                                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <LayoutDashboard className="w-6 h-6 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Interface</div>
+                                        <div className="text-sm font-black text-slate-800">Clean & Modern</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -312,7 +298,7 @@ export default function MainLanding() {
                             <div className="flex items-center space-x-2">
                                 <div className="relative w-10 h-10">
                                     <Image
-                                        src="/images/gsm-logo.png"
+                                        src="/api/files/1yEgE0CwFxIh1FZP0q2mZ0eZEtqgW_ZI_"
                                         alt="Gen School Mail Logo"
                                         fill
                                         className="object-contain brightness-0 invert"
