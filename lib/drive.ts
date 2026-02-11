@@ -1,15 +1,22 @@
 
 import { google } from 'googleapis';
 
-// Initialize Google Drive Client (JWT for Service Account or OAuth 2.0)
+// Initialize Google Drive Client (OAuth 2.0 or JWT for Service Account)
 export const getDriveClient = () => {
-    const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
-    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+    const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
+    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
 
-    // Try Service Account first (more reliable for server-side)
+    // Try OAuth 2.0 first (usually has storage quota and permissions for user uploads)
+    if (clientId && clientSecret && refreshToken) {
+        const auth = new google.auth.OAuth2(clientId, clientSecret);
+        auth.setCredentials({ refresh_token: refreshToken });
+        return google.drive({ version: 'v3', auth });
+    }
+
+    // Fallback to Service Account (useful for shared drive scenarios)
     if (email && keyRaw) {
         const key = keyRaw.replace(/\\n/g, '\n');
         const auth = new google.auth.JWT({
@@ -17,13 +24,6 @@ export const getDriveClient = () => {
             key,
             scopes: ['https://www.googleapis.com/auth/drive'],
         });
-        return google.drive({ version: 'v3', auth });
-    }
-
-    // Fallback to OAuth 2.0
-    if (clientId && clientSecret && refreshToken) {
-        const auth = new google.auth.OAuth2(clientId, clientSecret);
-        auth.setCredentials({ refresh_token: refreshToken });
         return google.drive({ version: 'v3', auth });
     }
 
