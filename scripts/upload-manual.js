@@ -7,9 +7,16 @@ const path = require('path');
 const envPath = path.join(process.cwd(), '.env');
 const envContent = fs.readFileSync(envPath, 'utf8');
 envContent.split('\n').forEach(line => {
-    const match = line.match(/^([^=]+)=["']?([^"'\r\n]+)["']?$/);
-    if (match) {
-        process.env[match[1]] = match[2];
+    // Better regex to handle keys and special chars
+    const eqIndex = line.indexOf('=');
+    if (eqIndex > 0) {
+        let key = line.substring(0, eqIndex).trim();
+        let value = line.substring(eqIndex + 1).trim();
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.substring(1, value.length - 1);
+        }
+        process.env[key] = value;
     }
 });
 
@@ -19,14 +26,14 @@ const getDriveClient = () => {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-    if (!clientId || !clientSecret || !refreshToken) {
-        throw new Error('Missing Google Drive OAuth credentials in .env');
+    if (clientId && clientSecret && refreshToken) {
+        console.log("Using OAuth 2.0 authentication for upload...");
+        const auth = new google.auth.OAuth2(clientId, clientSecret);
+        auth.setCredentials({ refresh_token: refreshToken });
+        return google.drive({ version: 'v3', auth });
     }
 
-    const auth = new google.auth.OAuth2(clientId, clientSecret);
-    auth.setCredentials({ refresh_token: refreshToken });
-
-    return google.drive({ version: 'v3', auth });
+    throw new Error('Missing Google Drive OAuth credentials in .env');
 };
 
 async function uploadToDrive(filePath, fileName, mimeType, folderId) {
