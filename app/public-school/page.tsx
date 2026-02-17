@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { createInquiry } from '@/lib/cms-actions';
-import { GraduationCap, Mail, Phone, MapPin, Send, Users, BookOpen, Award } from 'lucide-react';
+import { GraduationCap, Mail, Phone, MapPin, Send, Users, BookOpen, Award, Bell } from 'lucide-react';
 import Link from 'next/link';
 
 // This would normally extract subdomain from headers
@@ -11,7 +11,10 @@ async function getSchoolBySubdomain() {
 
     return await prisma.school.findFirst({
         where: { status: 'ACTIVE' },
-        include: { subscription: { include: { plan: true } } }
+        include: {
+            subscription: { include: { plan: true } },
+            schoolSettings: true
+        }
     });
 }
 
@@ -31,6 +34,16 @@ export default async function PublicSchoolPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+            {/* Notice Board Banner */}
+            {school.schoolSettings?.homepageNoticeEnabled && school.schoolSettings?.homepageNotice && (
+                <div className="bg-indigo-600 text-white py-3 px-6 text-center">
+                    <div className="container mx-auto flex items-center justify-center gap-3">
+                        <Bell className="w-5 h-5 animate-bounce" />
+                        <span className="font-medium">{school.schoolSettings.homepageNotice}</span>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-50">
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -38,37 +51,57 @@ export default async function PublicSchoolPage() {
                         <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                             <GraduationCap className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-slate-800">{school.name}</span>
+                        <div className="flex flex-col">
+                            <span className="text-xl font-bold text-slate-800 leading-none">{school.name}</span>
+                            {school.schoolSettings?.admissionStatusEnabled && (
+                                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mt-1">
+                                    {school.schoolSettings.admissionText || "Admissions Open"}
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="flex gap-4">
-                        <a href="#admissions" className="text-slate-600 hover:text-indigo-600 font-medium transition-colors">
+                        <a href="#admissions" className="hidden md:block text-slate-600 hover:text-indigo-600 font-medium transition-colors">
                             Admissions
                         </a>
-                        <Link href="/login" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                            Student/Staff Login
+                        <Link href="/login" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-bold">
+                            Login
                         </Link>
                     </div>
                 </nav>
             </header>
 
             {/* Hero Section */}
-            <section className="container mx-auto px-6 py-20">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-5xl font-bold text-slate-900 mb-6">
-                        Welcome to {school.name}
+            <section
+                className="relative container mx-auto px-6 py-24 md:py-32 overflow-hidden"
+                style={school.schoolSettings?.heroImage ? {
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${school.schoolSettings.heroImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    color: 'white'
+                } : {}}
+            >
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <h1 className={`text-4xl md:text-6xl font-extrabold mb-6 ${!school.schoolSettings?.heroImage ? 'text-slate-900' : 'text-white'}`}>
+                        {school.schoolSettings?.heroTitle || `Welcome to ${school.name}`}
                     </h1>
-                    <p className="text-xl text-slate-600 mb-8">
-                        Excellence in Education • Shaping Future Leaders • Building Strong Foundations
+                    <p className={`text-lg md:text-2xl mb-10 max-w-2xl mx-auto leading-relaxed ${!school.schoolSettings?.heroImage ? 'text-slate-600' : 'text-slate-100'}`}>
+                        {school.schoolSettings?.heroDescription || "Excellence in Education • Shaping Future Leaders • Building Strong Foundations"}
                     </p>
-                    <div className="flex gap-4 justify-center">
-                        <a href="#admissions" className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="#admissions" className="px-10 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-xl hover:shadow-indigo-500/20 active:scale-95">
                             Apply for Admission
                         </a>
-                        <a href="#about" className="px-8 py-4 border-2 border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-100 transition-all">
+                        <a href="#about" className={`px-10 py-4 border-2 rounded-xl font-bold transition-all active:scale-95 ${!school.schoolSettings?.heroImage ? 'border-slate-300 text-slate-700 hover:bg-slate-100' : 'border-white/30 text-white hover:bg-white/10'}`}>
                             Learn More
                         </a>
                     </div>
                 </div>
+
+                {/* Decorative Gradient if no Image (keep it aesthetic) */}
+                {!school.schoolSettings?.heroImage && (
+                    <div className="absolute top-0 right-0 -z-10 w-64 h-64 bg-indigo-200/30 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+                )}
             </section>
 
             {/* Stats */}
@@ -158,6 +191,32 @@ export default async function PublicSchoolPage() {
                     </form>
                 </div>
             </section>
+
+            {/* Gallery Section */}
+            {school.schoolSettings?.galleryJson && JSON.parse(school.schoolSettings.galleryJson).length > 0 && (
+                <section id="gallery" className="container mx-auto px-6 py-20 bg-white rounded-3xl my-20 shadow-sm border border-slate-100">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-slate-800 mb-4">School Memories</h2>
+                        <div className="w-20 h-1 bg-indigo-600 mx-auto rounded-full" />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {JSON.parse(school.schoolSettings.galleryJson).map((item: any, idx: number) => (
+                            <div key={idx} className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-100 hover:shadow-xl transition-all duration-300">
+                                <img
+                                    src={item.url}
+                                    alt={item.caption || "School Memory"}
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                                {item.caption && (
+                                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white text-sm font-medium">{item.caption}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* Contact Information */}
             <section className="bg-slate-900 text-white py-16">

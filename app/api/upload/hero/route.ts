@@ -36,10 +36,17 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        console.log(`[UploadAPI] Processing hero upload for school: ${schoolId}`);
+        // Fetch school subdomain for readable folder structure
+        const school = await prisma.school.findUnique({
+            where: { id: schoolId },
+            select: { subdomain: true }
+        });
+
+        const orgLabel = school?.subdomain || schoolId;
+        console.log(`[UploadAPI] Processing hero upload for school: ${orgLabel} (${schoolId})`);
 
         // 4. Save File
-        const imageUrl = await saveFile(file, 'website/hero', schoolId);
+        const imageUrl = await saveFile(file, 'website/hero', orgLabel);
 
         // 5. Update Database
         await (prisma.schoolSettings as any).upsert({
