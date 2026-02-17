@@ -28,7 +28,7 @@ export default function MainLanding() {
                     <Link href="/" className="flex items-center space-x-3 group">
                         <div className="relative w-12 h-12 transition-transform duration-300 group-hover:scale-105">
                             <Image
-                                src="/api/files/1EZkG9ov4HB2_43LvLYmP-j2kIVFDAN2R"
+                                src="/images/gsm-logo.png"
                                 alt="Gen School Mail Logo"
                                 fill
                                 className="object-contain"
@@ -144,7 +144,7 @@ export default function MainLanding() {
                             <div className="relative w-full max-w-2xl transform lg:perspective-[2000px] lg:rotate-y-[-12deg] lg:rotate-x-[5deg] hover:rotate-0 transition-all duration-700 ease-out z-20">
                                 <div className="relative bg-white rounded-xl shadow-2xl border-4 border-slate-900/5 overflow-hidden ring-1 ring-slate-900/10">
                                     <Image
-                                        src="/api/files/1gZO5IEBc5zPtlqNsWzb-u9KyQlyU6hqm"
+                                        src="/images/dashboard-preview.png"
                                         alt="Gen School Mail Dashboard"
                                         width={1200}
                                         height={800}
@@ -298,7 +298,7 @@ export default function MainLanding() {
                             <div className="flex items-center space-x-2">
                                 <div className="relative w-10 h-10">
                                     <Image
-                                        src="/api/files/1EZkG9ov4HB2_43LvLYmP-j2kIVFDAN2R"
+                                        src="/images/gsm-logo.png"
                                         alt="Gen School Mail Logo"
                                         fill
                                         className="object-contain brightness-0 invert"
