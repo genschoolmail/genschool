@@ -108,12 +108,12 @@ export async function createStudent(formData: FormData) {
 
         let imagePath = undefined;
         if (imageFile && imageFile.size > 0) {
-            imagePath = await saveFile(imageFile, 'students');
+            imagePath = await saveFile(imageFile, 'students', schoolId);
         }
 
         let documentsPath = undefined;
         if (documentsFile && documentsFile.size > 0) {
-            documentsPath = await saveFile(documentsFile, 'students/documents');
+            documentsPath = await saveFile(documentsFile, 'students/documents', schoolId);
         }
 
         const hashedPassword = await bcrypt.hash('password123', 10);
@@ -233,12 +233,12 @@ export async function updateStudent(formData: FormData) {
 
     let imagePath = student.user.image;
     if (imageFile && imageFile.size > 0) {
-        imagePath = await saveFile(imageFile, 'students');
+        imagePath = await saveFile(imageFile, 'students', schoolId);
     }
 
     let documentsPath = student.documents;
     if (documentsFile && documentsFile.size > 0) {
-        documentsPath = await saveFile(documentsFile, 'students/documents');
+        documentsPath = await saveFile(documentsFile, 'students/documents', schoolId);
     }
 
     const userData: any = { name, email };
@@ -435,21 +435,22 @@ export async function createTeacher(formData: FormData) {
     const imageFile = formData.get('image') as File;
     const documents = formData.getAll('documents') as File[];
 
+    const schoolId = await ensureTenantId();
+
     let imagePath = undefined;
     if (imageFile && imageFile.size > 0) {
-        imagePath = await saveFile(imageFile, 'teachers');
+        imagePath = await saveFile(imageFile, 'teachers', schoolId);
     }
 
     const documentPaths = [];
     for (const doc of documents) {
         if (doc && doc.size > 0) {
-            const path = await saveFile(doc, 'teachers/documents');
+            const path = await saveFile(doc, 'teachers/documents', schoolId);
             documentPaths.push(path);
         }
     }
 
     const hashedPassword = await bcrypt.hash('password123', 10);
-    const schoolId = await ensureTenantId();
 
     const user = await prisma.user.create({
         data: {
@@ -1209,7 +1210,7 @@ export async function uploadSchoolLogo(formData: FormData) {
 
     try {
         const schoolId = await ensureTenantId();
-        const logoPath = await saveFile(logoFile, 'school');
+        const logoPath = await saveFile(logoFile, 'logo', schoolId);
 
         await prisma.$transaction([
             prisma.schoolSettings.upsert({
@@ -1260,7 +1261,7 @@ export async function uploadWatermark(formData: FormData) {
 
     try {
         const schoolId = await ensureTenantId();
-        const watermarkPath = await saveFile(watermarkFile, 'school');
+        const watermarkPath = await saveFile(watermarkFile, 'logo', schoolId);
 
         await prisma.schoolSettings.upsert({
             where: { schoolId },
@@ -1750,7 +1751,8 @@ export async function uploadAdminSignature(formData: FormData) {
     }
 
     try {
-        const signaturePath = await saveFile(signatureFile, 'signatures');
+        const schoolId = await ensureTenantId();
+        const signaturePath = await saveFile(signatureFile, 'signatures', schoolId);
 
         await prisma.adminSignature.create({
             data: {

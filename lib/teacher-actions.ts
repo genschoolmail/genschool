@@ -63,7 +63,7 @@ export async function createTeacher(formData: FormData) {
         // 3. Handle Profile Image Upload
         let imageUrl = null;
         if (profileImage && profileImage.size > 0) {
-            imageUrl = await saveFile(profileImage, 'teachers/profiles');
+            imageUrl = await saveFile(profileImage, 'teachers', schoolId);
         }
 
         // 4. Create User
@@ -97,7 +97,7 @@ export async function createTeacher(formData: FormData) {
         if (documents && documents.length > 0) {
             for (const doc of documents) {
                 if (doc.size > 0) {
-                    const docUrl = await saveFile(doc, 'teachers/documents');
+                    const docUrl = await saveFile(doc, 'teachers/documents', schoolId);
                     await prisma.teacherDocument.create({
                         data: {
                             schoolId,
@@ -144,7 +144,7 @@ export async function updateTeacher(id: string, formData: FormData) {
         // Update User
         let imageUrl = teacher.user.image;
         if (profileImage && profileImage.size > 0) {
-            imageUrl = await saveFile(profileImage, 'teachers/profiles');
+            imageUrl = await saveFile(profileImage, 'teachers', schoolId);
         }
 
         await prisma.user.update({

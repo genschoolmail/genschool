@@ -187,7 +187,7 @@ export async function uploadHeroImage(formData: FormData): Promise<ActionRespons
 
             console.log(`[UploadAction] Hero File: ${file.name}, Size: ${file.size}`);
 
-            const imageUrl = await saveFile(file, 'website/hero');
+            const imageUrl = await saveFile(file, 'website/hero', schoolId);
 
             await (prisma.schoolSettings as any).upsert({
                 where: { schoolId },
@@ -345,7 +345,7 @@ export async function uploadGalleryImage(formData: FormData): Promise<ActionResp
 
             console.log(`[UploadAction] Gallery File: ${file.name}, Size: ${file.size}`);
 
-            const imageUrl = await saveFile(file, `gallery/${schoolId}`);
+            const imageUrl = await saveFile(file, 'website/gallery', schoolId);
             console.log('[UploadAction] Gallery file saved, updating galleryJson');
 
             // Add to gallery

@@ -275,8 +275,8 @@ export async function submitKYC(formData: FormData) {
         // Import saveFile dynamically to avoid circular dependencies if any
         const { saveFile } = await import('./upload');
 
-        const certUrl = await saveFile(registrationCertificate, `kyc/${schoolId}/registration`);
-        const bankUrl = await saveFile(bankProof, `kyc/${schoolId}/bank`);
+        const certUrl = await saveFile(registrationCertificate, 'kyc', schoolId);
+        const bankUrl = await saveFile(bankProof, 'kyc', schoolId);
 
         await prisma.school.update({
             where: { id: schoolId },
@@ -312,7 +312,7 @@ export async function uploadSchoolLogo(formData: FormData) {
             logAction(`Logo file received: ${file.name}, Size: ${file.size} bytes`);
 
             const { saveFile } = await import('./upload');
-            const logoUrl = await saveFile(file, `schools/${schoolId}/logo`);
+            const logoUrl = await saveFile(file, 'logo', schoolId);
 
             await prisma.school.update({
                 where: { id: schoolId },
@@ -347,7 +347,7 @@ export async function uploadSchoolBanner(formData: FormData) {
             logAction(`Banner file received: ${file.name}, Size: ${file.size} bytes`);
 
             const { saveFile } = await import('./upload');
-            const bannerUrl = await saveFile(file, `schools/${schoolId}/banner`);
+            const bannerUrl = await saveFile(file, 'banner', schoolId);
 
             await prisma.school.update({
                 where: { id: schoolId },

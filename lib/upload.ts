@@ -15,63 +15,79 @@ function logDebug(message: string) {
     console.log(`[CRITICAL_LOG] [Upload] ${message}`);
 }
 
-const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
+const ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
 
-export async function saveFile(file: File, folder: string = 'uploads'): Promise<string> {
-    logDebug(`[Upload] Starting saveFile for: ${file.name}, Folder: ${folder}`);
+/**
+ * Save a file to Google Drive (organized by school) or local storage as fallback.
+ *
+ * @param file        - The file to save
+ * @param folder      - Content-type path like "students", "teachers/profiles", "website/hero"
+ * @param schoolId    - Optional school ID for multi-tenant organization.
+ *                      If provided, files go to: ROOT / {schoolId} / {folder}
+ *                      If omitted, files go to: ROOT / _platform / {folder}
+ */
+export async function saveFile(file: File, folder: string = 'uploads', schoolId?: string): Promise<string> {
+    logDebug(`Starting saveFile for: ${file.name}, Folder: ${folder}, SchoolId: ${schoolId || 'platform'}`);
 
-    // 1. Try Google Drive Upload (If credentials exist)
-    if (process.env.GOOGLE_DRIVE_CLIENT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY && FOLDER_ID) {
+    // 1. Try Google Drive Upload
+    const hasSA = process.env.GOOGLE_DRIVE_CLIENT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+    const hasOAuth = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN;
+
+    if ((hasSA || hasOAuth) && ROOT_FOLDER_ID) {
         try {
-            logDebug(`[Upload] Attempting Google Drive upload...`);
-            const { uploadToDrive } = await import('./drive');
-            const driveFile = await uploadToDrive(file, FOLDER_ID);
+            logDebug('Attempting Google Drive upload...');
+            const { uploadToDrive, resolveFolderPath } = await import('./drive');
+
+            // Build the organized path: ROOT / {schoolOrPlatform} / {contentFolder}
+            const orgPrefix = schoolId || '_platform';
+            const fullPath = `${orgPrefix}/${folder}`;
+            logDebug(`Resolving Drive folder path: ${fullPath}`);
+
+            const targetFolderId = await resolveFolderPath(ROOT_FOLDER_ID, fullPath);
+            logDebug(`Target folder resolved: ${targetFolderId}`);
+
+            const driveFile = await uploadToDrive(file, targetFolderId);
 
             if (driveFile && driveFile.id) {
                 const publicUrl = `/api/files/${driveFile.id}`;
-                logDebug(`[Upload] Google Drive Success! Public Proxy URL: ${publicUrl}`);
+                logDebug(`Google Drive Success! URL: ${publicUrl} (Path: ${fullPath})`);
                 return publicUrl;
             }
         } catch (error: any) {
-            logDebug(`[Upload] Google Drive Failed: ${error.message}. Falling back to local storage.`);
+            logDebug(`Google Drive Failed: ${error.message}. Falling back to local storage.`);
             console.error('Google Drive Upload Failed:', error);
-            // Fallback to local storage if Drive fails
         }
     }
 
-    // 2. Fallback to Local Storage (Development / No Credentials)
+    // 2. Fallback to Local Storage (development only — will NOT work on Vercel)
     try {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
         const extension = extname(file.name);
-        // Sanitize filename for local storage
         const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const filename = `${Date.now()}-${sanitizedOriginalName}`;
 
-        // Normalize folder for Windows
         const isWindows = process.platform === 'win32' || join(' ', ' ').includes('\\');
         const normalizedFolder = folder.replace(/\//g, isWindows ? '\\' : '/');
 
-        // Ensure the directory exists
         const uploadDir = join(process.cwd(), 'public', 'uploads', normalizedFolder);
-        logDebug(`[Upload] Saving to physical path: ${uploadDir}`);
+        logDebug(`Saving to physical path: ${uploadDir}`);
 
         if (!existsSync(uploadDir)) {
             await mkdir(uploadDir, { recursive: true });
-            logDebug(`[Upload] Created directory: ${uploadDir}`);
+            logDebug(`Created directory: ${uploadDir}`);
         }
 
         const filePath = join(uploadDir, filename);
         await writeFile(filePath, buffer);
-        logDebug(`[Upload] File written to disk: ${filePath}`);
+        logDebug(`File written to disk: ${filePath}`);
 
-        // Return the public URL - URLs MUST use forward slashes
         const publicUrl = `/uploads/${folder.replace(/\\/g, '/')}/${filename}`;
-        logDebug(`[Upload] Success! Public URL: ${publicUrl}`);
+        logDebug(`Success! Public URL: ${publicUrl}`);
         return publicUrl;
     } catch (error: any) {
-        logDebug(`[Upload] ERROR in saveFile: ${error.message}`);
+        logDebug(`ERROR in saveFile: ${error.message}`);
         console.error('Error saving file:', error);
         throw error;
     }
