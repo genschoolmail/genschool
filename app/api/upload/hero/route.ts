@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { saveFile } from '@/lib/upload';
@@ -13,7 +12,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const userRole = session.user.role;
+        const userRole = (session.user as any).role;
         if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -27,14 +26,9 @@ export async function POST(req: NextRequest) {
         }
 
         // 3. Get School Context
-        // Note: modify ensureTenantId to accept explicit schoolId from session if needed, 
-        // but it primarily relies on subdomain. 
-        // For API routes, headers might be different or same. 
-        // Let's rely on session.schoolId as a fallback or primary check if subdomain fails.
         let schoolId = (session.user as any).schoolId;
 
         if (!schoolId) {
-            // Fallback to subdomain check if session doesn't have it (though it should)
             try {
                 schoolId = await ensureTenantId();
             } catch (e) {
@@ -47,19 +41,27 @@ export async function POST(req: NextRequest) {
         // 4. Save File
         const imageUrl = await saveFile(file, 'website/hero', schoolId);
 
-        // 5. Update Database (Immediate Persistence)
-        // We update the SchoolSettings directly here
+        // 5. Update Database
         await (prisma.schoolSettings as any).upsert({
             where: { schoolId },
             create: {
                 schoolId,
                 heroImage: imageUrl,
-                schoolName: 'School', // Default fields if creating new
+                schoolName: 'School',
             },
             update: { heroImage: imageUrl }
         });
 
-        return NextResponse.json({ success: true, url: imageUrl });
+        return NextResponse.json({
+            success: true,
+            url: imageUrl,
+            debug: {
+                schoolId,
+                userRole,
+                folder: 'website/hero',
+                timestamp: new Date().toISOString()
+            }
+        });
 
     } catch (error: any) {
         console.error('[UploadAPI] Error:', error);
