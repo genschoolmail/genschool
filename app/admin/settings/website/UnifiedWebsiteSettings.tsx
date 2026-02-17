@@ -59,6 +59,7 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // --- Handlers ---
 
@@ -288,44 +289,78 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                             const file = e.target.files?.[0];
                                             if (!file) return;
 
+                                            // Client-side XHR upload for progress tracking
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+
+                                            setUploadProgress(1); // Start progress
                                             const toastId = toast.loading("Uploading hero image...");
-                                            try {
-                                                const formData = new FormData();
-                                                formData.append('file', file);
 
-                                                // Dynamically import to minimize hydration issues if any, though standard import works
-                                                const { uploadHeroImage } = await import('@/lib/cms-actions');
-                                                const result = await uploadHeroImage(formData);
+                                            const xhr = new XMLHttpRequest();
+                                            xhr.open('POST', '/api/upload/hero', true);
 
-                                                if (result.success && result.url) {
-                                                    setConfig(prev => ({ ...prev, heroImage: result.url }));
-                                                    toast.success('Hero image uploaded', { id: toastId });
-                                                } else {
-                                                    toast.error(result.error || 'Upload failed', { id: toastId });
+                                            xhr.upload.onprogress = (event) => {
+                                                if (event.lengthComputable) {
+                                                    const percent = Math.round((event.loaded / event.total) * 100);
+                                                    setUploadProgress(percent);
                                                 }
-                                            } catch (err) {
-                                                console.error(err);
-                                                toast.error('Upload error', { id: toastId });
-                                            } finally {
+                                            };
+
+                                            xhr.onload = () => {
+                                                if (xhr.status === 200) {
+                                                    try {
+                                                        const response = JSON.parse(xhr.responseText);
+                                                        if (response.success && response.url) {
+                                                            setConfig(prev => ({ ...prev, heroImage: response.url }));
+                                                            toast.success('Hero image uploaded', { id: toastId });
+                                                        } else {
+                                                            toast.error(response.error || 'Upload failed', { id: toastId });
+                                                        }
+                                                    } catch (err) {
+                                                        toast.error('Invalid server response', { id: toastId });
+                                                    }
+                                                } else {
+                                                    toast.error('Upload failed', { id: toastId });
+                                                }
                                                 setUploadingHeroImage(false);
+                                                setUploadProgress(0);
                                                 e.target.value = '';
-                                            }
+                                            };
+
+                                            xhr.onerror = () => {
+                                                toast.error('Network error', { id: toastId });
+                                                setUploadingHeroImage(false);
+                                                setUploadProgress(0);
+                                                e.target.value = '';
+                                            };
+
+                                            xhr.send(formData);
                                         }}
                                     />
                                     <Plus className="w-4 h-4" />
-                                    <span>Choose File</span>
+                                    <span>{uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Choose File'}</span>
                                 </label>
                             ) : (
-                                <input
-                                    name="heroImage"
-                                    value={config.heroImage}
-                                    onChange={handleChange}
-                                    placeholder="https://example.com/hero-image.jpg"
-                                    className="flex-1 p-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 bg-transparent text-sm"
-                                />
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <input
+                                        name="heroImage"
+                                        value={config.heroImage}
+                                        onChange={handleChange}
+                                        placeholder="https://example.com/hero-image.jpg"
+                                        className="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 bg-transparent text-sm"
+                                    />
+                                    {config.heroImage && (
+                                        <div className="relative aspect-video w-full max-w-xs bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                                            <img src={config.heroImage} alt="Hero Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             <button
-                                onClick={() => setUploadingHeroImage(!uploadingHeroImage)}
+                                onClick={() => {
+                                    if (uploadProgress > 0) return; // Prevent cancel during upload
+                                    setUploadingHeroImage(!uploadingHeroImage);
+                                }}
                                 className={`px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-xs transition-colors ${uploadingHeroImage ? 'bg-slate-100 text-slate-600' : 'bg-white text-slate-500 hover:text-indigo-600'}`}
                             >
                                 {uploadingHeroImage ? 'Cancel' : 'Upload'}
@@ -412,11 +447,13 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                                 formData.append('caption', newImageCaption);
 
                                                 const result = await uploadGalleryImage(formData);
-                                                if (result.success && result.gallery) {
-                                                    setGallery(result.gallery);
-                                                    setConfig(prev => ({ ...prev, galleryJson: JSON.stringify(result.gallery) }));
-                                                    setNewImageCaption('');
-                                                    toast.success('Image uploaded successfully', { id: toastId });
+                                                if (result.success) {
+                                                    if (result.gallery) {
+                                                        setGallery(result.gallery);
+                                                        setConfig(prev => ({ ...prev, galleryJson: JSON.stringify(result.gallery) }));
+                                                        setNewImageCaption('');
+                                                        toast.success('Image uploaded successfully', { id: toastId });
+                                                    }
                                                 } else {
                                                     toast.error(result.error || 'Upload failed', { id: toastId });
                                                 }
