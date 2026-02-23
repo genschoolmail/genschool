@@ -91,35 +91,40 @@ export async function resolveFolderPath(rootFolderId: string, folderPath: string
 
 // Upload File to Google Drive (into the correct subfolder)
 export async function uploadToDrive(file: File, folderId: string) {
+    const drive = getDriveClient();
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    console.log(`[Drive] uploadToDrive: ${file.name} | ${buffer.length} bytes | mimeType: ${file.type} | folder: ${folderId}`);
+
+    if (buffer.length === 0) {
+        throw new Error('File buffer is empty — no data to upload.');
+    }
+
+    const { PassThrough } = require('stream');
+    const stream = new PassThrough();
+    stream.end(buffer);
+
     try {
-        const drive = getDriveClient();
-        const buffer = Buffer.from(await file.arrayBuffer());
-
-        const { Readable } = require('stream');
-        const stream = Readable.from(buffer);
-
         const response = await drive.files.create({
             requestBody: {
                 name: file.name,
                 parents: [folderId],
-                mimeType: file.type,
+                mimeType: file.type || 'application/octet-stream',
             },
             media: {
-                mimeType: file.type,
+                mimeType: file.type || 'application/octet-stream',
                 body: stream,
             },
-            fields: 'id, webContentLink, webViewLink',
+            fields: 'id, name, webContentLink, webViewLink, size',
             supportsAllDrives: true,
         });
 
+        console.log(`[Drive] Upload complete: id=${response.data.id} name=${response.data.name} size=${response.data.size}`);
         return response.data;
     } catch (error: any) {
-        console.error('Google Drive Upload Error:', error);
-        console.error('Error Details:', {
-            message: error.message,
-            code: error.code,
-            errors: error.errors
-        });
+        console.error('[Drive] Upload failed:', error.message);
+        console.error('[Drive] Details:', JSON.stringify(error.errors || []));
         throw new Error(`Drive Upload Failed: ${error.message || 'Unknown error'}`);
     }
 }
