@@ -42,9 +42,9 @@ export async function saveFile(file: File, folder: string = 'uploads', schoolId?
         // Make publicly readable so <img> tags work everywhere
         await makeFilePublic(driveFile.id);
 
-        // Direct Drive thumbnail URL — no proxy, works everywhere
-        const publicUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
-        console.log(`[saveFile] Public URL: ${publicUrl}`);
+        // Use internal proxy URL — works everywhere, no proxy/timeout issues
+        const publicUrl = `/api/files/${driveFile.id}`;
+        console.log(`[saveFile] Public Proxy URL: ${publicUrl}`);
         return publicUrl;
     }
 

@@ -88,12 +88,10 @@ export default function GallerySlideshow({ images }: GallerySlideshowProps) {
                     }}
                     className="absolute inset-0 w-full h-full"
                 >
-                    <Image
+                    <img
                         src={images[index].url}
                         alt={images[index].caption || "Gallery Image"}
-                        fill
-                        className="object-cover"
-                        priority
+                        className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
 
