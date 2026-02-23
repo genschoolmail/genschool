@@ -100,15 +100,20 @@ export async function POST(req: NextRequest) {
         console.log(`[HeroUpload] Success! Drive URL: ${imageUrl}`);
 
         // 6. Update Database
-        await (prisma.schoolSettings as any).upsert({
-            where: { schoolId },
-            create: { schoolId, heroImage: imageUrl, schoolName: 'School' },
-            update: { heroImage: imageUrl }
-        });
+        console.log(`[HeroUpload] Attempting DB update for schoolId: "${schoolId}" with URL: "${imageUrl}"`);
 
-        console.log(`[HeroUpload] Database updated for ${schoolId}`);
+        try {
+            const result = await (prisma.schoolSettings as any).upsert({
+                where: { schoolId },
+                create: { schoolId, heroImage: imageUrl, schoolName: (school as any)?.name || 'School' },
+                update: { heroImage: imageUrl }
+            });
+            console.log(`[HeroUpload] DB update SUCCESS. Result ID: ${result.id}, heroImage: ${result.heroImage}`);
+        } catch (dbErr: any) {
+            console.error(`[HeroUpload] DB update FAILED:`, dbErr.message);
+            throw new Error(`Database update failed: ${dbErr.message}`);
+        }
 
-        // Forced revalidation
         const { revalidatePath } = await import('next/cache');
 
         // Revalidate shared paths

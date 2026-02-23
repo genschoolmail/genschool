@@ -149,6 +149,24 @@ export async function uploadToDrive(file: File, folderId: string) {
         throw new Error('File buffer is empty — no data to upload.');
     }
 
+    // --- Unique File Check: Delete existing file with same name if found ---
+    try {
+        const existingRes = await drive.files.list({
+            q: `'${folderId}' in parents and name = '${file.name}' and trashed = false`,
+            fields: 'files(id)',
+            supportsAllDrives: true,
+        });
+        const existingFiles = existingRes.data.files || [];
+        for (const f of existingFiles) {
+            if (f.id) {
+                console.log(`[Drive] Deleting existing file with same name: ${file.name} (${f.id})`);
+                await drive.files.delete({ fileId: f.id, supportsAllDrives: true });
+            }
+        }
+    } catch (err: any) {
+        console.warn('[Drive] Pre-upload cleanup failed (non-fatal):', err.message);
+    }
+
     const { PassThrough } = require('stream');
     const stream = new PassThrough();
     stream.end(buffer);
