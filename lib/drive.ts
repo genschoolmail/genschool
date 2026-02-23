@@ -1,7 +1,11 @@
 
 import { google } from 'googleapis';
 
-// Initialize Google Drive Client — Service Account first (never expires), OAuth fallback
+/**
+ * Metadata client — uses Service Account (never expires).
+ * Used for: listing/creating/deleting folders (no storage quota needed).
+ * ⚠️ CANNOT upload files — Service Accounts have no storage quota on personal Google Drive.
+ */
 export const getDriveClient = () => {
     const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
     const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
@@ -9,7 +13,7 @@ export const getDriveClient = () => {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-    // Service Account (JWT) — preferred, never expires
+    // Service Account (JWT) — preferred for metadata, never expires
     if (email && keyRaw) {
         const key = keyRaw.replace(/\\n/g, '\n');
         const auth = new google.auth.JWT({
@@ -29,6 +33,44 @@ export const getDriveClient = () => {
 
     throw new Error('Missing Google Drive credentials');
 };
+
+/**
+ * Upload client — uses OAuth 2.0 (user's personal 15GB quota).
+ * Required for: uploading actual files, because Service Accounts
+ * have NO storage quota on personal Google Drive.
+ *
+ * If OAuth is not configured, falls back to Service Account
+ * (will work only on Google Workspace Shared Drives, not personal Drive).
+ */
+export const getUploadClient = () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+    // OAuth first — user's 15GB quota covers uploads
+    if (clientId && clientSecret && refreshToken) {
+        const auth = new google.auth.OAuth2(clientId, clientSecret);
+        auth.setCredentials({ refresh_token: refreshToken });
+        return google.drive({ version: 'v3', auth });
+    }
+
+    // No OAuth? Fall back to Service Account (requires Shared Drive setup)
+    const email = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
+    const keyRaw = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+    if (email && keyRaw) {
+        console.warn('[Drive] Using Service Account for file upload. This requires a Shared Drive. Personal Drive uploads will fail with quota error.');
+        const key = keyRaw.replace(/\\n/g, '\n');
+        const auth = new google.auth.JWT({
+            email,
+            key,
+            scopes: ['https://www.googleapis.com/auth/drive'],
+        });
+        return google.drive({ version: 'v3', auth });
+    }
+
+    throw new Error('Missing Google Drive credentials for file upload. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN.');
+};
+
 
 // Cache for folder IDs to avoid repeated API calls
 const folderCache = new Map<string, string>();
@@ -90,8 +132,9 @@ export async function resolveFolderPath(rootFolderId: string, folderPath: string
 }
 
 // Upload File to Google Drive (into the correct subfolder)
+// Uses OAuth (getUploadClient) because Service Accounts have NO storage quota on personal Drive.
 export async function uploadToDrive(file: File, folderId: string) {
-    const drive = getDriveClient();
+    const drive = getUploadClient(); // ← OAuth, not Service Account
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -145,7 +188,7 @@ export async function getFileStream(fileId: string) {
  */
 export async function makeFilePublic(fileId: string): Promise<void> {
     try {
-        const drive = getDriveClient();
+        const drive = getUploadClient(); // File was uploaded with OAuth — use same client for permissions
         await drive.permissions.create({
             fileId,
             requestBody: {
