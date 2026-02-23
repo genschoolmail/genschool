@@ -142,8 +142,13 @@ export async function updateTeacher(id: string, formData: FormData) {
         }
 
         // Update User
+        const { extractFileIdFromUrl, deleteFileFromDrive } = await import('@/lib/drive');
         let imageUrl = teacher.user.image;
         if (profileImage && profileImage.size > 0) {
+            // Cleanup old image
+            const oldFileId = extractFileIdFromUrl(imageUrl);
+            if (oldFileId) await deleteFileFromDrive(oldFileId);
+
             imageUrl = await saveFile(profileImage, 'teachers', schoolId);
         }
 

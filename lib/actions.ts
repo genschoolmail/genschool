@@ -231,13 +231,23 @@ export async function updateStudent(formData: FormData) {
         throw new Error("Student not found");
     }
 
+    const { extractFileIdFromUrl, deleteFileFromDrive } = await import('@/lib/drive');
+
     let imagePath = student.user.image;
     if (imageFile && imageFile.size > 0) {
+        // Cleanup old image
+        const oldFileId = extractFileIdFromUrl(imagePath);
+        if (oldFileId) await deleteFileFromDrive(oldFileId);
+
         imagePath = await saveFile(imageFile, 'students', schoolId);
     }
 
     let documentsPath = student.documents;
     if (documentsFile && documentsFile.size > 0) {
+        // Cleanup old document
+        const oldFileId = extractFileIdFromUrl(documentsPath);
+        if (oldFileId) await deleteFileFromDrive(oldFileId);
+
         documentsPath = await saveFile(documentsFile, 'students/documents', schoolId);
     }
 
