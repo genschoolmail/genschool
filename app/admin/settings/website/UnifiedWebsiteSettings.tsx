@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { updateWebsiteConfig, manageGallery, uploadGalleryImage } from '@/lib/cms-actions';
 import { Bell, Shield, Image as ImageIcon, Phone, Save, Loader2, Eye, EyeOff, Plus, Trash2, Globe, CheckCircle2, LayoutDashboard, ExternalLink, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface WebsiteConfig {
     schoolId: string;
@@ -27,6 +28,7 @@ interface GalleryItem {
 }
 
 export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { initialConfig: any, subdomain?: string }) {
+    const router = useRouter();
     // --- State Management ---
     const [config, setConfig] = useState<WebsiteConfig>({
         schoolId: initialConfig?.schoolId || '',
@@ -313,7 +315,8 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                                         if (response.success && response.url) {
                                                             setConfig(prev => ({ ...prev, heroImage: response.url }));
                                                             toast.success('Hero image uploaded! Click "Save Changes" to apply.', { id: toastId });
-                                                            // Switch back to URL mode so user can see the preview
+                                                            // Force refresh server data and switch back to URL mode
+                                                            router.refresh();
                                                             setUploadingHeroImage(false);
                                                         } else {
                                                             toast.error(response.error || 'Upload failed', { id: toastId });

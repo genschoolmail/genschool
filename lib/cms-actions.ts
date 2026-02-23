@@ -107,8 +107,13 @@ export async function updateWebsiteConfig(data: {
     const updateData: any = {
         heroTitle: data.heroTitle,
         heroDescription: data.heroDescription,
-        heroImage: data.heroImage
     };
+
+    // Only update heroImage if it's provided and not empty
+    // This prevents accidental overwrites when the UI state might be out of sync
+    if (data.heroImage) {
+        updateData.heroImage = data.heroImage;
+    }
 
     // Optional fields
     if (data.phone) updateData.contactNumber = data.phone;
@@ -131,7 +136,7 @@ export async function updateWebsiteConfig(data: {
                 address: data.address || '',
                 heroTitle: data.heroTitle,
                 heroDescription: data.heroDescription,
-                heroImage: data.heroImage,
+                heroImage: data.heroImage || '',
                 galleryJson: data.galleryJson || '[]',
                 homepageNotice: data.homepageNotice || '',
                 homepageNoticeEnabled: data.homepageNoticeEnabled || false,
