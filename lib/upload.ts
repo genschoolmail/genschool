@@ -1,98 +1,75 @@
 import { writeFile, mkdir } from 'fs/promises';
 import { join, extname } from 'path';
-import { existsSync, appendFileSync } from 'fs';
-
-const DEBUG_LOG = join(process.cwd(), 'public', 'uploads', 'upload_debug.log');
-
-function logDebug(message: string) {
-    try {
-        const timestamp = new Date().toISOString();
-        const logLine = `[${timestamp}] [Upload] ${message}\n`;
-        appendFileSync(DEBUG_LOG, logLine);
-    } catch (e) {
-        console.error('Upload logging failed:', e);
-    }
-    console.log(`[CRITICAL_LOG] [Upload] ${message}`);
-}
+import { existsSync } from 'fs';
 
 const ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
 
 /**
- * Save a file to Google Drive (organized by school) or local storage as fallback.
+ * Save a file to Google Drive (organized by school).
+ * Falls back to local disk ONLY in development (when Drive is not configured).
  *
- * @param file        - The file to save
- * @param folder      - Content-type path like "students", "teachers/profiles", "website/hero"
- * @param schoolId    - Optional school ID for multi-tenant organization.
- *                      If provided, files go to: ROOT / {schoolId} / {folder}
- *                      If omitted, files go to: ROOT / _platform / {folder}
+ * @param file      - The file to save
+ * @param folder    - e.g. "students", "teachers/profiles", "website/hero"
+ * @param schoolId  - School subdomain or ID for folder organization
  */
 export async function saveFile(file: File, folder: string = 'uploads', schoolId?: string): Promise<string> {
-    logDebug(`Starting saveFile for: ${file.name}, Folder: ${folder}, SchoolId: ${schoolId || 'platform'}`);
-
-    // 1. Try Google Drive Upload
     const hasSA = process.env.GOOGLE_DRIVE_CLIENT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY;
     const hasOAuth = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN;
+    const isDriveConfigured = (hasSA || hasOAuth) && ROOT_FOLDER_ID;
 
-    if ((hasSA || hasOAuth) && ROOT_FOLDER_ID) {
-        try {
-            logDebug('Attempting Google Drive upload...');
-            const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('./drive');
+    console.log(`[saveFile] file="${file.name}" size=${file.size} folder="${folder}" school="${schoolId || 'platform'}" driveConfigured=${!!isDriveConfigured}`);
 
-            // Build the organized path: ROOT / {schoolOrPlatform} / {contentFolder}
-            const orgPrefix = schoolId || '_platform';
-            const fullPath = `${orgPrefix}/${folder}`;
-            logDebug(`Resolving Drive folder path: ${fullPath}`);
+    // ── 1. Google Drive (primary — required on Vercel) ──────────────────────
+    if (isDriveConfigured) {
+        const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('./drive');
 
-            const targetFolderId = await resolveFolderPath(ROOT_FOLDER_ID, fullPath);
-            logDebug(`Target folder resolved: ${targetFolderId}`);
+        const orgPrefix = schoolId || '_platform';
+        const fullPath = `${orgPrefix}/${folder}`;
+        console.log(`[saveFile] Uploading to Drive path: ${fullPath}`);
 
-            const driveFile = await uploadToDrive(file, targetFolderId);
+        // Let errors propagate — do NOT catch here silently
+        const targetFolderId = await resolveFolderPath(ROOT_FOLDER_ID!, fullPath);
+        console.log(`[saveFile] Resolved folder ID: ${targetFolderId}`);
 
-            if (driveFile && driveFile.id) {
-                // Make the file publicly readable so <img> tags work anywhere
-                await makeFilePublic(driveFile.id);
+        const driveFile = await uploadToDrive(file, targetFolderId);
 
-                // Use direct Drive thumbnail URL — works without any proxy/auth
-                const publicUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
-                logDebug(`Google Drive Success! URL: ${publicUrl} (Path: ${fullPath})`);
-                return publicUrl;
-            }
-        } catch (error: any) {
-            logDebug(`Google Drive Failed: ${error.message}. Falling back to local storage.`);
-            console.error('Google Drive Upload Failed:', error);
-        }
-    }
-
-    // 2. Fallback to Local Storage (development only — will NOT work on Vercel)
-    try {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        const extension = extname(file.name);
-        const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filename = `${Date.now()}-${sanitizedOriginalName}`;
-
-        const isWindows = process.platform === 'win32' || join(' ', ' ').includes('\\');
-        const normalizedFolder = folder.replace(/\//g, isWindows ? '\\' : '/');
-
-        const uploadDir = join(process.cwd(), 'public', 'uploads', normalizedFolder);
-        logDebug(`Saving to physical path: ${uploadDir}`);
-
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true });
-            logDebug(`Created directory: ${uploadDir}`);
+        if (!driveFile?.id) {
+            throw new Error('Google Drive returned no file ID after upload.');
         }
 
-        const filePath = join(uploadDir, filename);
-        await writeFile(filePath, buffer);
-        logDebug(`File written to disk: ${filePath}`);
+        console.log(`[saveFile] Drive upload success: id=${driveFile.id}`);
 
-        const publicUrl = `/uploads/${folder.replace(/\\/g, '/')}/${filename}`;
-        logDebug(`Success! Public URL: ${publicUrl}`);
+        // Make publicly readable so <img> tags work everywhere
+        await makeFilePublic(driveFile.id);
+
+        // Direct Drive thumbnail URL — no proxy, works everywhere
+        const publicUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
+        console.log(`[saveFile] Public URL: ${publicUrl}`);
         return publicUrl;
-    } catch (error: any) {
-        logDebug(`ERROR in saveFile: ${error.message}`);
-        console.error('Error saving file:', error);
-        throw error;
     }
+
+    // ── 2. Local Storage (dev-only fallback — NOT available on Vercel) ───────
+    console.warn('[saveFile] WARNING: Google Drive is not configured. Saving to local disk (will NOT persist on Vercel).');
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filename = `${Date.now()}-${sanitizedOriginalName}`;
+
+    const isWindows = process.platform === 'win32';
+    const normalizedFolder = folder.replace(/\//g, isWindows ? '\\' : '/');
+
+    const uploadDir = join(process.cwd(), 'public', 'uploads', normalizedFolder);
+
+    if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+    }
+
+    const filePath = join(uploadDir, filename);
+    await writeFile(filePath, buffer);
+
+    const publicUrl = `/uploads/${folder.replace(/\\/g, '/')}/${filename}`;
+    console.log(`[saveFile] Local fallback URL: ${publicUrl}`);
+    return publicUrl;
 }
