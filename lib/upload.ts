@@ -42,9 +42,9 @@ export async function saveFile(file: File, folder: string = 'uploads', schoolId?
         // Make publicly readable so <img> tags work everywhere
         await makeFilePublic(driveFile.id);
 
-        // Use internal proxy URL — works everywhere, no proxy/timeout issues
-        const publicUrl = `/api/files/${driveFile.id}`;
-        console.log(`[saveFile] Public Proxy URL: ${publicUrl}`);
+        // Direct Drive thumbnail URL — direct browser fetch (bypasses Next.js proxy)
+        const publicUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
+        console.log(`[saveFile] Public Drive URL: ${publicUrl}`);
         return publicUrl;
     }
 

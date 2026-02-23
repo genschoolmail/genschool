@@ -96,8 +96,8 @@ export async function POST(req: NextRequest) {
         // Make publicly accessible
         await makeFilePublic(driveFile.id);
 
-        const imageUrl = `/api/files/${driveFile.id}`;
-        console.log(`[HeroUpload] Success! Proxy URL: ${imageUrl}`);
+        const imageUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
+        console.log(`[HeroUpload] Success! Drive URL: ${imageUrl}`);
 
         // 6. Update Database
         await (prisma.schoolSettings as any).upsert({
