@@ -59,7 +59,25 @@ export async function POST(req: NextRequest) {
         }
 
         // 5. Upload directly to Drive — NO local fallback for this endpoint
-        const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('@/lib/drive');
+        const { uploadToDrive, resolveFolderPath, makeFilePublic, deleteFileFromDrive, extractFileIdFromUrl } = await import('@/lib/drive');
+
+        // --- Cleanup: Delete old hero image if it exists in Drive ---
+        try {
+            const currentSettings = await prisma.schoolSettings.findUnique({
+                where: { schoolId },
+                select: { heroImage: true }
+            });
+
+            if (currentSettings?.heroImage) {
+                const oldFileId = extractFileIdFromUrl(currentSettings.heroImage);
+                if (oldFileId) {
+                    console.log(`[HeroUpload] Cleaning up old file: ${oldFileId}`);
+                    await deleteFileFromDrive(oldFileId);
+                }
+            }
+        } catch (cleanupErr) {
+            console.warn('[HeroUpload] Old file cleanup failed (non-fatal):', cleanupErr);
+        }
 
         const fullPath = `${orgLabel}/website/hero`;
         console.log(`[HeroUpload] Uploading to Drive path: ${fullPath}`);

@@ -204,3 +204,41 @@ export async function makeFilePublic(fileId: string): Promise<void> {
         }
     }
 }
+
+/**
+ * Delete a file from Google Drive.
+ */
+export async function deleteFileFromDrive(fileId: string): Promise<boolean> {
+    try {
+        const drive = getDriveClient(); // Use metadata client for deletion
+        await drive.files.delete({
+            fileId,
+            supportsAllDrives: true
+        });
+        console.log(`[Drive] Deleted file: ${fileId}`);
+        return true;
+    } catch (err: any) {
+        // If file already deleted or not found, ignore
+        if (err.code === 404) return true;
+        console.error(`[Drive] Error deleting file ${fileId}:`, err.message);
+        return false;
+    }
+}
+
+/**
+ * Helper to extract Google Drive file ID from our thumbnail or proxy URLs.
+ * Example URL: https://drive.google.com/thumbnail?id=1lgt-HYbl...&sz=w1200
+ */
+export function extractFileIdFromUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+
+    // 1. Check for thumbnail URL
+    const thumbMatch = url.match(/[?&]id=([^&]+)/);
+    if (thumbMatch) return thumbMatch[1];
+
+    // 2. Check for proxy URL (/api/files/ID)
+    const proxyMatch = url.match(/\/api\/files\/([^/?]+)/);
+    if (proxyMatch) return proxyMatch[1];
+
+    return null;
+}
