@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { ensureTenantId } from './tenant';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { saveFile } from './upload';
 import { appendFileSync } from 'fs';
 import { join } from 'path';
@@ -47,6 +47,7 @@ export interface WebsiteConfig {
 }
 
 export async function getWebsiteConfig(schoolId: string): Promise<WebsiteConfig | null> {
+    noStore(); // Prevents caching of config
     const settings = await prisma.schoolSettings.findUnique({
         where: { schoolId }
     });
@@ -209,15 +210,21 @@ export async function uploadHeroImage(formData: FormData): Promise<ActionRespons
 
             const imageUrl = `${await saveFile(file, 'website/hero', schoolId)}&t=${Date.now()}`;
 
+            // Fetch school metadata for robust creation
+            const school = await prisma.school.findUnique({
+                where: { id: schoolId },
+                select: { name: true, contactEmail: true, contactPhone: true, address: true }
+            });
+
             await (prisma.schoolSettings as any).upsert({
                 where: { schoolId },
                 create: {
                     schoolId,
                     heroImage: imageUrl,
-                    schoolName: 'School',
-                    contactNumber: 'N/A',
-                    email: 'N/A',
-                    address: 'N/A'
+                    schoolName: school?.name || 'School',
+                    email: school?.contactEmail || 'N/A',
+                    contactNumber: school?.contactPhone || 'N/A',
+                    address: school?.address || 'N/A'
                 },
                 update: { heroImage: imageUrl }
             });

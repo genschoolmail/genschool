@@ -26,21 +26,24 @@ export async function POST(req: NextRequest) {
 
         console.log(`[HeroUpload] File received: ${file.name} | Size: ${file.size} bytes | Type: ${file.type}`);
 
-        // 3. Get School Context
-        let schoolId = (session.user as any).schoolId;
+        // 3. Get School Context - Always resolve from subdomain to ensure consistency with website CMS
+        let schoolId: string;
+        try {
+            schoolId = await ensureTenantId();
+            console.log(`[HeroUpload] Resolved schoolId from subdomain: ${schoolId}`);
+        } catch (e: any) {
+            console.warn(`[HeroUpload] Subdomain resolution failed: ${e.message}. Falling back to session schoolId.`);
+            schoolId = (session.user as any).schoolId;
+        }
 
         if (!schoolId) {
-            try {
-                schoolId = await ensureTenantId();
-            } catch (e) {
-                return NextResponse.json({ error: 'School context missing' }, { status: 400 });
-            }
+            return NextResponse.json({ error: 'School context missing (subdomain and session ID both failed)' }, { status: 400 });
         }
 
         // Fetch school subdomain for readable folder structure
         const school = await prisma.school.findUnique({
             where: { id: schoolId },
-            select: { subdomain: true }
+            select: { name: true, subdomain: true, contactEmail: true, contactPhone: true, address: true }
         });
 
         const orgLabel = school?.subdomain || schoolId;
@@ -105,7 +108,14 @@ export async function POST(req: NextRequest) {
         try {
             const result = await (prisma.schoolSettings as any).upsert({
                 where: { schoolId },
-                create: { schoolId, heroImage: imageUrl, schoolName: (school as any)?.name || 'School' },
+                create: {
+                    schoolId,
+                    heroImage: imageUrl,
+                    schoolName: school?.name || 'School',
+                    email: school?.contactEmail || 'N/A',
+                    contactNumber: school?.contactPhone || 'N/A',
+                    address: school?.address || 'N/A'
+                },
                 update: { heroImage: imageUrl }
             });
             console.log(`[HeroUpload] DB update SUCCESS. Result ID: ${result.id}, heroImage: ${result.heroImage}`);
