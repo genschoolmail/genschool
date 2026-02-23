@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { saveFile } from '@/lib/upload';
 import { prisma } from '@/lib/prisma';
 import { ensureTenantId } from '@/lib/tenant';
 
@@ -25,6 +24,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
+        console.log(`[HeroUpload] File received: ${file.name} | Size: ${file.size} bytes | Type: ${file.type}`);
+
         // 3. Get School Context
         let schoolId = (session.user as any).schoolId;
 
@@ -43,35 +44,63 @@ export async function POST(req: NextRequest) {
         });
 
         const orgLabel = school?.subdomain || schoolId;
-        console.log(`[UploadAPI] Processing hero upload for school: ${orgLabel} (${schoolId})`);
+        console.log(`[HeroUpload] School: ${orgLabel} (${schoolId})`);
 
-        // 4. Save File
-        const imageUrl = await saveFile(file, 'website/hero', orgLabel);
+        // 4. Check Drive credentials before attempting
+        const ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID?.trim();
+        const hasSA = process.env.GOOGLE_DRIVE_CLIENT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+        const hasOAuth = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN;
 
-        // 5. Update Database
+        if (!ROOT_FOLDER_ID) {
+            return NextResponse.json({ error: 'GOOGLE_DRIVE_FOLDER_ID is not configured in environment variables.' }, { status: 500 });
+        }
+        if (!hasSA && !hasOAuth) {
+            return NextResponse.json({ error: 'Google Drive credentials (GOOGLE_DRIVE_CLIENT_EMAIL / GOOGLE_DRIVE_PRIVATE_KEY) are not configured.' }, { status: 500 });
+        }
+
+        // 5. Upload directly to Drive — NO local fallback for this endpoint
+        const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('@/lib/drive');
+
+        const fullPath = `${orgLabel}/website/hero`;
+        console.log(`[HeroUpload] Uploading to Drive path: ${fullPath}`);
+
+        const targetFolderId = await resolveFolderPath(ROOT_FOLDER_ID, fullPath);
+        console.log(`[HeroUpload] Target folder ID: ${targetFolderId}`);
+
+        const driveFile = await uploadToDrive(file, targetFolderId);
+
+        if (!driveFile || !driveFile.id) {
+            throw new Error('Drive returned no file ID after upload.');
+        }
+
+        console.log(`[HeroUpload] Drive file ID: ${driveFile.id}`);
+
+        // Make publicly accessible
+        await makeFilePublic(driveFile.id);
+
+        const imageUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
+        console.log(`[HeroUpload] Success! URL: ${imageUrl}`);
+
+        // 6. Update Database
         await (prisma.schoolSettings as any).upsert({
             where: { schoolId },
-            create: {
-                schoolId,
-                heroImage: imageUrl,
-                schoolName: 'School',
-            },
+            create: { schoolId, heroImage: imageUrl, schoolName: 'School' },
             update: { heroImage: imageUrl }
         });
 
         return NextResponse.json({
             success: true,
             url: imageUrl,
-            debug: {
-                schoolId,
-                userRole,
-                folder: 'website/hero',
-                timestamp: new Date().toISOString()
-            }
+            driveFileId: driveFile.id,
+            drivePath: fullPath,
         });
 
     } catch (error: any) {
-        console.error('[UploadAPI] Error:', error);
-        return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
+        console.error('[HeroUpload] CRITICAL ERROR:', error);
+        // Return the actual error so the user/developer sees it
+        return NextResponse.json({
+            error: error.message || 'Upload failed',
+            detail: error.errors ? JSON.stringify(error.errors) : undefined,
+        }, { status: 500 });
     }
 }
