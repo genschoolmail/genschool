@@ -106,16 +106,22 @@ export async function POST(req: NextRequest) {
             update: { heroImage: imageUrl }
         });
 
+        console.log(`[HeroUpload] Database updated for ${schoolId}`);
+
         // Forced revalidation
         const { revalidatePath } = await import('next/cache');
-        revalidatePath('/admin/settings/website');
-        revalidatePath('/public-school'); // Revalidate the shared route
+
+        // Revalidate shared paths
         revalidatePath('/', 'layout');
         revalidatePath('/', 'page');
+        revalidatePath('/public-school');
+        revalidatePath('/admin/settings/website');
 
-        // Also revalidate for subdomains
+        // Also revalidate for subdomains explicitly
         if (school?.subdomain) {
+            console.log(`[HeroUpload] Revalidating subdomain path: /${school.subdomain}`);
             revalidatePath(`/${school.subdomain}`, 'page');
+            revalidatePath(`/${school.subdomain}`, 'layout');
         }
 
         return NextResponse.json({

@@ -210,7 +210,7 @@ export async function makeFilePublic(fileId: string): Promise<void> {
  */
 export async function deleteFileFromDrive(fileId: string): Promise<boolean> {
     try {
-        const drive = getDriveClient(); // Use metadata client for deletion
+        const drive = getUploadClient(); // Use OAuth client for deletion to ensure permission
         await drive.files.delete({
             fileId,
             supportsAllDrives: true

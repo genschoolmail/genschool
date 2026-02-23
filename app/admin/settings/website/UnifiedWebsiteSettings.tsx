@@ -580,11 +580,11 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                 </div>
                 <button
                     onClick={handleSaveAll}
-                    disabled={saving}
+                    disabled={saving || uploadProgress > 0}
                     className="flex items-center gap-2 px-6 py-3 bg-white text-slate-900 rounded-full font-bold text-sm hover:bg-indigo-50 transition-all disabled:opacity-50"
                 >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Save className="w-4 h-4" />}
-                    {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (uploadProgress > 0) ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Save className="w-4 h-4" />}
+                    {saving ? 'Saving...' : (uploadProgress > 0) ? 'Uploading Image...' : saved ? 'Saved' : 'Save Changes'}
                 </button>
             </div>
         </div>
