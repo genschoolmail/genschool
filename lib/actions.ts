@@ -378,6 +378,21 @@ export async function deleteStudent(formData: FormData) {
             prisma.student.delete({ where: { id, schoolId } as any }),
             prisma.user.delete({ where: { id: student.userId, schoolId } as any })
         ]);
+
+        // 7. Cleanup Files from Drive
+        try {
+            const { extractFileIdFromUrl, deleteFileFromDrive } = await import('@/lib/drive');
+
+            // Delete Profile Image
+            const profileFileId = extractFileIdFromUrl(student.user.image);
+            if (profileFileId) await deleteFileFromDrive(profileFileId);
+
+            // Delete Documents
+            const docFileId = extractFileIdFromUrl(student.documents);
+            if (docFileId) await deleteFileFromDrive(docFileId);
+        } catch (cleanupErr) {
+            console.error('[deleteStudent] Drive cleanup failed:', cleanupErr);
+        }
     }
 
     revalidatePath('/admin/students');

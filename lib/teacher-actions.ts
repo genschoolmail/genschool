@@ -186,7 +186,8 @@ export async function deleteTeacher(id: string) {
     try {
         const schoolId = await getTenantId();
         const teacher = await prisma.teacher.findUnique({
-            where: { id }
+            where: { id },
+            include: { user: true }
         });
 
         if (!teacher || teacher.schoolId !== schoolId) {
@@ -197,6 +198,26 @@ export async function deleteTeacher(id: string) {
         await prisma.user.delete({
             where: { id: teacher.userId }
         });
+
+        // Cleanup Files from Drive
+        try {
+            const { extractFileIdFromUrl, deleteFileFromDrive } = await import('@/lib/drive');
+
+            // Delete Profile Image
+            const profileFileId = extractFileIdFromUrl(teacher.user.image);
+            if (profileFileId) await deleteFileFromDrive(profileFileId);
+
+            // Delete Documents (comma separated)
+            if (teacher.documents) {
+                const docs = teacher.documents.split(',');
+                for (const docUrl of docs) {
+                    const docFileId = extractFileIdFromUrl(docUrl);
+                    if (docFileId) await deleteFileFromDrive(docFileId);
+                }
+            }
+        } catch (cleanupErr) {
+            console.error('[deleteTeacher] Drive cleanup failed:', cleanupErr);
+        }
 
         revalidatePath('/admin/teachers');
         return { success: true };
