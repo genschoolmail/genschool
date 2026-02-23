@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         // Make publicly accessible
         await makeFilePublic(driveFile.id);
 
-        const imageUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
+        const imageUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200&t=${Date.now()}`;
         console.log(`[HeroUpload] Success! Drive URL: ${imageUrl}`);
 
         // 6. Update Database

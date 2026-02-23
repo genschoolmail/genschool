@@ -89,11 +89,16 @@ export async function ensureFolder(drive: any, parentId: string, folderName: str
     const query = `'${parentId}' in parents AND name='${folderName}' AND mimeType='application/vnd.google-apps.folder' AND trashed=false`;
     const res = await drive.files.list({
         q: query,
-        fields: 'files(id, name)',
+        fields: 'files(id, name, createdTime)',
+        orderBy: 'createdTime asc', // Always pick the oldest one if duplicates exist
         supportsAllDrives: true,
     });
 
     if (res.data.files && res.data.files.length > 0) {
+        // Log if duplicates found to help debugging
+        if (res.data.files.length > 1) {
+            console.warn(`[Drive] Duplicate folders found for "${folderName}" in "${parentId}". Picking oldest: ${res.data.files[0].id}`);
+        }
         const folderId = res.data.files[0].id;
         folderCache.set(cacheKey, folderId);
         return folderId;

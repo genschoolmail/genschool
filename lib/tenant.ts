@@ -31,7 +31,8 @@ export function getSubdomain() {
 
 import { cache } from 'react';
 
-export const getPublicSchool = cache(async () => {
+// Disable request-level memoization to ensure fresh data on every cross-server-component fetch
+export async function getPublicSchool() {
     noStore();
     const subdomain = getSubdomain();
     if (!subdomain) return null;
@@ -49,7 +50,7 @@ export const getPublicSchool = cache(async () => {
         console.error("Error fetching public school:", error);
         return null;
     }
-});
+}
 
 export async function ensureTenantId() {
     const subdomain = getSubdomain();
