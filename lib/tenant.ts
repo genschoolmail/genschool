@@ -85,3 +85,26 @@ export async function ensureTenantId() {
 export async function getTenantId() {
     return await ensureTenantId();
 }
+
+/**
+ * Gets the current subdomain.
+ * If an optional schoolId (UUID) is provided, it attempts to resolve the subdomain for that ID.
+ */
+export async function getTenantSubdomain(schoolId?: string): Promise<string | null> {
+    // 1. If we have a schoolId, check if it's already a subdomain or a UUID
+    if (schoolId) {
+        // Simple regex for UUID-like strings (Prisma IDs)
+        const isUuid = /^[0-9a-f-]{20,}$/i.test(schoolId) || schoolId.length > 20;
+        if (!isUuid) return schoolId; // Likely already a subdomain
+
+        // It's a UUID, look up subdomain in DB
+        const school = await prisma.school.findUnique({
+            where: { id: schoolId },
+            select: { subdomain: true }
+        });
+        return school?.subdomain || null;
+    }
+
+    // 2. Fallback to headers
+    return getSubdomain();
+}

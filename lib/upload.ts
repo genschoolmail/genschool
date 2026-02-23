@@ -22,10 +22,13 @@ export async function saveFile(file: File, folder: string = 'uploads', schoolId?
     // ── 1. Google Drive (primary — required on Vercel) ──────────────────────
     if (isDriveConfigured) {
         const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('./drive');
+        const { getTenantSubdomain } = await import('./tenant');
 
-        const orgPrefix = schoolId || '_platform';
+        // FORCE use of subdomain for folder naming to avoid fragmentation
+        const subdomain = await getTenantSubdomain(schoolId);
+        const orgPrefix = subdomain || schoolId || '_platform';
         const fullPath = `${orgPrefix}/${folder}`;
-        console.log(`[saveFile] Uploading to Drive path: ${fullPath}`);
+        console.log(`[saveFile] Uploading to Drive path: ${fullPath} (resolved schoolId: ${schoolId} -> subdomain: ${subdomain})`);
 
         // Let errors propagate — do NOT catch here silently
         const targetFolderId = await resolveFolderPath(ROOT_FOLDER_ID!, fullPath);
