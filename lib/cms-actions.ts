@@ -305,6 +305,18 @@ export async function manageGallery(action: 'add' | 'remove', item: { url: strin
             console.log(`[manageGallery] After remove. New count: ${gallery.length}`);
             if (initialCount === gallery.length) {
                 console.warn(`[manageGallery] FAILED TO REMOVE. Target: ${targetUrl}. Available URLs:`, gallery.map((g: any) => normalizeUrl(g.url)));
+            } else {
+                // If removal from JSON was successful, also delete the physical file from Drive
+                try {
+                    const { extractFileIdFromUrl, deleteFileFromDrive } = await import('@/lib/drive');
+                    const fileId = extractFileIdFromUrl(item.url);
+                    if (fileId) {
+                        console.log(`[manageGallery] Deleting file from Drive: ${fileId}`);
+                        await deleteFileFromDrive(fileId);
+                    }
+                } catch (driveErr) {
+                    console.error('[manageGallery] Failed to delete file from Drive (non-fatal):', driveErr);
+                }
             }
         }
 
