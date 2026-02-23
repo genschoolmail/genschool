@@ -312,7 +312,9 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                                         const response = JSON.parse(xhr.responseText);
                                                         if (response.success && response.url) {
                                                             setConfig(prev => ({ ...prev, heroImage: response.url }));
-                                                            toast.success('Hero image uploaded', { id: toastId });
+                                                            toast.success('Hero image uploaded! Click "Save Changes" to apply.', { id: toastId });
+                                                            // Switch back to URL mode so user can see the preview
+                                                            setUploadingHeroImage(false);
                                                         } else {
                                                             toast.error(response.error || 'Upload failed', { id: toastId });
                                                         }
@@ -320,9 +322,10 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                                         toast.error('Invalid server response', { id: toastId });
                                                     }
                                                 } else {
-                                                    toast.error('Upload failed', { id: toastId });
+                                                    let errMsg = 'Upload failed';
+                                                    try { errMsg = JSON.parse(xhr.responseText)?.error || errMsg; } catch { }
+                                                    toast.error(errMsg, { id: toastId });
                                                 }
-                                                setUploadingHeroImage(false);
                                                 setUploadProgress(0);
                                                 e.target.value = '';
                                             };
@@ -350,8 +353,25 @@ export default function UnifiedWebsiteSettings({ initialConfig, subdomain }: { i
                                         className="w-full p-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 bg-transparent text-sm"
                                     />
                                     {config.heroImage && (
-                                        <div className="relative aspect-video w-full max-w-xs bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-                                            <img src={config.heroImage} alt="Hero Preview" className="w-full h-full object-cover" />
+                                        <div className="relative w-full max-w-sm rounded-xl overflow-hidden border-2 border-indigo-200 bg-slate-100 shadow-sm">
+                                            <img
+                                                src={config.heroImage}
+                                                alt="Hero Preview"
+                                                className="w-full aspect-video object-cover"
+                                                onError={(e) => {
+                                                    // Show a broken image placeholder with helpful text
+                                                    const target = e.currentTarget;
+                                                    target.style.display = 'none';
+                                                    const parent = target.parentElement;
+                                                    if (parent && !parent.querySelector('.img-error')) {
+                                                        const errEl = document.createElement('div');
+                                                        errEl.className = 'img-error flex items-center justify-center aspect-video bg-amber-50 text-amber-700 text-xs font-semibold p-4 text-center';
+                                                        errEl.innerHTML = '⚠️ Preview unavailable in admin panel.<br>Image will appear correctly on the public site.';
+                                                        parent.appendChild(errEl);
+                                                    }
+                                                }}
+                                            />
+                                            <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Saved ✓</div>
                                         </div>
                                     )}
                                 </div>

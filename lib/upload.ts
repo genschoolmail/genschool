@@ -36,7 +36,7 @@ export async function saveFile(file: File, folder: string = 'uploads', schoolId?
     if ((hasSA || hasOAuth) && ROOT_FOLDER_ID) {
         try {
             logDebug('Attempting Google Drive upload...');
-            const { uploadToDrive, resolveFolderPath } = await import('./drive');
+            const { uploadToDrive, resolveFolderPath, makeFilePublic } = await import('./drive');
 
             // Build the organized path: ROOT / {schoolOrPlatform} / {contentFolder}
             const orgPrefix = schoolId || '_platform';
@@ -49,7 +49,11 @@ export async function saveFile(file: File, folder: string = 'uploads', schoolId?
             const driveFile = await uploadToDrive(file, targetFolderId);
 
             if (driveFile && driveFile.id) {
-                const publicUrl = `/api/files/${driveFile.id}`;
+                // Make the file publicly readable so <img> tags work anywhere
+                await makeFilePublic(driveFile.id);
+
+                // Use direct Drive thumbnail URL — works without any proxy/auth
+                const publicUrl = `https://drive.google.com/thumbnail?id=${driveFile.id}&sz=w1200`;
                 logDebug(`Google Drive Success! URL: ${publicUrl} (Path: ${fullPath})`);
                 return publicUrl;
             }

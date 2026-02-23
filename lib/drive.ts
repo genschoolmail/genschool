@@ -133,3 +133,26 @@ export async function getFileStream(fileId: string) {
     );
     return response.data;
 }
+
+/**
+ * Make a Drive file publicly readable so <img> tags work without auth.
+ * Creates an "anyone with the link can view" permission.
+ */
+export async function makeFilePublic(fileId: string): Promise<void> {
+    try {
+        const drive = getDriveClient();
+        await drive.permissions.create({
+            fileId,
+            requestBody: {
+                role: 'reader',
+                type: 'anyone',
+            },
+            supportsAllDrives: true,
+        });
+    } catch (err: any) {
+        // Non-fatal: if permission already exists, ignore
+        if (!err.message?.includes('already exists')) {
+            console.warn(`[Drive] Could not make file public (${fileId}):`, err.message);
+        }
+    }
+}
