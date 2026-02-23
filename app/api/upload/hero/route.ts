@@ -88,6 +88,13 @@ export async function POST(req: NextRequest) {
             update: { heroImage: imageUrl }
         });
 
+        // Forced revalidation
+        const { revalidatePath } = await import('next/cache');
+        revalidatePath('/admin/settings/website');
+        revalidatePath('/public-school'); // Revalidate the shared route
+        revalidatePath('/', 'layout');
+        revalidatePath('/', 'page');
+
         return NextResponse.json({
             success: true,
             url: imageUrl,

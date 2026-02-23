@@ -3,14 +3,33 @@ import { createInquiry } from '@/lib/cms-actions';
 import { GraduationCap, Mail, Phone, MapPin, Send, Users, BookOpen, Award, Bell } from 'lucide-react';
 import Link from 'next/link';
 
-// This would normally extract subdomain from headers
-// For demo, we'll use a default school
-async function getSchoolBySubdomain() {
-    // In production: extract from request headers
-    // const subdomain = headers().get('host')?.split('.')[0];
+import { headers } from 'next/headers';
 
-    return await prisma.school.findFirst({
-        where: { status: 'ACTIVE' },
+export const dynamic = 'force-dynamic';
+
+// Extract subdomain from host header
+async function getSchoolBySubdomain() {
+    const headersList = await headers();
+    const host = headersList.get('host') || '';
+
+    // Example: successmission.genschoolmail.in -> successmission
+    const subdomain = host.split('.')[0];
+
+    console.log(`[PublicPage] host=${host}, subdomain=${subdomain}`);
+
+    // If it's a localhost or main domain, we might need a fallback or test value
+    if (host.includes('localhost') || host === process.env.BASE_DOMAIN) {
+        return await prisma.school.findFirst({
+            where: { status: 'ACTIVE' },
+            include: {
+                subscription: { include: { plan: true } },
+                schoolSettings: true
+            }
+        });
+    }
+
+    return await prisma.school.findUnique({
+        where: { subdomain },
         include: {
             subscription: { include: { plan: true } },
             schoolSettings: true
