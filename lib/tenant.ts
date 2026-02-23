@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import { unstable_noStore as noStore } from 'next/cache';
 import { prisma } from "@/lib/prisma";
 
 export function getSubdomain() {
@@ -31,6 +32,7 @@ export function getSubdomain() {
 import { cache } from 'react';
 
 export const getPublicSchool = cache(async () => {
+    noStore();
     const subdomain = getSubdomain();
     if (!subdomain) return null;
 

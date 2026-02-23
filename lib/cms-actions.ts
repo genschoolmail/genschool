@@ -103,16 +103,24 @@ export async function updateWebsiteConfig(data: {
     admissionText?: string;
 }) {
     const schoolId = await ensureTenantId();
+    console.log(`[updateWebsiteConfig] Triggered for school ${schoolId}. Data.heroImage: "${data.heroImage}"`);
 
     const updateData: any = {
         heroTitle: data.heroTitle,
         heroDescription: data.heroDescription,
     };
 
-    // Only update heroImage if it's provided and not empty
-    // This prevents accidental overwrites when the UI state might be out of sync
-    if (data.heroImage) {
+    // --- CRITICAL PROTECTION ---
+    // Only update heroImage if it's provided and not empty.
+    // This prevents the Admin UI from accidentally wiping out an uploaded image
+    // if the local state hasn't refreshed yet.
+    if (data.heroImage && data.heroImage.trim() !== '') {
+        console.log(`[updateWebsiteConfig] Updating heroImage to: ${data.heroImage}`);
         updateData.heroImage = data.heroImage;
+    } else {
+        // Double check: If data.heroImage is empty, we DON'T update it in updateData.
+        // This keeps the existing DB value.
+        console.log(`[updateWebsiteConfig] Skipping heroImage update (empty string received) to preserve existing value.`);
     }
 
     // Optional fields
@@ -126,7 +134,7 @@ export async function updateWebsiteConfig(data: {
     if (data.admissionText !== undefined) updateData.admissionText = data.admissionText;
 
     try {
-        await (prisma.schoolSettings as any).upsert({
+        const result = await (prisma.schoolSettings as any).upsert({
             where: { schoolId },
             create: {
                 schoolId,
@@ -136,7 +144,7 @@ export async function updateWebsiteConfig(data: {
                 address: data.address || '',
                 heroTitle: data.heroTitle,
                 heroDescription: data.heroDescription,
-                heroImage: data.heroImage || '',
+                heroImage: data.heroImage || '', // Only empty on initial creation
                 galleryJson: data.galleryJson || '[]',
                 homepageNotice: data.homepageNotice || '',
                 homepageNoticeEnabled: data.homepageNoticeEnabled || false,
@@ -145,6 +153,8 @@ export async function updateWebsiteConfig(data: {
             },
             update: updateData
         });
+
+        console.log(`[updateWebsiteConfig] Database update successful for ${schoolId}. heroImage is now: "${result.heroImage}"`);
 
         if (data.phone || data.email || data.address) {
             await prisma.school.update({
@@ -157,9 +167,14 @@ export async function updateWebsiteConfig(data: {
             });
         }
 
+        // --- EXTENSIVE REVALIDATION ---
         revalidatePath('/admin/settings/website');
         revalidatePath('/', 'layout');
         revalidatePath('/', 'page');
+
+        // Also try to revalidate the public-school path just in case
+        revalidatePath('/public-school');
+
         return { success: true };
     } catch (error: any) {
         console.error(`[updateWebsiteConfig] Error for school ${schoolId}:`, error);

@@ -113,6 +113,11 @@ export async function POST(req: NextRequest) {
         revalidatePath('/', 'layout');
         revalidatePath('/', 'page');
 
+        // Also revalidate for subdomains
+        if (school?.subdomain) {
+            revalidatePath(`/${school.subdomain}`, 'page');
+        }
+
         return NextResponse.json({
             success: true,
             url: imageUrl,
