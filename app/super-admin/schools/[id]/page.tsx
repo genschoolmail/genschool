@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { ArrowLeft, Users, GraduationCap, Calendar, Trash2, Info, MapPin, Globe, Hash, UserCircle, ShieldAlert, Key, Mail, Phone, User } from 'lucide-react';
 import Link from 'next/link';
 import PasswordViewer from '@/components/common/PasswordViewer';
+import SmtpSettingsForm from './SmtpSettingsForm';
 
 export default async function SchoolDetailsPage({ params }: { params: { id: string } }) {
     const school = await getSchoolDetails(params.id);
@@ -367,11 +368,14 @@ export default async function SchoolDetailsPage({ params }: { params: { id: stri
                 </button>
             </form>
 
+            {/* Custom SMTP Configuration Form */}
+            <SmtpSettingsForm schoolId={params.id} />
+
             {/* Plan Upgrade Section */}
             <PlanUpgradeForm schoolId={params.id} currentSubscription={school.subscription} />
 
             {/* Users List */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mt-6">
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">School Users ({users.length})</h2>
                 <div className="overflow-x-auto">
                     <table className="w-full">

@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
         // 4. Send OTP
         let sendResult;
         if (isEmail) {
-            sendResult = await sendEmailOTP(identifier, otp);
+            sendResult = await sendEmailOTP(identifier, otp, user.schoolId);
         } else {
-            sendResult = await sendSMSOTP(identifier, otp);
+            sendResult = await sendSMSOTP(identifier, otp, user.schoolId);
         }
 
         // Construct a safe masked identifier
