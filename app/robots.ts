@@ -1,7 +1,11 @@
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://successmission.genschoolmail.in';
+    const headersList = headers();
+    const host = headersList.get('host') || 'genschoolmail.in';
+    const isLocalhost = host.includes('localhost');
+    const protocol = isLocalhost ? 'http' : 'https';
 
     return {
         rules: {
@@ -17,6 +21,6 @@ export default function robots(): MetadataRoute.Robots {
                 '/_next/',
             ],
         },
-        sitemap: `${baseUrl}/sitemap.xml`,
+        sitemap: `${protocol}://${host}/sitemap.xml`,
     };
 }
