@@ -2,6 +2,8 @@
 
 import { updateTeacherBasicInfo } from '@/lib/teacher-actions';
 import { useFormStatus } from 'react-dom';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -33,8 +35,25 @@ export function EditTeacherForm({
         currentDocuments?: string;
     }
 }) {
+    const router = useRouter();
+
+    async function handleSubmit(formData: FormData) {
+        try {
+            await updateTeacherBasicInfo(formData);
+            // redirect() throws internally, so toast before calling if needed.
+            // But since redirect throws, we show toast optimistically beforehand.
+        } catch (err: any) {
+            // Next.js redirect() throws a special error — ignore it (it means success)
+            if (err?.message?.includes('NEXT_REDIRECT') || err?.digest?.includes('NEXT_REDIRECT')) {
+                toast.success('Teacher updated successfully!');
+                return;
+            }
+            toast.error(err?.message || 'Failed to update teacher.');
+        }
+    }
+
     return (
-        <form action={updateTeacherBasicInfo} className="space-y-8">
+        <form action={handleSubmit} className="space-y-8">
             <input type="hidden" name="id" value={teacherId} />
 
             {/* Basic Info */}

@@ -7,6 +7,7 @@ import { Loader2, Save, User, Mail, Lock, Phone, MapPin, BookOpen, Briefcase, Up
 import { BackButton } from '@/components/BackButton';
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
+import { toast } from 'sonner';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -38,6 +39,10 @@ export default function NewTeacherForm() {
         const result = await createTeacher(formData);
         if (result?.error) {
             setError(result.error);
+            toast.error(result.error);
+        } else if (result?.success) {
+            toast.success('Teacher created successfully!');
+            window.location.href = '/admin/teachers';
         }
     }
 

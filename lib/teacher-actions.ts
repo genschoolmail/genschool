@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getTenantId } from "@/lib/tenant";
 import { saveFile } from "@/lib/upload";
 import bcrypt from "bcryptjs";
@@ -126,6 +127,7 @@ export async function updateTeacher(id: string, formData: FormData) {
         const schoolId = await getTenantId();
 
         const name = formData.get('name') as string;
+        const email = formData.get('email') as string;
         const designation = formData.get('designation') as string;
         const subject = formData.get('subject') as string;
         const phone = formData.get('phone') as string;
@@ -156,6 +158,7 @@ export async function updateTeacher(id: string, formData: FormData) {
             where: { id: teacher.userId },
             data: {
                 name,
+                email,
                 phone,
                 image: imageUrl
             }
@@ -182,7 +185,8 @@ export async function updateTeacher(id: string, formData: FormData) {
     }
 }
 
-export async function deleteTeacher(id: string) {
+export async function deleteTeacher(formData: FormData) {
+    const id = formData.get('id') as string;
     try {
         const schoolId = await getTenantId();
         const teacher = await prisma.teacher.findUnique({
@@ -229,7 +233,11 @@ export async function deleteTeacher(id: string) {
 
 export async function updateTeacherBasicInfo(formData: FormData) {
     const id = formData.get('id') as string;
-    return await updateTeacher(id, formData);
+    const result = await updateTeacher(id, formData);
+    if (result?.success) {
+        redirect(`/admin/teachers/${id}`);
+    }
+    return result;
 }
 
 export async function deleteTeacherDocument(documentId: string) {
