@@ -133,6 +133,7 @@ export async function updateTeacher(id: string, formData: FormData) {
         const phone = formData.get('phone') as string;
         const address = formData.get('address') as string;
         const profileImage = formData.get('image') as File;
+        const documents = formData.getAll('documents') as File[];
 
         const teacher = await prisma.teacher.findUnique({
             where: { id },
@@ -174,6 +175,25 @@ export async function updateTeacher(id: string, formData: FormData) {
                 address
             }
         });
+
+        // Handle New Document Uploads
+        if (documents && documents.length > 0) {
+            for (const doc of documents) {
+                if (doc.size > 0) {
+                    const docUrl = await saveFile(doc, 'teachers/documents', schoolId);
+                    await prisma.teacherDocument.create({
+                        data: {
+                            schoolId,
+                            teacherId: id,
+                            fileName: doc.name,
+                            filePath: docUrl,
+                            fileType: doc.type || 'application/octet-stream',
+                            fileSize: doc.size
+                        }
+                    });
+                }
+            }
+        }
 
         revalidatePath('/admin/teachers');
         revalidatePath(`/admin/teachers/${id}`);
