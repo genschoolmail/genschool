@@ -123,7 +123,9 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
                         className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto mb-4 cursor-pointer active:scale-95 transition-transform select-none overflow-hidden"
                     >
                         {school?.logo ? (
-                            <img src={school.logo} alt={school.name} className="w-full h-full object-contain" />
+                            <img src={school.logo} alt={school.name} className="w-full h-full object-contain p-2" />
+                        ) : !currentSubdomain ? (
+                            <img src="/images/gsm-logo.png" alt="Gen School Mail" className="w-full h-full object-contain p-2 brightness-0 invert" />
                         ) : (
                             <span className="text-white font-bold text-2xl">
                                 {school?.name ? school.name.charAt(0).toUpperCase() : 'S'}
@@ -131,10 +133,10 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
                         )}
                     </div>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                        {school?.name || 'Welcome Back'}
+                        {school?.name || 'Gen School Mail'}
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-                        {school ? `Sign in to ${school.name} Portal` : 'Sign in to access your dashboard'}
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">
+                        {school ? `Sign in to ${school.name} Portal` : 'Platform Administration Login'}
                     </p>
                 </div>
 
