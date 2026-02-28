@@ -50,7 +50,7 @@ export default function DriverProfileClient({ user, driver, stats, userRole, sub
             let callbackUrl = '/';
             const isLocalhost = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1';
             const protocol = window.location.protocol;
-            const baseDomain = isLocalhost ? 'localhost:3000' : 'platform.com';
+            const baseDomain = isLocalhost ? 'localhost:3000' : 'genschoolmail.in';
 
             if (userRole === 'SUPER_ADMIN') {
                 callbackUrl = `${protocol}//${baseDomain}`;

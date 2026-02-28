@@ -112,7 +112,7 @@ export default async function Home({ searchParams }: { searchParams: { preview?:
         // This handles cases where they might land on root after a partial signout or direct navigation
         if (userSubdomain && !subdomain && role !== 'SUPER_ADMIN') {
             const isLocalhost = process.env.NODE_ENV === 'development' || !process.env.VERCEL_URL;
-            const domain = isLocalhost ? 'localhost:3000' : 'platform.com'; // Replace with env var if available
+            const domain = isLocalhost ? 'localhost:3000' : 'genschoolmail.in'; // Replace with env var if available
             const protocol = isLocalhost ? 'http' : 'https';
             redirect(`${protocol}://${userSubdomain}.${domain}/${role.toLowerCase().replace('_', '-')}`);
         }
