@@ -1,7 +1,14 @@
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+
+class CustomAuthError extends CredentialsSignin {
+    constructor(code: string) {
+        super();
+        this.code = code;
+    }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     trustHost: true,
@@ -62,34 +69,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 });
 
                 if (!user) {
-                    throw new Error('InvalidUser');
+                    throw new CustomAuthError('InvalidUser');
                 }
 
                 if (user.school?.status === 'SUSPENDED' && user.role !== 'SUPER_ADMIN') {
-                    throw new Error('SchoolSuspended');
+                    throw new CustomAuthError('SchoolSuspended');
                 }
 
                 // TENANT VALIDATION
-                const requestSubdomain = creds.subdomain as string | null;
+                // NextAuth serializes null to string "null". Handle this.
+                let requestSubdomain = creds.subdomain as string | null | undefined;
+                if (requestSubdomain === 'null' || requestSubdomain === 'undefined') {
+                    requestSubdomain = null;
+                }
 
                 // For SUPER_ADMIN, enforce no subdomain (root domain only)
                 if (user.role === 'SUPER_ADMIN') {
                     if (requestSubdomain) {
                         console.log(`Tenant Mismatch: SUPER_ADMIN tried to login to ${requestSubdomain}`);
-                        throw new Error('TenantMismatch');
+                        throw new CustomAuthError('TenantMismatch');
                     }
                 } else {
                     // For regular users, enforce subdomain match
                     // user MUST belong to that school and cannot login from root domain
                     if (!requestSubdomain || user.school?.subdomain !== requestSubdomain) {
                         console.log(`Tenant Mismatch: User ${user.email} (School: ${user.school?.subdomain}) tried to login to ${requestSubdomain || 'root'}`);
-                        throw new Error('TenantMismatch');
+                        throw new CustomAuthError('TenantMismatch');
                     }
                 }
 
                 const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password);
                 if (!passwordsMatch) {
-                    throw new Error('InvalidPassword');
+                    throw new CustomAuthError('InvalidPassword');
                 }
 
                 return {

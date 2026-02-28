@@ -30,12 +30,13 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
         } else if (errorParam === 'InvalidPassword') {
             setError('Incorrect password. Please try again.');
         } else if (errorParam === 'CredentialsSignin') {
-            // Check if there is a more detailed reason passed (sometimes possible in custom setups)
-            setError('Invalid email/phone or password');
+            setError('Invalid email/phone or password. Please try again.');
         } else if (errorParam === 'SchoolSuspended') {
             setError('This school portal has been suspended.');
+        } else if (errorParam === 'Configuration') {
+            setError('Login service error. Please try again or contact support.');
         } else if (errorParam) {
-            setError('An error occurred during sign-in.');
+            setError('An error occurred during sign-in. Please try again.');
         }
     }, [searchParams]);
 
@@ -76,7 +77,8 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
             const result = await signIn('credentials', {
                 identifier,
                 password,
-                subdomain: currentSubdomain,
+                // Pass subdomain only if it exists (don't pass null/undefined strings)
+                ...(currentSubdomain ? { subdomain: currentSubdomain } : {}),
                 redirect: false,
             });
 
