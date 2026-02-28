@@ -136,38 +136,73 @@ export async function impersonateSchoolAdmin(schoolId: string) {
 // --- Settings & Plans ---
 
 export async function getSystemSettings() {
-    // Return array format expected by SettingsClient
-    return [
-        // SMTP Settings
-        { key: 'SMTP_HOST', value: '', type: 'TEXT', category: 'SMTP', description: 'SMTP server hostname' },
-        { key: 'SMTP_PORT', value: '587', type: 'NUMBER', category: 'SMTP', description: 'SMTP port number' },
-        { key: 'SMTP_USER', value: '', type: 'TEXT', category: 'SMTP', description: 'SMTP username' },
-        { key: 'SMTP_PASSWORD', value: '', type: 'PASSWORD', category: 'SMTP', description: 'SMTP password' },
-        { key: 'SMTP_FROM_EMAIL', value: '', type: 'TEXT', category: 'SMTP', description: 'Default from email' },
+    try {
+        await ensureSuperAdmin();
+        const dbSettings = await prisma.systemSettings.findMany({
+            orderBy: { category: 'asc' }
+        });
 
-        // SMS Settings
-        { key: 'SMS_PROVIDER', value: '', type: 'TEXT', category: 'SMS', description: 'SMS provider name (e.g., Twilio)' },
-        { key: 'SMS_API_KEY', value: '', type: 'PASSWORD', category: 'SMS', description: 'SMS API key' },
-        { key: 'SMS_SENDER_ID', value: '', type: 'TEXT', category: 'SMS', description: 'SMS sender ID' },
+        // Define expected structure with defaults
+        const defaultSettings = [
+            // SMTP Settings
+            { key: 'SMTP_HOST', value: '', type: 'TEXT', category: 'SMTP', description: 'SMTP server hostname' },
+            { key: 'SMTP_PORT', value: '465', type: 'NUMBER', category: 'SMTP', description: 'SMTP port number' },
+            { key: 'SMTP_USER', value: '', type: 'TEXT', category: 'SMTP', description: 'SMTP username' },
+            { key: 'SMTP_PASS', value: '', type: 'PASSWORD', category: 'SMTP', description: 'SMTP password' },
+            { key: 'SMTP_FROM', value: '', type: 'TEXT', category: 'SMTP', description: 'Default from email (e.g. "Name" <email@domain.com>)' },
 
-        // Maps Settings
-        { key: 'MAPS_API_KEY', value: '', type: 'PASSWORD', category: 'MAPS', description: 'Google Maps API key' },
+            // SMS Settings
+            { key: 'SMS_PROVIDER', value: '', type: 'TEXT', category: 'SMS', description: 'SMS provider name (e.g., Twilio)' },
+            { key: 'SMS_API_KEY', value: '', type: 'PASSWORD', category: 'SMS', description: 'SMS API key' },
+            { key: 'SMS_SENDER_ID', value: '', type: 'TEXT', category: 'SMS', description: 'SMS sender ID' },
 
-        // OTP Settings
-        { key: 'OTP_LENGTH', value: '6', type: 'NUMBER', category: 'OTP', description: 'OTP code length' },
-        { key: 'OTP_EXPIRY_MINUTES', value: '10', type: 'NUMBER', category: 'OTP', description: 'OTP expiry time in minutes' },
+            // Maps Settings
+            { key: 'MAPS_API_KEY', value: '', type: 'PASSWORD', category: 'MAPS', description: 'Google Maps API key' },
 
-        // Storage Settings
-        { key: 'STORAGE_PROVIDER', value: 'AWS_S3', type: 'TEXT', category: 'STORAGE', description: 'Cloud storage provider' },
-        { key: 'STORAGE_BUCKET', value: '', type: 'TEXT', category: 'STORAGE', description: 'Storage bucket name' },
-        { key: 'STORAGE_ACCESS_KEY', value: '', type: 'PASSWORD', category: 'STORAGE', description: 'Storage access key' },
-        { key: 'STORAGE_SECRET_KEY', value: '', type: 'PASSWORD', category: 'STORAGE', description: 'Storage secret key' },
+            // OTP Settings
+            { key: 'OTP_LENGTH', value: '6', type: 'NUMBER', category: 'OTP', description: 'OTP code length' },
+            { key: 'OTP_EXPIRY_MINUTES', value: '10', type: 'NUMBER', category: 'OTP', description: 'OTP expiry time in minutes' },
 
-        // Redis Settings
-        { key: 'REDIS_HOST', value: 'localhost', type: 'TEXT', category: 'REDIS', description: 'Redis server hostname' },
-        { key: 'REDIS_PORT', value: '6379', type: 'NUMBER', category: 'REDIS', description: 'Redis port number' },
-        { key: 'REDIS_PASSWORD', value: '', type: 'PASSWORD', category: 'REDIS', description: 'Redis password (optional)' },
-    ];
+            // Storage Settings
+            { key: 'STORAGE_PROVIDER', value: 'AWS_S3', type: 'TEXT', category: 'STORAGE', description: 'Cloud storage provider' },
+            { key: 'STORAGE_BUCKET', value: '', type: 'TEXT', category: 'STORAGE', description: 'Storage bucket name' },
+            { key: 'STORAGE_ACCESS_KEY', value: '', type: 'PASSWORD', category: 'STORAGE', description: 'Storage access key' },
+            { key: 'STORAGE_SECRET_KEY', value: '', type: 'PASSWORD', category: 'STORAGE', description: 'Storage secret key' },
+
+            // Redis Settings
+            { key: 'REDIS_HOST', value: 'localhost', type: 'TEXT', category: 'REDIS', description: 'Redis server hostname' },
+            { key: 'REDIS_PORT', value: '6379', type: 'NUMBER', category: 'REDIS', description: 'Redis port number' },
+            { key: 'REDIS_PASSWORD', value: '', type: 'PASSWORD', category: 'REDIS', description: 'Redis password (optional)' },
+        ];
+
+        // Merge DB values into defaults
+        const merged = defaultSettings.map(def => {
+            const dbS = dbSettings.find(s => s.key === def.key);
+            return dbS ? {
+                ...def,
+                value: dbS.value,
+                description: dbS.description || def.description,
+                type: dbS.type || def.type
+            } : def;
+        });
+
+        // Add any settings in DB that aren't in defaults
+        const existingKeys = new Set(defaultSettings.map(d => d.key));
+        const extras = dbSettings
+            .filter(s => !existingKeys.has(s.key))
+            .map(s => ({
+                key: s.key,
+                value: s.value,
+                type: s.type,
+                category: s.category,
+                description: s.description
+            }));
+
+        return [...merged, ...extras];
+    } catch (error) {
+        console.error("Error fetching system settings:", error);
+        return [];
+    }
 }
 
 export async function updateSystemSettings(formData: FormData) {
@@ -175,19 +210,32 @@ export async function updateSystemSettings(formData: FormData) {
         await ensureSuperAdmin();
         const settings = Object.fromEntries(formData);
 
-        // In a real production app, we would loop and upsert to a 'SystemSetting' table
-        // For this implementation, we simulate the persistence
-        console.log('Platform settings updated:', settings);
+        // Process all entries in parallel
+        await Promise.all(
+            Object.entries(settings).map(async ([key, value]) => {
+                if (key.startsWith('$')) return; // Skip internal fields
 
-        // Mock persistence logic
-        for (const [key, value] of Object.entries(settings)) {
-            if (key.startsWith('$')) continue; // Skip internal form fields
-            // await prisma.systemSetting.upsert({ ... })
-        }
+                return prisma.systemSettings.upsert({
+                    where: { key },
+                    update: {
+                        value: String(value),
+                        updatedAt: new Date()
+                    },
+                    create: {
+                        key,
+                        value: String(value),
+                        type: key.toLowerCase().includes('password') || key.toLowerCase().includes('key') || key.toLowerCase().includes('secret') || key.toLowerCase().includes('pass') ? 'PASSWORD' : 'TEXT',
+                        category: key.split('_')[0] || 'GENERAL',
+                        description: `Platform setting for ${key}`
+                    }
+                });
+            })
+        );
 
         revalidatePath('/super-admin/settings');
         return { success: true };
     } catch (error: any) {
+        console.error("Error updating system settings:", error);
         return { success: false, error: error.message };
     }
 }
