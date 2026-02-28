@@ -11,17 +11,22 @@ export async function POST(req: NextRequest) {
         const hostParts = host.split(":")[0].split(".");
         const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
         const currentSubdomain = isLocalhost
-            ? (hostParts.length > 1 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
-            : (hostParts.length > 2 ? hostParts[0] : null);
+            ? (hostParts.length > 2 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
+            : (hostParts.length > 2 && hostParts[0] !== 'www' ? hostParts[0] : null);
 
         // 1. Find User in this context
+        // If user is SUPER_ADMIN, they can recover from anywhere
+        // If subdomain exists, restrict regular users to that specific school
         const user = await prisma.user.findFirst({
             where: {
                 AND: [
                     { OR: [{ email: identifier }, { phone: identifier }] },
-                    currentSubdomain
-                        ? { school: { subdomain: currentSubdomain.toLowerCase() } }
-                        : { role: 'SUPER_ADMIN' }
+                    {
+                        OR: [
+                            { role: 'SUPER_ADMIN' },
+                            currentSubdomain ? { school: { subdomain: currentSubdomain.toLowerCase() } } : {}
+                        ]
+                    }
                 ]
             }
         });

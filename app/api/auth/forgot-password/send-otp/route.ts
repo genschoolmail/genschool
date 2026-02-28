@@ -23,19 +23,22 @@ export async function POST(req: NextRequest) {
         const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
 
         const currentSubdomain = isLocalhost
-            ? (hostParts.length > 1 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
-            : (hostParts.length > 2 ? hostParts[0] : null);
+            ? (hostParts.length > 2 && hostParts[0] !== 'localhost' ? hostParts[0] : null)
+            : (hostParts.length > 2 && hostParts[0] !== 'www' ? hostParts[0] : null);
 
         // 2. Check if user exists within the current tenant context
-        // If no subdomain, we are on the Super Admin portal - restrict to SUPER_ADMIN role
-        // If subdomain exists, restrict to that specific school
+        // If user is SUPER_ADMIN, they can recover from anywhere
+        // If subdomain exists, restrict regular users to that specific school
         const user = await prisma.user.findFirst({
             where: {
                 AND: [
                     isEmail ? { email: identifier } : { phone: identifier },
-                    currentSubdomain
-                        ? { school: { subdomain: currentSubdomain.toLowerCase() } }
-                        : { role: 'SUPER_ADMIN' }
+                    {
+                        OR: [
+                            { role: 'SUPER_ADMIN' },
+                            currentSubdomain ? { school: { subdomain: currentSubdomain.toLowerCase() } } : {}
+                        ]
+                    }
                 ]
             }
         });
