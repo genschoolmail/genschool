@@ -162,3 +162,44 @@ export async function sendSMSOTP(phone: string, otp: string, _schoolId?: string)
         return { success: false, error: error.message };
     }
 }
+/**
+ * Generic function to send an email.
+ * It will use per-school SMTP if schoolId is provided and configured, 
+ * otherwise it falls back to Global Super-Admin SMTP.
+ */
+export async function sendEmail({ to, subject, html, schoolId }: { to: string; subject: string; html: string; schoolId?: string }) {
+    const resolved = await resolveSmtpConfig(schoolId);
+
+    if (!resolved) {
+        console.warn('[SMTP] No SMTP settings found for generic email.');
+        return { success: false, error: 'SMTP settings missing' };
+    }
+
+    const { config } = resolved;
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host: config.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(config.SMTP_PORT) || 465,
+            secure: String(config.SMTP_PORT) === '465',
+            auth: {
+                user: config.SMTP_USER,
+                pass: config.SMTP_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: config.SMTP_FROM || config.SMTP_USER,
+            to,
+            subject,
+            html,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('[SMTP] Generic Email sent:', info.messageId);
+        return { success: true };
+    } catch (error: any) {
+        console.error('[SMTP] Generic Email error:', error);
+        return { success: false, error: error.message };
+    }
+}

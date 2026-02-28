@@ -92,3 +92,28 @@ export async function getSchoolSmtpConfig(schoolId: string) {
         return { success: false, error: error.message };
     }
 }
+
+export async function testSchoolSmtpConfig(schoolId: string, testEmail: string) {
+    try {
+        await ensureSuperAdmin();
+        const { sendEmail } = await import('@/lib/communication');
+
+        const res = await sendEmail({
+            to: testEmail,
+            subject: 'SMTP Test - GenSchool Platform',
+            html: `
+                <div style="font-family: sans-serif; padding: 20px;">
+                    <h2 style="color: #4f46e5;">SMTP Test Successful!</h2>
+                    <p>This is a test email sent from the GenSchool Super Admin panel.</p>
+                    <p>If you are seeing this, the SMTP configuration for this school is working correctly.</p>
+                </div>
+            `,
+            schoolId
+        });
+
+        return res;
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
