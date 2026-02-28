@@ -30,9 +30,13 @@ export async function validateCredentials(identifier: string, password: string, 
         }
 
         // Subdomain Check
-        if (user.role !== 'SUPER_ADMIN' && subdomain) {
-            if (user.school?.subdomain !== subdomain.toLowerCase()) {
-                return { error: 'TenantMismatch' };
+        if (user.role === 'SUPER_ADMIN') {
+            if (subdomain) {
+                return { error: 'TenantMismatch' }; // Super Admin can only login from root domain
+            }
+        } else {
+            if (!subdomain || user.school?.subdomain !== subdomain.toLowerCase()) {
+                return { error: 'TenantMismatch' }; // School users can only login from their exact subdomain
             }
         }
 

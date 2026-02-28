@@ -120,12 +120,15 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
                 <div className="text-center mb-8">
                     <div
                         onClick={handleLogoClick}
-                        className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 mx-auto mb-4 cursor-pointer active:scale-95 transition-transform select-none overflow-hidden"
+                        className={`mx-auto mb-6 flex items-center justify-center cursor-pointer active:scale-95 transition-transform select-none relative ${school?.logo
+                                ? 'w-24 h-24 bg-white rounded-3xl shadow-sm border border-slate-100 p-3 overflow-hidden'
+                                : 'w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30 overflow-hidden'
+                            }`}
                     >
                         {school?.logo ? (
-                            <img src={school.logo} alt={school.name} className="w-full h-full object-contain p-2" />
+                            <img src={school.logo} alt={school.name} className="w-full h-full object-contain drop-shadow-sm" />
                         ) : !currentSubdomain ? (
-                            <img src="/images/gsm-logo.png" alt="Gen School Mail" className="w-full h-full object-contain p-2 brightness-0 invert" />
+                            <img src="/images/gsm-logo.png" alt="Gen School Mail" className="w-full h-full object-contain p-3 brightness-0 invert" />
                         ) : (
                             <span className="text-white font-bold text-2xl">
                                 {school?.name ? school.name.charAt(0).toUpperCase() : 'S'}

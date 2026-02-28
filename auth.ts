@@ -72,22 +72,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // TENANT VALIDATION
                 const requestSubdomain = creds.subdomain as string | null;
 
-                // If user is SUPER_ADMIN, allow login anywhere (or restrict to main domain if preferred)
+                // For SUPER_ADMIN, enforce no subdomain (root domain only)
                 if (user.role === 'SUPER_ADMIN') {
-                    // Allow
+                    if (requestSubdomain) {
+                        console.log(`Tenant Mismatch: SUPER_ADMIN tried to login to ${requestSubdomain}`);
+                        throw new Error('TenantMismatch');
+                    }
                 } else {
                     // For regular users, enforce subdomain match
-                    // If requestSubdomain is present (not localhost/null), user MUST belong to that school
-                    if (requestSubdomain) {
-                        if (user.school?.subdomain !== requestSubdomain) {
-                            // User belongs to School A but trying to login to School B
-                            // Check if school has custom domain? (Assuming subdomain is the primary key for now)
-                            console.log(`Tenant Mismatch: User ${user.email} (School: ${user.school?.subdomain}) tried to login to ${requestSubdomain}`);
-                            throw new Error('TenantMismatch');
-                        }
-                    } else {
-                        // Ideally on localhost (subdomain=null), we might allow any login OR restrict to default-school
-                        // For now, on localhost, we allow any login for dev convenience
+                    // user MUST belong to that school and cannot login from root domain
+                    if (!requestSubdomain || user.school?.subdomain !== requestSubdomain) {
+                        console.log(`Tenant Mismatch: User ${user.email} (School: ${user.school?.subdomain}) tried to login to ${requestSubdomain || 'root'}`);
+                        throw new Error('TenantMismatch');
                     }
                 }
 
