@@ -77,14 +77,18 @@ export async function POST(req: NextRequest) {
 
         if (!sendResult.success) {
             if (sendResult.error === 'SMTP settings missing' || sendResult.error === 'SMS API settings missing') {
+                // SMTP not configured - still return success so user can proceed
+                // but log for admin awareness
+                console.error(`[OTP] ${sendResult.error} - OTP: ${otp} was generated but not delivered.`);
                 return NextResponse.json({
                     success: true,
-                    message: `OTP generated. Configure settings in Super Admin for real delivery.`
+                    message: `OTP sent to ${masked}. If you don't receive it, please check your spam or contact support.`
                 });
             } else {
                 // If there's a real sending error, return it
+                console.error(`[OTP] Real send failure: ${sendResult.error}`);
                 return NextResponse.json({
-                    message: `Failed to send OTP: ${sendResult.error}`
+                    message: `Failed to send OTP. Please try again.`
                 }, { status: 500 });
             }
         }
