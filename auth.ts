@@ -62,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 });
 
                 if (!user) {
-                    return null;
+                    throw new Error('InvalidUser');
                 }
 
                 if (user.school?.status === 'SUSPENDED' && user.role !== 'SUPER_ADMIN') {
@@ -83,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             // User belongs to School A but trying to login to School B
                             // Check if school has custom domain? (Assuming subdomain is the primary key for now)
                             console.log(`Tenant Mismatch: User ${user.email} (School: ${user.school?.subdomain}) tried to login to ${requestSubdomain}`);
-                            return null; // Implicitly invalid credentials for this school
+                            throw new Error('TenantMismatch');
                         }
                     } else {
                         // Ideally on localhost (subdomain=null), we might allow any login OR restrict to default-school
@@ -93,7 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password);
                 if (!passwordsMatch) {
-                    return null;
+                    throw new Error('InvalidPassword');
                 }
 
                 return {

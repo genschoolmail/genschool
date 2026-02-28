@@ -24,8 +24,15 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
         const errorParam = searchParams.get('error');
         if (errorParam === 'TenantMismatch') {
             setError('This account does not belong to this school portal.');
+        } else if (errorParam === 'InvalidUser') {
+            setError('User not found. Please check your email or phone number.');
+        } else if (errorParam === 'InvalidPassword') {
+            setError('Incorrect password. Please try again.');
         } else if (errorParam === 'CredentialsSignin') {
+            // Check if there is a more detailed reason passed (sometimes possible in custom setups)
             setError('Invalid email/phone or password');
+        } else if (errorParam === 'SchoolSuspended') {
+            setError('This school portal has been suspended.');
         } else if (errorParam) {
             setError('An error occurred during sign-in.');
         }
@@ -55,7 +62,16 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
             });
 
             if (result?.error) {
-                setError('Invalid email/phone or password');
+                // NextAuth typically returns 'CredentialsSignin' for any authorize throw
+                // But we can check if it passed a specific message (though standard next-auth masks this)
+                // For now, we will handle the generic error by informing the user to check both.
+                // However, I will enhance the LoginForm to show specific errors based on the URL params
+                // which NextAuth uses to pass back error codes.
+                if (result.error === 'CredentialsSignin') {
+                    setError('Invalid email/phone or password');
+                } else {
+                    setError(result.error);
+                }
                 setLoading(false);
             } else {
                 const session = await getSession();
