@@ -20,7 +20,7 @@ async function resolveSmtpConfig(schoolId?: string) {
                 if (decrypted) {
                     const parsed = JSON.parse(decrypted);
                     // Expected keys: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
-                    if (parsed.SMTP_USER && parsed.SMTP_PASS) {
+                    if (parsed && parsed.SMTP_USER && parsed.SMTP_PASS) {
                         console.log(`[SMTP] Using school-specific SMTP for schoolId=${schoolId}`);
                         return { source: 'school', config: parsed };
                     }

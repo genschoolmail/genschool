@@ -5,6 +5,7 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { validateCredentials } from '@/lib/actions/auth';
 
 interface LoginFormProps {
     school: any;
@@ -54,6 +55,24 @@ export default function LoginForm({ school, currentSubdomain }: LoginFormProps) 
         setError('');
 
         try {
+            // Pre-validation to distinguish between User not found and Incorrect password
+            const validationResult = await validateCredentials(identifier, password, currentSubdomain);
+
+            if (validationResult.error) {
+                if (validationResult.error === 'InvalidUser') {
+                    setError('User not found. Please check your email or phone number.');
+                } else if (validationResult.error === 'InvalidPassword') {
+                    setError('Incorrect password. Please try again.');
+                } else if (validationResult.error === 'TenantMismatch') {
+                    setError('This account does not belong to this school portal.');
+                } else {
+                    setError('An error occurred. Please try again.');
+                }
+                setLoading(false);
+                return;
+            }
+
+            // Now call the official signIn for session management
             const result = await signIn('credentials', {
                 identifier,
                 password,
