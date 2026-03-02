@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { generateAISlideDeck, shareNoteWithClass } from '@/lib/actions/ai-slides';
+import { shareNoteWithClass } from '@/lib/actions/ai-slides';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,23 +16,40 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
     const [isSharing, setIsSharing] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [selectedClass, setSelectedClass] = useState("");
+    const [progress, setProgress] = useState("");
 
     const handleUpload = async () => {
         if (!file) return toast.error("Please select a file first");
 
         setIsGenerating(true);
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('language', language);
+        setProgress("Uploading document...");
 
-        const res = await generateAISlideDeck(formData);
-        setIsGenerating(false);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('language', language);
 
-        if (res.error) {
-            toast.error(res.error);
-        } else {
-            setResult(res);
-            toast.success("AI Slide Deck generated successfully!");
+            setProgress("AI is reading your document...");
+
+            const response = await fetch('/api/teacher/generate-slides', {
+                method: 'POST',
+                body: formData
+            });
+
+            setProgress("Generating slides & PDF...");
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                toast.error(data.error || "Generation failed. Please try again.");
+            } else {
+                setResult(data);
+                toast.success(`Generated ${data.slideData?.length || 0} slides successfully!`);
+            }
+        } catch (err: any) {
+            toast.error("Network error: " + (err.message || "Please try again"));
+        } finally {
+            setIsGenerating(false);
+            setProgress("");
         }
     };
 
@@ -100,7 +117,7 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                     className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
                 >
                     {isGenerating ? (
-                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Generating AI Slides...</>
+                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {progress || "Processing..."}</>
                     ) : (
                         <><Presentation className="w-5 h-5 mr-2" /> Generate Slide Deck</>
                     )}
