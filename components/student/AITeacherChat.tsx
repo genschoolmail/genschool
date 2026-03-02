@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { chatWithAITeacher } from '@/lib/actions/ai-slides';
 import { Send, Loader2, User, Bot, Sparkles } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -56,7 +55,7 @@ export default function AITeacherChat({ noteId, noteTitle }: { noteId: string, n
             </div>
 
             {/* Chat Area */}
-            <ScrollArea className="flex-1 p-4">
+            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                 <div className="space-y-4">
                     {messages.map((m, i) => (
                         <div key={i} className={`flex items-start gap-2 ${m.role === 'USER' ? 'flex-row-reverse text-right' : 'flex-row'}`}>
@@ -64,8 +63,8 @@ export default function AITeacherChat({ noteId, noteTitle }: { noteId: string, n
                                 {m.role === 'USER' ? <User className="w-4 h-4 text-indigo-600" /> : <Bot className="w-4 h-4 text-indigo-500" />}
                             </div>
                             <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role === 'USER'
-                                    ? 'bg-indigo-600 text-white rounded-tr-none'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-700'
+                                ? 'bg-indigo-600 text-white rounded-tr-none'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-700'
                                 }`}>
                                 {m.content}
                             </div>
@@ -79,7 +78,7 @@ export default function AITeacherChat({ noteId, noteTitle }: { noteId: string, n
                     )}
                     <div ref={scrollRef} />
                 </div>
-            </ScrollArea>
+            </div>
 
             {/* Input Area */}
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
