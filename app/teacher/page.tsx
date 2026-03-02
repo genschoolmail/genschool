@@ -7,7 +7,8 @@ import Link from 'next/link';
 import {
     Calendar, BookOpen, Clock, User, GraduationCap,
     ClipboardCheck, TrendingUp, FileText, Award,
-    ChevronRight, Users, Check, Megaphone, Bell, Image as ImageIcon
+    ChevronRight, Users, Check, Megaphone, Bell, Image as ImageIcon,
+    Sparkles
 } from 'lucide-react';
 import { getAnnouncements } from '@/lib/actions/announcement-actions';
 import { format } from 'date-fns';
@@ -18,7 +19,7 @@ export default async function TeacherDashboard() {
         redirect('/login');
     }
 
-    const announcements = await getActiveAnnouncements();
+    const announcements = await getActiveAnnouncements('TEACHER');
     const schoolNotices = await getAnnouncements({ targetRole: 'TEACHER', isPublic: false });
     const allNotices = [...announcements, ...schoolNotices];
 
@@ -239,6 +240,13 @@ export default async function TeacherDashboard() {
                             description="Check payment status"
                             href="/teacher/finance"
                             gradient="from-emerald-600 to-green-600"
+                        />
+                        <QuickActionCard
+                            icon={<Sparkles className="w-7 h-7" />}
+                            title="AI Slide Generator"
+                            description="Generate slides & quizzes from notes"
+                            href="/teacher/ai-slides"
+                            gradient="from-indigo-500 to-purple-600"
                         />
                     </div>
                 </div>

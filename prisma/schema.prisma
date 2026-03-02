@@ -101,6 +101,7 @@ model School {
   AdmissionEnquiry      AdmissionEnquiry[]
   subjectGroups         SubjectGroup[]
   wallets               Wallet[]
+  sharedNotes           SharedNote[]
 }
 
 model Plan {
@@ -253,6 +254,7 @@ model Teacher {
   teacherDocuments TeacherDocument[]
   timetableEntries TimetableEntry[]
   examSchedules    ExamSchedule[]
+  sharedNotes      SharedNote[]
   school           School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@unique([schoolId, employeeId])
@@ -364,6 +366,7 @@ model Class {
   students         Student[]
   subjects         Subject[]
   timetableEntries TimetableEntry[]
+  sharedNotes      SharedNote[]
   school           School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@unique([schoolId, name, section])
@@ -896,6 +899,27 @@ model FeeDiscount {
   school School @relation(fields: [schoolId], references: [id])
 
   @@index([studentFeeId])
+}
+
+model SharedNote {
+  id          String   @id @default(cuid())
+  schoolId    String
+  teacherId   String
+  teacherName String
+  classId     String
+  title       String
+  content     String   @db.Text
+  fileUrl     String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  school  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+  @@index([classId])
+  @@index([expiresAt])
 }
 
 model AuditLog {
