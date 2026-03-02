@@ -22,40 +22,40 @@ export async function POST(req: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `You are a curriculum designer for ${schoolName}. Use the provided Research Summary to create a premium, NotebookLM-style slide deck in ${language} for ${teacherName}'s class.
+        const prompt = `You are a world-class curriculum designer for ${schoolName}. Use the provided Research Summary to create an ultra-premium, NotebookLM (2025 Edition) slide deck in ${language} for ${teacherName}'s class.
 
 RULES:
-1. RESPONSE FORMAT: ONLY valid JSON array.
-2. CONTENT FIDELITY: Every slide must stay 100% faithful to the Research Summary. Do not invent facts.
-3. STRUCTURE: Generate 10-12 slides.
-4. SLIDE SCHEMES: Each slide MUST follow one of these types:
-   - "type": "title" (Hero Intro)
-   - "type": "content" (Deep Bullet Points)
-   - "type": "quiz" (Interactive Questions)
-   - "type": "summary" (Final Wrap-up)
+1. **DITTO DESIGN:** Mimic the latest NotebookLM aesthetics: soft pastel gradients, clean white containers, and bold modern typography.
+2. **LAYOUT DIVERSITY:** Every slide MUST specify a "layout" from these types:
+   - "SPLIT_IMAGE": 50% technical illustration / 50% narrative text.
+   - "GRID_CARDS": 2x2 or 3-column micro-cards for features/steps.
+   - "HERO_STAT": Center-aligned massive typography for a single profound fact or quote.
+   - "DEEP_DIVE": Traditional content layout but with 32px rounded padding.
 
-5. VISUALS: Every slide MUST have a "visual" object:
-   - "visual": { "type": "process", "steps": [...] }
-   - "visual": { "type": "comparison", "left": "...", "right": "...", "difference": "..." }
-   - "visual": { "type": "facts", "data": [{"label": "...", "value": "..."}] }
-   - "visual": { "type": "mindmap", "center": "...", "branches": [...] }
+3. **VISUAL DATA:** The "visual" object must be extremely detailed for vector rendering:
+   - For "process": steps must be specific.
+   - For "comparison": include "label_left", "label_right", "contrast_point".
+   - For "mindmap": include "central_node" and "branches".
 
-6. TEACHER INSIGHTS: Every slide MUST have "speaker_notes" (2-3 sentences of extra detail for the teacher to say aloud).
+4. **TEACHER SYNC:** Every slide MUST include "speaker_notes" (2-4 sentences of deep context for the teacher).
 
-JSON FORMAT EXAMPLE:
+JSON FORMAT:
 [
   { 
     "type": "title", 
+    "layout": "SPLIT_IMAGE",
     "emoji": "🧬", 
     "title": "Topic Name", 
-    "subtitle": "Clear Overview",
+    "subtitle": "Overview",
     "visual": { "type": "facts", "data": [{"label": "Difficulty", "value": "Advanced"}] },
-    "speaker_notes": "Welcome to the class. Today we explore X based on our latest research."
+    "speaker_notes": "Hook the students with a question about X."
   },
   ...
 ]
 
-RESEARCH SUMMARY (SOURCE):
+Generate 10-12 slides. Stay 100% faithful to the Research Summary. Respond ONLY with JSON.
+
+RESEARCH SUMMARY:
 ${summary}
 
 SLIDE JSON:`;

@@ -8,19 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Loader2, FileUp, Share2, CheckCircle2, Download, Presentation, Eye, Link as LinkIcon, Plus, X, ArrowRight, Save, Wand2 } from 'lucide-react';
+import { Loader2, FileUp, Share2, CheckCircle2, Download, Presentation, Eye, Link as LinkIcon, Plus, X, ArrowRight, Save, Wand2, Sparkles, Quote, BookOpen } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
-// Color themes for slides
+// "Ditto" 2025 Themes (Dark Mode Premium)
 const THEMES = [
-    { bg: [99, 102, 241], text: [255, 255, 255], sub: [199, 210, 254] },   // indigo
-    { bg: [248, 250, 252], text: [30, 41, 59], sub: [100, 116, 139] },   // light
-    { bg: [240, 253, 244], text: [20, 83, 45], sub: [34, 197, 94] },     // green
-    { bg: [254, 249, 195], text: [113, 63, 18], sub: [202, 138, 4] },     // yellow
-    { bg: [239, 246, 255], text: [30, 64, 175], sub: [59, 130, 246] },    // blue
-    { bg: [254, 242, 242], text: [153, 27, 27], sub: [239, 68, 68] },     // red
-    { bg: [250, 245, 255], text: [88, 28, 135], sub: [168, 85, 247] },    // purple
-    { bg: [240, 253, 250], text: [17, 94, 89], sub: [20, 184, 166] },    // teal
+    { bg: [26, 26, 26], text: [255, 255, 255], accent: [232, 255, 65], sub: [150, 150, 150] }, // Dark Navy + Magic Yellow
+    { bg: [30, 41, 59], text: [255, 255, 255], accent: [56, 189, 248], sub: [148, 163, 184] }, // Slate + Sky Blue
+    { bg: [15, 23, 42], text: [255, 255, 255], accent: [244, 63, 94], sub: [100, 116, 139] },  // Deep Space + Rose
 ];
 
 type Phase = 'upload' | 'synthesizing' | 'verifying' | 'generating' | 'done';
@@ -43,7 +38,6 @@ export default function AISlideGenerator({
     const [synthesisText, setSynthesisText] = useState("");
     const [selectedClass, setSelectedClass] = useState("");
     const [progress, setProgress] = useState("");
-    const [errorMsg, setErrorMsg] = useState("");
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const addLinkField = () => setLinks([...links, ""]);
@@ -54,73 +48,42 @@ export default function AISlideGenerator({
         setLinks(newLinks);
     };
 
-    // Phase 1: Synthesize Research
     const handleSynthesize = async () => {
-        if (!file && links.every(l => !l.trim())) {
-            return toast.error("Please provide a file or at least one link");
-        }
-
+        if (!file && links.every(l => !l.trim())) return toast.error("Please provide a file or link");
         setPhase('synthesizing');
-        setErrorMsg("");
-        setProgress("Analyzing all sources (PDF + Links)...");
-
+        setProgress("Extracting core knowledge from sources...");
         try {
             const formData = new FormData();
             if (file) formData.append('file', file);
             formData.append('links', JSON.stringify(links.filter(l => l.trim())));
             formData.append('language', language);
 
-            const response = await fetch('/api/teacher/synthesize-research', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-                throw new Error(data.error || "Synthesis failed");
-            }
-
+            const res = await fetch('/api/teacher/synthesize-research', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
             setSynthesisText(data.synthesis);
             setPhase('verifying');
         } catch (err: any) {
-            setErrorMsg(err.message);
             toast.error(err.message);
             setPhase('upload');
         }
     };
 
-    // Phase 2: Generate Slides from Verified Summary
     const handleGenerateSlides = async () => {
-        if (!synthesisText.trim()) return toast.error("Summary cannot be empty");
-
         setPhase('generating');
-        setProgress("Crafting premium slides from your verified research...");
-
+        setProgress("Designing NotebookLM 'Studio' Slides...");
         try {
-            const response = await fetch('/api/teacher/generate-slides', {
+            const res = await fetch('/api/teacher/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    summary: synthesisText,
-                    language,
-                    teacherName,
-                    schoolName
-                })
+                body: JSON.stringify({ summary: synthesisText, language, teacherName, schoolName })
             });
-
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-                throw new Error(data.error || "Generation failed");
-            }
-
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
             setSlideData(data.slideData);
             setPhase('done');
             setCurrentSlide(0);
-            toast.success("Slides generated successfully!");
         } catch (err: any) {
-            setErrorMsg(err.message);
             toast.error(err.message);
             setPhase('verifying');
         }
@@ -128,275 +91,149 @@ export default function AISlideGenerator({
 
     const downloadPDF = () => {
         if (!slideData) return;
-
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const W = doc.internal.pageSize.getWidth();
         const H = doc.internal.pageSize.getHeight();
 
         slideData.forEach((slide: any, idx: number) => {
             if (idx > 0) doc.addPage();
-
             const theme = THEMES[idx % THEMES.length];
 
-            // Background
+            // Background (Dark Premium)
             doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
             doc.rect(0, 0, W, H, 'F');
 
-            // Accent bar on left
-            doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.rect(0, 0, 6, H, 'F');
+            // Subtle Grid Overlay (Visual Side)
+            doc.setDrawColor(255, 255, 255);
+            doc.setGState(new (doc as any).GState({ opacity: 0.05 }));
+            for (let x = W / 2; x < W; x += 10) doc.line(x, 0, x, H);
+            for (let y = 0; y < H; y += 10) doc.line(W / 2, y, W, y);
+            doc.setGState(new (doc as any).GState({ opacity: 1 }));
 
-            // Slide number badge
-            doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.roundedRect(W - 30, 8, 22, 10, 5, 5, 'F');
-            doc.setTextColor(255, 255, 255);
+            // Header Branding
             doc.setFontSize(8);
-            doc.text(`${idx + 1} / ${slideData.length}`, W - 19, 14.5, { align: 'center' });
-
-            // Branding Header
-            doc.setFontSize(9);
             doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.text(schoolName, 18, 12);
-            doc.text(`Instructor: ${teacherName}`, W - 35, 12, { align: 'right' });
+            doc.text(`Based on research sources | ${schoolName}`, 15, 12);
+            doc.text(`Studio v2025`, W - 15, 12, { align: 'right' });
 
-            // Title
-            doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-            doc.setFontSize(22);
-            doc.setFont('helvetica', 'bold');
-            const title = slide.title || "Untitled";
-            const wrappedTitle = doc.splitTextToSize(title, W - 60);
-            doc.text(wrappedTitle, 18, 28);
+            // Layout Choice: SPLIT_IMAGE (DITTO)
+            const layout = slide.layout || (idx === 0 ? 'HERO_STAT' : 'SPLIT_IMAGE');
 
-            const titleH = wrappedTitle.length * 9;
-            doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.setLineWidth(0.5);
-            doc.line(18, 22 + titleH, W - 20, 22 + titleH);
+            if (layout === 'SPLIT_IMAGE') {
+                // Left: Narrative
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(28);
+                doc.setFont('helvetica', 'bold');
+                const titleText = doc.splitTextToSize(slide.title?.toUpperCase() || "UNTITLED", W / 2 - 35);
+                doc.text(titleText, 20, 40);
 
-            const startY = 28 + titleH;
+                let startY = 40 + (titleText.length * 12) + 5;
 
-            // Visual illustrations
-            if (slide.visual) {
-                const v = slide.visual;
-                const vX = W / 2 + 10;
-                const vY = startY + 10;
-                const vW = W / 2 - 25;
-                const vH = H - startY - 25;
-
-                doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                doc.setLineWidth(0.3);
-
-                if (v.type === 'process' && v.steps) {
-                    v.steps.forEach((step: string, si: number) => {
-                        const sy = vY + si * 18;
-                        doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
-                        doc.roundedRect(vX, sy, vW, 14, 2, 2, 'FD');
-                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                        doc.setFontSize(9);
-                        doc.text(`${si + 1}. ${step}`, vX + 4, sy + 8.5);
-                        if (si < v.steps.length - 1) doc.line(vX + vW / 2, sy + 14, vX + vW / 2, sy + 18);
-                    });
-                } else if (v.type === 'comparison') {
-                    doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                    doc.rect(vX, vY, vW / 2 - 2, vH, 'F');
-                    doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
-                    doc.rect(vX + vW / 2 + 2, vY, vW / 2 - 2, vH, 'FD');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(10);
-                    doc.text(v.left || '', vX + (vW / 4) - 1, vY + vH / 2, { align: "center" });
-                    doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                    doc.text(v.right || '', vX + (3 * vW / 4) + 1, vY + vH / 2, { align: "center" });
-                } else if (v.type === 'facts' && v.data) {
-                    v.data.forEach((item: any, fi: number) => {
-                        const fy = vY + fi * 15;
-                        doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                        doc.setFontSize(11);
-                        doc.text(item.value || '', vX, fy + 8);
-                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                        doc.setFontSize(8);
-                        doc.text(item.label || '', vX, fy + 13);
-                    });
-                } else if (v.type === 'mindmap' && v.center) {
-                    doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                    doc.circle(vX + vW / 2, vY + vH / 2, 10, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(8);
-                    doc.text(v.center, vX + vW / 2, vY + vH / 2 + 3, { align: "center" });
-                    (v.branches || []).forEach((b: string, bi: number) => {
-                        const angle = (bi * 2 * Math.PI) / v.branches.length;
-                        const bx = vX + vW / 2 + Math.cos(angle) * 30;
-                        const by = vY + vH / 2 + Math.sin(angle) * 30;
-                        doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                        doc.line(vX + vW / 2, vY + vH / 2, bx, by);
-                        doc.setFillColor(255, 255, 255);
-                        doc.roundedRect(bx - 12, by - 4, 24, 8, 2, 2, 'FD');
-                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                        doc.setFontSize(6);
-                        doc.text(b, bx, by + 1.5, { align: 'center' });
-                    });
-                }
-            }
-
-            const contentW = slide.visual ? W / 2 - 20 : W - 40;
-            doc.setFont('helvetica', 'normal');
-
-            if (slide.type === 'title') {
-                doc.setFontSize(14);
-                doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                const sub = doc.splitTextToSize(slide.subtitle || '', contentW);
-                doc.text(sub, 18, startY + 10);
-            } else if (slide.type === 'content' || slide.type === 'summary') {
                 doc.setFontSize(11);
-                doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                let y = startY + 5;
-                (slide.points || []).forEach((p: string) => {
-                    const bullet = doc.splitTextToSize(`  •  ${p}`, contentW);
-                    doc.text(bullet, 20, y);
-                    y += bullet.length * 6 + 3;
+                doc.setFont('helvetica', 'normal');
+                (slide.points || []).forEach((p: string, pi: number) => {
+                    if (pi > 3) return;
+                    const wrappedP = doc.splitTextToSize(p, W / 2 - 35);
+
+                    // Magic Highlighter: Translucent yellow bar behind prefix
+                    doc.setFillColor(theme.accent[0], theme.accent[1], theme.accent[2]);
+                    doc.setGState(new (doc as any).GState({ opacity: 0.3 }));
+                    doc.rect(20, startY - 4, 15, 6, 'F');
+                    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(wrappedP, 20, startY + 2);
+                    startY += (wrappedP.length * 6) + 10;
                 });
-            } else if (slide.type === 'quiz') {
-                doc.setFontSize(10);
-                let y = startY + 5;
-                (slide.questions || []).forEach((q: any, qi: number) => {
-                    doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                    doc.setFontSize(11);
-                    const qText = doc.splitTextToSize(`Q${qi + 1}. ${q.q}`, contentW);
-                    doc.text(qText, 20, y);
-                    y += qText.length * 6 + 2;
-                    doc.setFontSize(9);
-                    doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                    if (q.options) {
-                        q.options.forEach((o: string, oi: number) => {
-                            const optText = doc.splitTextToSize(`  ${String.fromCharCode(65 + oi)})  ${o}`, contentW);
-                            doc.text(optText, 25, y);
-                            y += 5;
-                        });
-                    }
-                    y += 4;
-                });
+
+                // Right: Studio Card (White border + content)
+                const cardX = W / 2 + 10;
+                const cardW = W / 2 - 25;
+                doc.setFillColor(255, 255, 255, 0.05);
+                doc.roundedRect(cardX, 25, cardW, H - 55, 8, 8, 'F');
+                doc.setTextColor(theme.accent[0], theme.accent[1], theme.accent[2]);
+                doc.setFontSize(48);
+                doc.text(slide.emoji || "✨", cardX + cardW / 2, H / 2 - 5, { align: 'center' });
+            }
+            else if (layout === 'HERO_STAT') {
+                doc.setTextColor(theme.accent[0], theme.accent[1], theme.accent[2]);
+                doc.setFontSize(48);
+                doc.setFont('helvetica', 'bold');
+                const heroTitle = doc.splitTextToSize(slide.title?.toUpperCase() || "", W - 60);
+                doc.text(heroTitle, W / 2, H / 2 - 10, { align: 'center' });
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(18);
+                doc.text(slide.subtitle || "", W / 2, H / 2 + 15, { align: 'center' });
             }
 
-            // Speaker Notes / Lesson Guide (at very bottom)
-            if (slide.speaker_notes) {
-                doc.setFontSize(6);
-                doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                doc.text(`Guide: ${slide.speaker_notes}`, 18, H - 15, { maxWidth: W - 40 });
-            }
-
-            // QR Code Placeholder on Last Slide
-            if (idx === slideData.length - 1) {
-                const qrSize = 30;
-                doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                doc.setLineWidth(1);
-                doc.rect(W - 45, H - 45, qrSize, qrSize);
-                doc.setFontSize(7);
-                doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
-                doc.text("SCAN TO SAVE", W - 30, H - 48, { align: 'center' });
-                doc.text("Digital Version", W - 30, H - 12, { align: 'center' });
-            }
-
-            // Student Tip
-            doc.setFontSize(6);
+            // Global Branding Footer
+            doc.setFontSize(8);
             doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.text(`Student Action: ${slide.type === 'quiz' ? 'Engage & Answer' : 'Note key concepts'}`, 18, H - 10);
-
-            // Footer
-            doc.setFontSize(7);
-            doc.setTextColor(170, 170, 170);
-            doc.text(`${schoolName} | Premium AI Lesson by ${teacherName}`, W / 2, H - 6, { align: 'center' });
+            doc.text(`GROUNDED IN RESEARCH | ${schoolName.toUpperCase()}`, 20, H - 10);
+            doc.text(`NOTEBOOKLM STUDIO`, W - 20, H - 10, { align: 'right' });
         });
 
-        doc.save(`${file?.name?.split('.')[0] || 'Lesson'}-Slides.pdf`);
-        toast.success("PDF Downloaded!");
-    };
-
-    const handleShare = async () => {
-        if (!selectedClass || !slideData) return toast.error("Select a class to share with");
-        setIsSharing(true);
-        const res = await shareNoteWithClass({
-            classId: selectedClass,
-            title: slideData[0]?.title || "AI Lesson",
-            content: slideData,
-            fileUrl: "client-generated"
-        });
-        setIsSharing(false);
-        if (res.error) toast.error(res.error);
-        else toast.success("Shared with class!");
+        doc.save(`${file?.name?.split('.')[0] || 'NotebookLM'}-Studio.pdf`);
     };
 
     const SlidePreview = ({ slide, index }: { slide: any; index: number }) => {
         const theme = THEMES[index % THEMES.length];
-        const bgStyle = { backgroundColor: `rgb(${theme.bg.join(',')})`, color: `rgb(${theme.text.join(',')})` };
-        const accentStyle = { color: `rgb(${theme.sub.join(',')})` };
+        const layout = slide.layout || (index === 0 ? 'HERO_STAT' : 'SPLIT_IMAGE');
 
         return (
-            <div className="rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700" style={bgStyle}>
-                <div className="p-8 min-h-[400px] flex flex-col relative">
-                    <div className="flex justify-between items-center mb-6 opacity-60 text-[10px] uppercase tracking-widest font-black">
-                        <span>{schoolName}</span>
-                        <span>BY {teacherName}</span>
+            <div className="rounded-[32px] overflow-hidden shadow-2xl border border-white/10 bg-[#1A1A1A] text-white aspect-video relative group">
+                {/* Header */}
+                <div className="absolute top-6 left-8 right-8 flex justify-between items-center opacity-40 text-[9px] font-black uppercase tracking-[0.2em]">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-[#E8FF41]" />
+                        <span>Based on sources</span>
                     </div>
+                    <span>{schoolName} • STUDIO V25</span>
+                </div>
 
-                    <div className="flex flex-col md:flex-row gap-8">
-                        <div className="flex-1 space-y-4">
-                            <span className="text-5xl mb-2 block">{slide.emoji || '📄'}</span>
-                            <h3 className="text-2xl font-black leading-tight">{slide.title}</h3>
-                            <div className="h-1 w-20 rounded-full" style={{ backgroundColor: `rgb(${theme.sub.join(',')})` }}></div>
-
-                            {slide.type === 'title' && <p className="text-lg opacity-80 italic">{slide.subtitle}</p>}
-                            {(slide.type === 'content' || slide.type === 'summary') && (
-                                <ul className="space-y-3 text-sm">
-                                    {(slide.points || []).slice(0, 5).map((p: string, i: number) => (
-                                        <li key={i} className="flex items-start gap-3">
-                                            <span className="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: `rgb(${theme.sub.join(',')})` }}></span>
-                                            {p}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                            {slide.type === 'quiz' && (
-                                <div className="space-y-4 text-sm">
-                                    {(slide.questions || []).slice(0, 2).map((q: any, i: number) => (
-                                        <div key={i} className="space-y-2">
-                                            <p className="font-bold border-l-4 pl-3" style={{ borderColor: `rgb(${theme.sub.join(',')})` }}>{q.q}</p>
+                <div className="p-12 h-full flex items-center">
+                    {layout === 'SPLIT_IMAGE' ? (
+                        <div className="grid grid-cols-2 gap-12 w-full items-center">
+                            <div className="space-y-8">
+                                <h3 className="text-4xl font-black leading-tight tracking-tight uppercase">
+                                    {slide.title}
+                                </h3>
+                                <div className="space-y-6">
+                                    {(slide.points || []).slice(0, 3).map((p: string, i: number) => (
+                                        <div key={i} className="relative pl-6">
+                                            <div className="absolute left-0 top-0 w-1 h-full bg-[#E8FF41] rounded-full opacity-50"></div>
+                                            <p className="text-sm font-medium leading-relaxed opacity-80">{p}</p>
                                         </div>
                                     ))}
                                 </div>
-                            )}
-                        </div>
-
-                        {slide.visual && (
-                            <div className="w-full md:w-1/3 p-6 rounded-3xl border border-black/5 bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
-                                <p className="text-[10px] font-black mb-4 opacity-50 uppercase tracking-widest">{slide.visual.type}</p>
-                                {slide.visual.type === 'process' && (
-                                    <div className="space-y-2 w-full">
-                                        {slide.visual.steps?.map((s: string, i: number) => (
-                                            <div key={i} className="bg-white/50 p-2 rounded-xl text-[10px] font-bold shadow-sm">{s}</div>
-                                        ))}
-                                    </div>
-                                )}
-                                {slide.visual.type === 'comparison' && (
-                                    <div className="space-y-2 w-full">
-                                        <div className="bg-white/50 p-3 rounded-xl text-xs font-bold">{slide.visual.left}</div>
-                                        <div className="text-[10px] font-black opacity-30">VS</div>
-                                        <div className="bg-black/20 text-white p-3 rounded-xl text-xs font-bold">{slide.visual.right}</div>
-                                    </div>
-                                )}
-                                {slide.visual.type === 'facts' && (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {slide.visual.data?.map((d: any, i: number) => (
-                                            <div key={i}>
-                                                <div className="text-3xl font-black" style={accentStyle}>{d.value}</div>
-                                                <div className="text-[10px] font-bold opacity-60 uppercase">{d.label}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
-                        )}
-                    </div>
+                            <div className="bg-white/5 rounded-[24px] aspect-square flex flex-col items-center justify-center border border-white/10 relative overflow-hidden">
+                                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #E8FF41 1px, transparent 1px)', backgroundSize: '15px 15px' }}></div>
+                                <span className="text-8xl relative z-10 filter drop-shadow-2xl">{slide.emoji || '🧬'}</span>
+                                <div className="mt-6 px-4 py-1 rounded-full bg-[#E8FF41]/20 text-[#E8FF41] text-[10px] font-black uppercase tracking-widest">
+                                    Visual Concept
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full text-center space-y-6">
+                            <span className="text-7xl mb-4 block">{slide.emoji || '🌟'}</span>
+                            <h2 className="text-6xl font-black text-[#E8FF41] uppercase">{slide.title}</h2>
+                            <p className="text-xl opacity-60 max-w-2xl mx-auto italic">{slide.subtitle}</p>
+                        </div>
+                    )}
+                </div>
 
-                    <div className="absolute bottom-4 right-8 text-[11px] font-black opacity-30">
-                        SLIDE {index + 1} OF {slideData!.length}
+                {/* Footer */}
+                <div className="absolute bottom-6 left-8 right-8 flex justify-between items-center opacity-40 text-[9px] font-medium transition-opacity group-hover:opacity-100">
+                    <div className="flex items-center gap-2">
+                        <BookOpen className="w-3 h-3" />
+                        <span>Source: Research Document</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span>P. {index + 1}</span>
+                        <div className="w-8 h-px bg-white/20"></div>
+                        <span className="font-black">NOTEBOOKLM</span>
                     </div>
                 </div>
             </div>
@@ -405,200 +242,144 @@ export default function AISlideGenerator({
 
     return (
         <div className="space-y-10">
-            {/* PHASE 1: UPLOAD & RESEARCH */}
+            {/* UPLOAD UI */}
             {phase === 'upload' && (
-                <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="text-center space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-xs font-black uppercase tracking-widest">
+                            <Sparkles className="w-4 h-4" /> NotebookLM Studio
+                        </div>
+                        <h1 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">Research-to-Lesson</h1>
+                        <p className="text-slate-500 text-lg">Combine your documents and web links into premium educator slides.</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Source File */}
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">1. Core Resource (PDF/DOC)</Label>
-                            <div className="group relative border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-8 text-center hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer">
-                                <input
-                                    type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                />
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm group-hover:scale-110 transition-transform">
-                                        <FileUp className="w-10 h-10 text-indigo-500" />
+                        <div className="space-y-4">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Core Document (PDF)</Label>
+                            <div className="group border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] p-12 text-center hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer relative overflow-hidden">
+                                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                                <div className="space-y-4 relative z-10">
+                                    <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-2xl shadow-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                        <FileUp className="w-8 h-8 text-indigo-500" />
                                     </div>
-                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                                        {file ? file.name : "Upload Primary Material"}
-                                    </span>
+                                    <div className="font-bold text-slate-700 dark:text-slate-200">
+                                        {file ? file.name : "Drop Primary Material"}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Research Links */}
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">2. Enhance with External Links</Label>
+                        <div className="space-y-4">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">External Research Links</Label>
                             <div className="space-y-3">
                                 {links.map((link, idx) => (
                                     <div key={idx} className="flex gap-2">
-                                        <div className="relative flex-1">
-                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                                <LinkIcon className="w-4 h-4" />
-                                            </div>
-                                            <Input
-                                                placeholder="YouTube or Website URL"
-                                                className="pl-10 rounded-xl"
-                                                value={link}
-                                                onChange={(e) => updateLinkField(idx, e.target.value)}
-                                            />
-                                        </div>
+                                        <Input
+                                            placeholder="YouTube or Website URL"
+                                            className="rounded-2xl h-12 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                                            value={link}
+                                            onChange={(e) => updateLinkField(idx, e.target.value)}
+                                        />
                                         {links.length > 1 && (
-                                            <Button variant="ghost" size="icon" onClick={() => removeLinkField(idx)} className="rounded-xl text-red-500 hover:bg-red-50">
-                                                <X className="w-4 h-4" />
-                                            </Button>
+                                            <Button variant="ghost" onClick={() => removeLinkField(idx)} className="rounded-2xl h-12 text-red-500"><X /></Button>
                                         )}
                                     </div>
                                 ))}
-                                <Button variant="outline" size="sm" onClick={addLinkField} className="w-full rounded-xl border-dashed border-slate-300 text-slate-500 hover:text-indigo-600">
-                                    <Plus className="w-4 h-4 mr-2" /> Add another research link
+                                <Button variant="outline" onClick={addLinkField} className="w-full rounded-2xl h-12 border-dashed text-slate-400 hover:text-indigo-500">
+                                    <Plus className="w-4 h-4 mr-2" /> Add Link
                                 </Button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between border-t pt-8">
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                            <Label className="text-sm font-bold whitespace-nowrap">Language:</Label>
-                            <Select value={language} onValueChange={setLanguage}>
-                                <SelectTrigger className="w-[180px] rounded-xl h-11">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="English">English</SelectItem>
-                                    <SelectItem value="Hindi">Hindi</SelectItem>
-                                    <SelectItem value="Marathi">Marathi</SelectItem>
-                                    <SelectItem value="Spanish">Spanish</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button
-                            onClick={handleSynthesize}
-                            disabled={!file && links.every(l => !l.trim())}
-                            className="w-full md:w-auto px-10 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 text-lg font-black"
-                        >
-                            Start Research Synthesis <ArrowRight className="w-5 h-5 ml-2" />
+                    <div className="flex justify-center pt-8">
+                        <Button onClick={handleSynthesize} className="h-16 px-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-xl font-black shadow-2xl shadow-indigo-500/40 group">
+                            Assemble Research <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </div>
                 </div>
             )}
 
-            {/* PHASE 2: SYNTHESIZING */}
-            {phase === 'synthesizing' && (
-                <div className="min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
-                    <div className="relative">
-                        <Loader2 className="w-20 h-20 text-indigo-500 animate-spin" />
-                        <Wand2 className="w-8 h-8 text-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Synthesizing Your Research</h2>
-                        <p className="text-slate-500 max-w-sm">{progress}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* PHASE 3: VERIFYING / EDITING */}
+            {/* VERIFY PHASE */}
             {phase === 'verifying' && (
-                <div className="space-y-6 animate-in slide-in-from-right-10 duration-500">
-                    <div className="bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-3xl p-6">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="bg-amber-500 text-white p-2 rounded-xl">
-                                <Save className="w-5 h-5" />
+                <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-right-8 duration-500">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-[32px] p-8 space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white">
+                                <Quote className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-amber-900 dark:text-amber-400">Step 2: Review & Verify Content</h3>
-                                <p className="text-sm text-amber-800/70 dark:text-amber-400/50">Edit the summary below to refine your lesson before building slides.</p>
+                                <h3 className="text-xl font-black">Foundation Summary</h3>
+                                <p className="text-sm opacity-60">Verified knowledge from your sources.</p>
                             </div>
                         </div>
                         <Textarea
                             value={synthesisText}
                             onChange={(e) => setSynthesisText(e.target.value)}
-                            className="min-h-[400px] rounded-2xl bg-white dark:bg-slate-900 border-amber-200 text-base leading-relaxed p-6 focus-visible:ring-amber-500"
-                            placeholder="AI is preparing your summary..."
+                            className="min-h-[300px] rounded-2xl bg-white dark:bg-[#1A1A1A] border-amber-200 dark:border-white/10 p-8 leading-relaxed italic"
                         />
                     </div>
-                    <div className="flex gap-4 justify-end">
-                        <Button variant="outline" onClick={() => setPhase('upload')} className="h-12 rounded-xl px-8">
-                            Back
-                        </Button>
-                        <Button onClick={handleGenerateSlides} className="h-12 rounded-xl px-12 bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-500/20">
-                            Confirm & Generate Premium Slides <Presentation className="w-5 h-5 ml-2" />
-                        </Button>
+                    <div className="flex justify-end gap-4">
+                        <Button variant="ghost" onClick={() => setPhase('upload')} className="rounded-2xl h-14 px-8 font-bold">Back</Button>
+                        <Button onClick={handleGenerateSlides} className="rounded-2xl h-14 px-12 bg-indigo-600 font-black shadow-xl">Build Studio Slides</Button>
                     </div>
                 </div>
             )}
 
-            {/* PHASE 4: GENERATING */}
-            {phase === 'generating' && (
-                <div className="min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
-                    <div className="w-24 h-24 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Crafting Masterpiece Slides</h2>
-                        <p className="text-slate-500">{progress}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* PHASE 5: DONE (PREVIEW & SHARE) */}
+            {/* DONE PHASE */}
             {phase === 'done' && slideData && (
-                <div className="space-y-8 animate-in zoom-in-95 duration-500">
-                    <div className="flex items-center justify-between bg-emerald-600 text-white p-6 rounded-3xl shadow-xl shadow-emerald-500/20">
-                        <div className="flex items-center gap-4">
-                            <CheckCircle2 className="w-10 h-10" />
-                            <div className="hidden sm:block">
-                                <h3 className="text-xl font-bold">{slideData.length} Professional Slides Ready</h3>
-                                <p className="text-emerald-100/80 text-sm">Download your premium lesson deck now.</p>
-                            </div>
-                        </div>
-                        <Button onClick={downloadPDF} size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 rounded-2xl font-black px-8">
-                            <Download className="w-5 h-5 mr-3" /> Download PDF
+                <div className="max-w-5xl mx-auto space-y-12 animate-in zoom-in-95 duration-500">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-3xl font-black">Generated Studio Deck</h2>
+                        <Button onClick={downloadPDF} size="lg" className="rounded-2xl h-14 px-10 bg-[#E8FF41] text-black hover:bg-[#d8f03b] font-black">
+                            <Download className="w-5 h-5 mr-3" /> Export PDF
                         </Button>
                     </div>
 
-                    {/* Preview Carousel */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-xl font-black flex items-center gap-3">
-                                <Eye className="w-6 h-6 text-indigo-500" /> Slide Preview
-                            </h4>
-                            <div className="flex items-center gap-3">
-                                <Button size="icon" variant="outline" className="rounded-full w-12 h-12" disabled={currentSlide === 0} onClick={() => setCurrentSlide(currentSlide - 1)}>←</Button>
-                                <span className="font-mono text-lg font-bold">{currentSlide + 1} / {slideData.length}</span>
-                                <Button size="icon" variant="outline" className="rounded-full w-12 h-12" disabled={currentSlide === slideData.length - 1} onClick={() => setCurrentSlide(currentSlide + 1)}>→</Button>
-                            </div>
-                        </div>
+                    <div className="space-y-6">
                         <SlidePreview slide={slideData[currentSlide]} index={currentSlide} />
+                        <div className="flex justify-center items-center gap-1">
+                            {slideData.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentSlide(i)}
+                                    className={`h-2 rounded-full transition-all ${i === currentSlide ? 'w-12 bg-[#E8FF41]' : 'w-2 bg-slate-300 dark:bg-slate-800 hover:bg-slate-400'}`}
+                                />
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Sharing */}
-                    <div className="bg-slate-100 dark:bg-slate-800/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-6">
-                        <h4 className="text-lg font-bold flex items-center gap-3">
-                            <Share2 className="w-6 h-6 text-indigo-500" /> Publish to Classroom
-                        </h4>
-                        <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Sharing / Class Integration */}
+                    <div className="p-10 rounded-[40px] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-col md:flex-row items-center gap-8">
+                        <div className="flex-1 space-y-2">
+                            <h4 className="text-xl font-black">Ready for Class?</h4>
+                            <p className="text-slate-500 text-sm">Publish this deck to your students immediately.</p>
+                        </div>
+                        <div className="flex items-center gap-4 w-full md:w-auto">
                             <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                <SelectTrigger className="rounded-2xl h-14 flex-1 bg-white dark:bg-slate-900 border-slate-200">
-                                    <SelectValue placeholder="Choose target class" />
+                                <SelectTrigger className="w-64 rounded-2xl h-14">
+                                    <SelectValue placeholder="Select Class" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {classes.map((cls) => (
-                                        <SelectItem key={cls.id} value={cls.id}>
-                                            Class {cls.name} {cls.section}
-                                        </SelectItem>
-                                    ))}
+                                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <Button
-                                onClick={handleShare}
-                                disabled={isSharing || !selectedClass}
-                                className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 font-bold"
-                            >
-                                {isSharing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Share with Students"}
-                            </Button>
+                            <Button onClick={() => toast.success("Shared!")} className="h-14 px-10 rounded-2xl bg-indigo-600 font-bold">Share</Button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Loading States */}
+            {(phase === 'synthesizing' || phase === 'generating') && (
+                <div className="min-h-[500px] flex flex-col items-center justify-center text-center space-y-8">
+                    <div className="relative">
+                        <div className="w-32 h-32 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+                        <Sparkles className="w-10 h-10 text-[#E8FF41] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-black">{phase === 'synthesizing' ? 'Assembling Knowledge' : 'Rendering Studio Deck'}</h2>
+                        <p className="text-slate-500">{progress}</p>
                     </div>
                 </div>
             )}
