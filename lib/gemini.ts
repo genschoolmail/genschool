@@ -7,11 +7,14 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 /**
  * Generates slide-by-slide content, including Quiz, Lesson Plan, and References.
  */
-export async function generateSlideContent(sourceText: string, language: string = "English") {
-    if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
+export async function generateSlideContent(
+    language: string = "English",
+    fileData?: { data: string; mimeType: string }
+) {
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not configured. Please add it to your environment variables.");
 
     const prompt = `
-        You are an expert educator. Based on the following source text, generate a structured classroom slide deck content in ${language}.
+        You are an expert educator. Based on the provided document/image, generate a structured classroom slide deck content in ${language}.
         
         The response MUST be a valid JSON array of objects, where each object represents a slide:
         [
@@ -22,12 +25,25 @@ export async function generateSlideContent(sourceText: string, language: string 
             { "type": "references", "title": "Further Reading", "links": [{ "label": "YouTube", "url": "link" }] }
         ]
 
-        Source Text:
-        ${sourceText}
+        Respond ONLY with the JSON array.
     `;
 
     try {
-        const result = await model.generateContent(prompt);
+        let result;
+        if (fileData) {
+            result = await model.generateContent([
+                prompt,
+                {
+                    inlineData: {
+                        data: fileData.data,
+                        mimeType: fileData.mimeType
+                    }
+                }
+            ]);
+        } else {
+            result = await model.generateContent(prompt);
+        }
+
         const response = await result.response;
         const text = response.text();
         const jsonMatch = text.match(/\[[\s\S]*\]/);

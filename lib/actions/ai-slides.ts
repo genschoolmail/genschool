@@ -29,10 +29,13 @@ export async function generateAISlideDeck(formData: FormData) {
         const base64Content = Buffer.from(arrayBuffer).toString('base64');
         const mimeType = file.type || "application/pdf";
 
-        // We use the source text/content extracted by Gemini to build slides
-        const slideData = await generateSlideContent(`Multimodal source: ${file.name}`, language);
+        // 2. Process File with Gemini (Multimodal)
+        const slideData = await generateSlideContent(language, {
+            data: base64Content,
+            mimeType
+        });
 
-        // 2. Generate PDF Slides using jspdf
+        // 3. Generate PDF Slides using jspdf
         const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
