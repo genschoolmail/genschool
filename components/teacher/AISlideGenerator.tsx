@@ -67,6 +67,21 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
         }
     };
 
+    const getDownloadUrl = (url: string) => {
+        // Convert Google Drive preview/thumbnail URL to direct download URL
+        // Pattern: https://lh3.googleusercontent.com/d/FILE_ID=...
+        const lhMatch = url.match(/\/d\/([^=?&]+)/);
+        if (lhMatch) {
+            return `https://drive.google.com/uc?export=download&id=${lhMatch[1]}`;
+        }
+        // Pattern: https://drive.google.com/file/d/FILE_ID/view
+        const driveMatch = url.match(/\/file\/d\/([^/]+)/);
+        if (driveMatch) {
+            return `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+        }
+        return url;
+    };
+
     const handleShare = async () => {
         if (!selectedClass) return toast.error("Please select a class to share with");
 
@@ -159,11 +174,19 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">Generation Complete</h3>
                                 <div className="flex items-center gap-4 mt-1">
                                     <a
-                                        href={result.fileUrl}
-                                        target="_blank"
+                                        href={getDownloadUrl(result.fileUrl)}
+                                        download="AI-Slides.pdf"
                                         className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex items-center gap-1 hover:underline"
                                     >
                                         <Download className="w-4 h-4" /> Download PDF
+                                    </a>
+                                    <a
+                                        href={result.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-slate-500 text-sm flex items-center gap-1 hover:underline"
+                                    >
+                                        🔗 View Online
                                     </a>
                                 </div>
                             </div>
