@@ -17,11 +17,13 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
     const [result, setResult] = useState<any>(null);
     const [selectedClass, setSelectedClass] = useState("");
     const [progress, setProgress] = useState("");
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleUpload = async () => {
         if (!file) return toast.error("Please select a file first");
 
         setIsGenerating(true);
+        setErrorMsg("");
         setProgress("Uploading document...");
 
         try {
@@ -37,16 +39,28 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
             });
 
             setProgress("Generating slides & PDF...");
-            const data = await response.json();
+
+            // Safely parse JSON - timeout returns non-JSON
+            let data: any = {};
+            try {
+                data = await response.json();
+            } catch {
+                data = { error: `Server error (HTTP ${response.status}). The AI may be taking too long. Please try with a smaller document.` };
+            }
 
             if (!response.ok || data.error) {
-                toast.error(data.error || "Generation failed. Please try again.");
+                const msg = data.error || `HTTP ${response.status}: Generation failed`;
+                setErrorMsg(msg);
+                toast.error(msg);
             } else {
                 setResult(data);
+                setErrorMsg("");
                 toast.success(`Generated ${data.slideData?.length || 0} slides successfully!`);
             }
         } catch (err: any) {
-            toast.error("Network error: " + (err.message || "Please try again"));
+            const msg = "Network error: " + (err.message || "Please check your connection");
+            setErrorMsg(msg);
+            toast.error(msg);
         } finally {
             setIsGenerating(false);
             setProgress("");
@@ -122,6 +136,17 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                         <><Presentation className="w-5 h-5 mr-2" /> Generate Slide Deck</>
                     )}
                 </Button>
+
+                {/* Error Display — Persistent, always visible */}
+                {errorMsg && (
+                    <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl p-4 flex items-start gap-3">
+                        <span className="text-red-500 text-xl mt-0.5">⚠️</span>
+                        <div>
+                            <p className="font-semibold text-red-700 dark:text-red-400 text-sm">Generation Failed</p>
+                            <p className="text-red-600 dark:text-red-300 text-xs mt-1">{errorMsg}</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Step 2: Result & Share */}
