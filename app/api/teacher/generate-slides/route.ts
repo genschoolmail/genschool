@@ -31,26 +31,43 @@ export async function POST(req: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `You are an expert educator creating a rich, visual presentation in ${language}.
+        const prompt = `You are an expert educator creating a premium, NotebookLM-style visual presentation in ${language}.
 
-Analyze the provided document and generate slide content. Respond ONLY with a valid JSON array, no extra text.
+Analyze the provided document and generate slide content. Respond ONLY with a valid JSON array.
 
-Each slide must have an "emoji" field (a relevant single emoji). Use this exact format:
+Each slide MUST include:
+1. "emoji": A single relevant icon emoji.
+2. "visual": A structured object describing a diagram or illustration.
+   Formats for "visual":
+   - { "type": "process", "steps": ["Step 1", "Step 2", "Step 3"] }
+   - { "type": "comparison", "left": "Value A", "right": "Value B", "difference": "Contrast point" }
+   - { "type": "facts", "data": [{"label": "Metric", "value": "Number/Info"}] }
+   - { "type": "mindmap", "center": "Main Topic", "branches": ["Sub 1", "Sub 2"] }
+
+JSON Format:
 [
-  { "type": "title", "emoji": "🧬", "title": "Main Topic Title", "subtitle": "Engaging subtitle describing this lesson" },
-  { "type": "content", "emoji": "📖", "title": "Section Name", "points": ["Detailed point 1", "Detailed point 2", "Detailed point 3", "Detailed point 4"] },
-  { "type": "content", "emoji": "💡", "title": "Key Concepts", "points": ["Concept with explanation", "Another concept", "Third concept", "Fourth concept"] },
-  { "type": "quiz", "emoji": "❓", "title": "Check Your Understanding", "questions": [{"q": "Question?", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": "Option A"}, {"q": "Second question?", "options": ["A", "B", "C", "D"], "answer": "B"}] },
-  { "type": "lesson_plan", "emoji": "📋", "title": "Lesson Plan", "objectives": ["Students will understand X", "Students will apply Y"], "activities": ["Group discussion on topic", "Worksheet activity"] },
-  { "type": "summary", "emoji": "✅", "title": "Key Takeaways", "points": ["Most important learning", "Second learning", "Third learning", "Fourth learning"] }
+  { 
+    "type": "title", 
+    "emoji": "🧬", 
+    "title": "Topic Name", 
+    "subtitle": "Clear Overview",
+    "visual": { "type": "facts", "data": [{"label": "Difficulty", "value": "Advanced"}] }
+  },
+  { 
+    "type": "content", 
+    "emoji": "📖", 
+    "title": "Core Concept", 
+    "points": ["Major point 1", "Major point 2", "Major point 3"],
+    "visual": { "type": "process", "steps": ["Inbound", "Processing", "Outbound"] }
+  },
+  ...
 ]
 
 Rules:
-- Generate 6-8 slides minimum
-- Each content slide should have 3-5 detailed bullet points
-- Make quiz have 3-5 questions
-- Choose emojis that match the subject matter
-- Respond ONLY with the JSON array`;
+- Generate 7-10 slides.
+- Every slide MUST have a unique "visual" object.
+- Make content deep, technical, and educational.
+- Respond ONLY with the JSON array.`;
 
         const result = await model.generateContent([
             prompt,

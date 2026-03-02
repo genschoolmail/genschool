@@ -21,7 +21,15 @@ const THEMES = [
     { bg: [240, 253, 250], text: [17, 94, 89], sub: [20, 184, 166] },    // teal
 ];
 
-export default function AISlideGenerator({ classes }: { classes: any[] }) {
+export default function AISlideGenerator({
+    classes,
+    schoolName = "School",
+    teacherName = "Teacher"
+}: {
+    classes: any[],
+    schoolName?: string,
+    teacherName?: string
+}) {
     const [file, setFile] = useState<File | null>(null);
     const [language, setLanguage] = useState("English");
     const [isGenerating, setIsGenerating] = useState(false);
@@ -107,6 +115,12 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
             doc.setFontSize(8);
             doc.text(`${idx + 1} / ${slideData.length}`, W - 19, 14.5, { align: 'center' });
 
+            // Header: School Name / Teacher Name
+            doc.setFontSize(9);
+            doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+            doc.text(schoolName, 18, 12);
+            doc.text(`By ${teacherName}`, W - 35, 12, { align: 'right' });
+
             // Title
             doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
             doc.setFontSize(22);
@@ -122,11 +136,83 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
 
             const startY = 28 + titleH;
 
+            // DRAWING VISUALS (IF PRESENT)
+            if (slide.visual) {
+                const v = slide.visual;
+                const vX = W / 2 + 10;
+                const vY = startY + 10;
+                const vW = W / 2 - 25;
+                const vH = H - startY - 25;
+
+                doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+                doc.setLineWidth(0.3);
+
+                if (v.type === 'process' && v.steps) {
+                    v.steps.forEach((step: string, si: number) => {
+                        const sy = vY + si * 18;
+                        doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
+                        doc.roundedRect(vX, sy, vW, 14, 2, 2, 'FD');
+                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
+                        doc.setFontSize(9);
+                        doc.text(`${si + 1}. ${step}`, vX + 4, sy + 8.5);
+                        if (si < v.steps.length - 1) {
+                            doc.line(vX + vW / 2, sy + 14, vX + vW / 2, sy + 18);
+                        }
+                    });
+                } else if (v.type === 'comparison') {
+                    doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+                    doc.rect(vX, vY, vW / 2 - 2, vH, 'F');
+                    doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
+                    doc.rect(vX + vW / 2 + 2, vY, vW / 2 - 2, vH, 'FD');
+
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(10);
+                    doc.text(v.left || '', vX + (vW / 4) - 1, vY + vH / 2, { align: 'center' });
+
+                    doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
+                    doc.text(v.right || '', vX + (3 * vW / 4) + 1, vY + vH / 2, { align: 'center' });
+
+                    doc.setFontSize(8);
+                    doc.text(`Contrast: ${v.difference || ''}`, vX + vW / 2, vY + vH + 8, { align: 'center' });
+                } else if (v.type === 'facts' && v.data) {
+                    v.data.forEach((item: any, fi: number) => {
+                        const fy = vY + fi * 15;
+                        doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+                        doc.setFontSize(11);
+                        doc.text(item.value || '', vX, fy + 8);
+                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
+                        doc.setFontSize(8);
+                        doc.text(item.label || '', vX, fy + 13);
+                    });
+                } else if (v.type === 'mindmap' && v.center) {
+                    doc.setFillColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+                    doc.circle(vX + vW / 2, vY + vH / 2, 10, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(8);
+                    doc.text(v.center, vX + vW / 2, vY + vH / 2 + 3, { align: 'center' });
+
+                    (v.branches || []).forEach((b: string, bi: number) => {
+                        const angle = (bi * 2 * Math.PI) / v.branches.length;
+                        const bx = vX + vW / 2 + Math.cos(angle) * 30;
+                        const by = vY + vH / 2 + Math.sin(angle) * 30;
+                        doc.setDrawColor(theme.sub[0], theme.sub[1], theme.sub[2]);
+                        doc.line(vX + vW / 2, vY + vH / 2, bx, by);
+                        doc.setFillColor(255, 255, 255);
+                        doc.roundedRect(bx - 12, by - 4, 24, 8, 2, 2, 'FD');
+                        doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
+                        doc.setFontSize(6);
+                        doc.text(b, bx, by + 1.5, { align: 'center' });
+                    });
+                }
+            }
+
+            const contentW = slide.visual ? W / 2 - 20 : W - 40;
+
             if (slide.type === 'title') {
-                // Subtitle centered
+                // Subtitle
                 doc.setFontSize(14);
                 doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-                const sub = doc.splitTextToSize(slide.subtitle || '', W - 60);
+                const sub = doc.splitTextToSize(slide.subtitle || '', contentW);
                 doc.text(sub, 18, startY + 10);
 
             } else if (slide.type === 'content' || slide.type === 'summary') {
@@ -134,7 +220,7 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                 doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
                 let y = startY + 5;
                 (slide.points || []).slice(0, 7).forEach((p: string) => {
-                    const bullet = doc.splitTextToSize(`  •  ${p}`, W - 50);
+                    const bullet = doc.splitTextToSize(`  •  ${p}`, contentW);
                     doc.text(bullet, 20, y);
                     y += bullet.length * 6 + 3;
                 });
@@ -145,7 +231,7 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                 (slide.questions || []).slice(0, 4).forEach((q: any, qi: number) => {
                     doc.setTextColor(theme.text[0], theme.text[1], theme.text[2]);
                     doc.setFontSize(11);
-                    const qText = doc.splitTextToSize(`Q${qi + 1}. ${q.q}`, W - 50);
+                    const qText = doc.splitTextToSize(`Q${qi + 1}. ${q.q}`, contentW);
                     doc.text(qText, 20, y);
                     y += qText.length * 6 + 2;
 
@@ -153,7 +239,8 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
                     doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
                     if (q.options) {
                         q.options.forEach((o: string, oi: number) => {
-                            doc.text(`  ${String.fromCharCode(65 + oi)})  ${o}`, 25, y);
+                            const optText = doc.splitTextToSize(`  ${String.fromCharCode(65 + oi)})  ${o}`, contentW);
+                            doc.text(optText, 25, y);
                             y += 5;
                         });
                     }
@@ -225,63 +312,88 @@ export default function AISlideGenerator({ classes }: { classes: any[] }) {
 
         return (
             <div className="rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700" style={bgStyle}>
-                <div className="p-6 min-h-[220px] flex flex-col relative">
-                    {/* Slide number */}
-                    <div className="absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `rgba(${theme.sub.join(',')},0.3)` }}>
-                        {index + 1}/{slideData!.length}
+                <div className="p-6 min-h-[300px] flex flex-col relative">
+                    {/* Brand header */}
+                    <div className="flex justify-between items-center mb-4 opacity-60 text-[10px] uppercase tracking-wider font-bold">
+                        <span>{schoolName}</span>
+                        <span>BY {teacherName}</span>
                     </div>
 
-                    {/* Emoji */}
-                    <span className="text-4xl mb-2">{slide.emoji || '📄'}</span>
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex-1">
+                            {/* Emoji */}
+                            <span className="text-4xl mb-2 block">{slide.emoji || '📄'}</span>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold leading-tight mb-2">{slide.title}</h3>
+                            {/* Title */}
+                            <h3 className="text-xl font-bold leading-tight mb-3">{slide.title}</h3>
 
-                    {/* Content */}
-                    {slide.type === 'title' && (
-                        <p className="text-sm opacity-70 mt-1">{slide.subtitle}</p>
-                    )}
-
-                    {(slide.type === 'content' || slide.type === 'summary') && (
-                        <ul className="space-y-1 text-xs mt-1">
-                            {(slide.points || []).slice(0, 4).map((p: string, i: number) => (
-                                <li key={i} className="flex items-start gap-2">
-                                    <span className="mt-0.5" style={accentStyle}>●</span> {p}
-                                </li>
-                            ))}
-                            {(slide.points?.length || 0) > 4 && (
-                                <li className="opacity-50 text-[10px]">+{slide.points.length - 4} more in PDF</li>
+                            {/* Content */}
+                            {slide.type === 'title' && (
+                                <p className="text-sm opacity-70 mt-1 italic">{slide.subtitle}</p>
                             )}
-                        </ul>
-                    )}
 
-                    {slide.type === 'quiz' && (
-                        <div className="space-y-2 text-xs mt-1">
-                            {(slide.questions || []).slice(0, 2).map((q: any, i: number) => (
-                                <div key={i}>
-                                    <p className="font-medium">Q{i + 1}. {q.q}</p>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                        {q.options?.map((o: string, j: number) => (
-                                            <span key={j} className="px-1.5 py-0.5 rounded text-[10px] bg-white/20">{String.fromCharCode(65 + j)}) {o}</span>
+                            {(slide.type === 'content' || slide.type === 'summary') && (
+                                <ul className="space-y-1.5 text-xs mt-1">
+                                    {(slide.points || []).slice(0, 5).map((p: string, i: number) => (
+                                        <li key={i} className="flex items-start gap-2">
+                                            <span className="mt-1" style={accentStyle}>●</span> {p}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+
+                            {slide.type === 'quiz' && (
+                                <div className="space-y-2 text-xs mt-1">
+                                    {(slide.questions || []).slice(0, 2).map((q: any, i: number) => (
+                                        <div key={i}>
+                                            <p className="font-bold underline decoration-indigo-500/30 underline-offset-2">Q{i + 1}. {q.q}</p>
+                                        </div>
+                                    ))}
+                                    <p className="text-[10px] opacity-60 mt-2">See full quiz in PDF...</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Visual Section */}
+                        {slide.visual && (
+                            <div className="w-full md:w-1/3 p-4 rounded-xl border border-black/5 bg-black/5 flex flex-col items-center justify-center text-center">
+                                <p className="text-[10px] font-bold mb-2 opacity-50 uppercase tracking-tighter">Illustration: {slide.visual.type}</p>
+                                {slide.visual.type === 'process' && (
+                                    <div className="space-y-1 w-full">
+                                        {slide.visual.steps?.slice(0, 3).map((s: string, i: number) => (
+                                            <div key={i} className="bg-white/40 p-1.5 rounded text-[9px] font-medium border border-black/5">{s}</div>
                                         ))}
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                )}
+                                {slide.visual.type === 'comparison' && (
+                                    <div className="flex gap-1 w-full text-[9px]">
+                                        <div className="flex-1 bg-white/40 p-2 rounded">{slide.visual.left}</div>
+                                        <div className="flex-1 bg-black/20 text-white p-2 rounded">{slide.visual.right}</div>
+                                    </div>
+                                )}
+                                {slide.visual.type === 'facts' && (
+                                    <div className="space-y-2">
+                                        {slide.visual.data?.slice(0, 2).map((d: any, i: number) => (
+                                            <div key={i}>
+                                                <div className="text-lg font-black" style={accentStyle}>{d.value}</div>
+                                                <div className="text-[8px] opacity-70">{d.label}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {slide.visual.type === 'mindmap' && (
+                                    <div className="relative">
+                                        <div className="w-12 h-12 rounded-full bg-white/40 flex items-center justify-center text-[8px] font-bold p-1">{slide.visual.center}</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                    {slide.type === 'lesson_plan' && (
-                        <div className="text-xs space-y-2 mt-1">
-                            <div>
-                                <span className="font-semibold" style={accentStyle}>Objectives:</span>
-                                <ul className="mt-0.5 space-y-0.5">{(slide.objectives || []).map((o: string, i: number) => <li key={i}>• {o}</li>)}</ul>
-                            </div>
-                            <div>
-                                <span className="font-semibold" style={accentStyle}>Activities:</span>
-                                <ul className="mt-0.5 space-y-0.5">{(slide.activities || []).map((a: string, i: number) => <li key={i}>• {a}</li>)}</ul>
-                            </div>
-                        </div>
-                    )}
+                    {/* Slide number */}
+                    <div className="absolute bottom-3 right-5 text-[10px] font-bold opacity-40">
+                        PAGE {index + 1}/{slideData!.length}
+                    </div>
                 </div>
             </div>
         );

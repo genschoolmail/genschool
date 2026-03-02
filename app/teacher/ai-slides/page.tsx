@@ -17,11 +17,15 @@ export default async function AISlidesPage() {
         include: {
             classes: true,
             classTeachers: { include: { class: true } },
-            subjects: { include: { class: true } }
+            subjects: { include: { class: true } },
+            school: { select: { name: true } }
         }
     });
 
     if (!teacher) return <div>Teacher not found</div>;
+
+    const schoolName = teacher.school?.name || "School";
+    const teacherName = session.user.name || "Teacher";
 
     // Aggregate unique classes for the sharing dropdown
     const classesMap = new Map();
@@ -49,7 +53,11 @@ export default async function AISlidesPage() {
                         </div>
                     </div>
 
-                    <AISlideGenerator classes={teacherClasses} />
+                    <AISlideGenerator
+                        classes={teacherClasses}
+                        schoolName={schoolName}
+                        teacherName={teacherName}
+                    />
                 </div>
             </div>
         </div>
