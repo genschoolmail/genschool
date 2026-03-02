@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
         // Call Gemini API
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `You are an expert educator. Analyze the provided document and generate a structured classroom slide deck in ${language}.
 
