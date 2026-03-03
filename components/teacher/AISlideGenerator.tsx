@@ -370,78 +370,6 @@ export default function AISlideGenerator({
 
     // --- Render Helpers ---
 
-    const Sidebar = () => (
-        <motion.div
-            initial={false}
-            animate={{ width: sidebarOpen ? 300 : 0 }}
-            className="h-full bg-slate-50 dark:bg-[#121212] border-r border-slate-200 dark:border-white/10 flex flex-col overflow-hidden relative"
-        >
-            <div className="p-6 space-y-8 min-w-[300px] flex-1 flex flex-col">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Intelligence Source</h2>
-                    <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}><ChevronLeft className="w-4 h-4" /></Button>
-                </div>
-
-                <div className="space-y-6">
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-indigo-500">Director's Persona</Label>
-                        <Select value={persona} onValueChange={setPersona}>
-                            <SelectTrigger className="w-full h-11 rounded-xl bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-xs font-bold">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Academic Deep Dive">Academic Deep Dive</SelectItem>
-                                <SelectItem value="Classroom Storytellers">Classroom Storytelling</SelectItem>
-                                <SelectItem value="Skeptical Analyst">Skeptical Analyst</SelectItem>
-                                <SelectItem value="Quick Summary">Quick Summary</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-4">
-                        <Label className="text-[10px] font-black uppercase text-slate-400">Library ({sources.length})</Label>
-                        <div className="space-y-2 overflow-y-auto max-h-[300px] no-scrollbar">
-                            <AnimatePresence>
-                                {sources.map(s => (
-                                    <motion.div
-                                        key={s.id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            {s.type === 'file' ? <FileText className="w-3 h-3 text-indigo-400" /> : <LinkIcon className="w-3 h-3 text-emerald-400" />}
-                                            <span className="text-[11px] font-bold truncate">{s.name}</span>
-                                        </div>
-                                        <button onClick={() => removeSource(s.id)} className="text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-auto pt-6 space-y-4">
-                    <div className="relative group">
-                        <input type="file" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => {
-                            if (e.target.files) Array.from(e.target.files).forEach(addFile);
-                        }} />
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-indigo-600 text-white font-black text-xs shadow-xl shadow-indigo-500/20 group-hover:bg-indigo-700 transition-all">
-                            <FileUp className="w-4 h-4" />
-                            <span>Add Research Files</span>
-                        </div>
-                    </div>
-                    <Input
-                        placeholder="Paste URL..."
-                        className="rounded-2xl border-dashed h-12 text-xs font-bold"
-                        onKeyDown={(e) => e.key === 'Enter' && (addLink((e.target as HTMLInputElement).value), (e.target as HTMLInputElement).value = '')}
-                    />
-                </div>
-            </div>
-        </motion.div>
-    );
-
     const OutputDashboard = () => (
         <motion.div
             initial={false}
@@ -551,9 +479,83 @@ export default function AISlideGenerator({
 
     // --- Main Workflow Router ---
     return (
-        <div className="fixed inset-0 z-40 bg-[#0A0A0A] text-slate-900 dark:text-white flex overflow-hidden font-sans">
+        <div className="fixed inset-0 z-[100] bg-white dark:bg-[#0A0A0A] text-slate-900 dark:text-white flex overflow-hidden font-sans">
             {/* Sidebar (Sources & Persona) */}
-            <Sidebar />
+            <AnimatePresence>
+                {sidebarOpen && (
+                    <motion.div
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 300, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                        className="h-full bg-slate-50 dark:bg-[#121212] border-r border-slate-200 dark:border-white/10 flex flex-col overflow-hidden relative z-[101]"
+                    >
+                        <div className="w-[300px] p-6 space-y-8 flex-1 flex flex-col h-full">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Intelligence Source</h2>
+                                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}><ChevronLeft className="w-4 h-4" /></Button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase text-indigo-500">Director's Persona</Label>
+                                    <Select value={persona} onValueChange={setPersona}>
+                                        <SelectTrigger className="w-full h-11 rounded-xl bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-xs font-bold">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Academic Deep Dive">Academic Deep Dive</SelectItem>
+                                            <SelectItem value="Classroom Storytelling">Classroom Storytelling</SelectItem>
+                                            <SelectItem value="Skeptical Analyst">Skeptical Analyst</SelectItem>
+                                            <SelectItem value="Quick Summary">Quick Summary</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Label className="text-[10px] font-black uppercase text-slate-400">Library ({sources.length})</Label>
+                                    <div className="space-y-2 overflow-y-auto max-h-[300px] no-scrollbar">
+                                        <AnimatePresence>
+                                            {sources.map(s => (
+                                                <motion.div
+                                                    key={s.id}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        {s.type === 'file' ? <FileText className="w-3 h-3 text-indigo-400" /> : <LinkIcon className="w-3 h-3 text-emerald-400" />}
+                                                        <span className="text-[11px] font-bold truncate">{s.name}</span>
+                                                    </div>
+                                                    <button onClick={() => removeSource(s.id)} className="text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-auto pt-6 space-y-4">
+                                <div className="relative group">
+                                    <input type="file" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => {
+                                        if (e.target.files) Array.from(e.target.files).forEach(addFile);
+                                    }} />
+                                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-indigo-600 text-white font-black text-xs shadow-xl shadow-indigo-500/20 group-hover:bg-indigo-700 transition-all">
+                                        <FileUp className="w-4 h-4" />
+                                        <span>Add Research Files</span>
+                                    </div>
+                                </div>
+                                <Input
+                                    placeholder="Paste URL..."
+                                    className="rounded-2xl border-dashed h-12 text-xs font-bold"
+                                    onKeyDown={(e) => e.key === 'Enter' && (addLink((e.target as HTMLInputElement).value), (e.target as HTMLInputElement).value = '')}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Content Area */}
             <main className="flex-1 flex flex-col relative bg-white dark:bg-[#0A0A0A]">
