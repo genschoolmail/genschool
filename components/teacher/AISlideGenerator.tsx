@@ -58,7 +58,7 @@ export default function AISlideGenerator({
     teacherName?: string
 }) {
     // --- State: Research Studio Workspace ---
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [rightPanelOpen, setRightPanelOpen] = useState(false);
     const [currentPhase, setCurrentPhase] = useState<Phase>('library');
     const [sources, setSources] = useState<Source[]>([]);
@@ -551,7 +551,7 @@ export default function AISlideGenerator({
 
     // --- Main Workflow Router ---
     return (
-        <div className="fixed inset-0 bg-[#0A0A0A] text-slate-900 dark:text-white flex overflow-hidden font-sans">
+        <div className="fixed inset-0 z-40 bg-[#0A0A0A] text-slate-900 dark:text-white flex overflow-hidden font-sans">
             {/* Sidebar (Sources & Persona) */}
             <Sidebar />
 
