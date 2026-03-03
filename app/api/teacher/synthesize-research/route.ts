@@ -20,6 +20,18 @@ async function scrapeLink(url: string): Promise<string> {
     }
 }
 
+async function listAuthorizedModels(apiKey: string): Promise<string> {
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+        if (!res.ok) return `ListModels failed: ${res.status}`;
+        const data = await res.json();
+        const names = data.models?.map((m: any) => m.name.replace('models/', '')) || [];
+        return names.join(', ');
+    } catch (e: any) {
+        return `Discovery Error: ${e.message}`;
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
         const session = await auth();
@@ -41,19 +53,27 @@ export async function POST(req: NextRequest) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
 
-        const genAI = new GoogleGenerativeAI(apiKey);
+        // --- MODEL DISCOVERY (Diagnostic Raw Probe) ---
+        const authorizedModels = await listAuthorizedModels(apiKey);
+        console.log(`[SYNTHESIZE] Authorized Models for this key: ${authorizedModels}`);
 
-        // Comprehensive Model List (Stability v1 Tier)
+        // Expand fallback chain with experimental 2.0 identifiers
         const modelsToTry = [
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-latest",
+            "gemini-2.0-flash-exp",
+            "gemini-2.0-pro-exp-02-05",
             "gemini-2.0-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
             "gemini-1.5-pro",
             "gemini-pro"
         ];
 
+        // Add any authorized models that aren't in our list (Dynamic Discovery)
+        const discovered = authorizedModels.split(', ').map(m => m.trim()).filter(m => m && !modelsToTry.includes(m));
+        const finalModelsToTry = [...discovered, ...modelsToTry];
+
         let lastError = "";
-        let discoveryLogs = "";
+        let discoveryLogs = `AUTHORIZED: ${authorizedModels.slice(0, 150)}...\n`;
         let finalModelUsed = "";
         let result: any = null;
 
@@ -94,14 +114,16 @@ Respond ONLY in ${language}. Be thorough.`;
         }
         contentParts.push({ text: "\n\n---\nSYNTHESIS:" });
 
-        for (const modelName of modelsToTry) {
+        // IMPORTANT: We will try both v1 and v1beta if needed
+        for (const modelName of finalModelsToTry) {
+            if (!modelName) continue;
             try {
                 if (modelName === "gemini-pro" && validFiles.length > 0) continue;
 
                 console.log(`[SYNTHESIZE] Trying ${modelName}...`);
+                const genAI = new GoogleGenerativeAI(apiKey); // SDK defaults to v1beta usually
                 const model = genAI.getGenerativeModel({ model: modelName });
 
-                // Set a short internal timeout per model attempt to speed up discovery
                 const response = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
 
                 if (response && response.response) {
@@ -110,26 +132,17 @@ Respond ONLY in ${language}. Be thorough.`;
                     break;
                 }
             } catch (e: any) {
-                console.error(`[SYNTHESIZE] ${modelName} 404/Error:`, e.message);
+                console.error(`[SYNTHESIZE] ${modelName} Error:`, e.message);
                 lastError = e.message;
-                discoveryLogs += `[${modelName}]: ${e.message.slice(0, 80)}...\n`;
+                discoveryLogs += `[${modelName}]: ${e.message.slice(0, 50)} | `;
             }
         }
 
-        // --- MODEL DISCOVERY DIAGNOSTIC ---
         if (!result) {
-            let availableModels: string[] = [];
-            try {
-                // Technically there is no simple genAI.listModels() in the basic SDK, 
-                // but we can try to infer if it's an API Key restriction.
-                // If every single model 404s, it's likely the API key is tied to a specific project type 
-                // or the user is in a region where these specific IDs are prefixed with something else.
-            } catch (listErr) { }
-
             return NextResponse.json({
-                error: `All AI engines rejected the request (404/Restricted).`,
+                error: `404/Restricted. Your key may only support: ${authorizedModels.slice(0, 100)}`,
                 debug: lastError,
-                discovery: discoveryLogs || "No models responded to probe."
+                discovery: discoveryLogs.slice(0, 500)
             }, { status: 500 });
         }
 
@@ -139,7 +152,7 @@ Respond ONLY in ${language}. Be thorough.`;
             return NextResponse.json({ error: "AI returned empty content. Try different sources." }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, synthesis, model: finalModelUsed });
+        return NextResponse.json({ success: true, synthesis, model: finalModelUsed, authorized: authorizedModels });
 
     } catch (error: any) {
         console.error("[SYNTHESIZE_API_ERROR]", error);
