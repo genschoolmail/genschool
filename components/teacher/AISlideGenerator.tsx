@@ -9,564 +9,571 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
-    Loader2, FileUp, Share2, CheckCircle2, Download, Presentation, Eye,
-    Link as LinkIcon, Plus, X, ArrowRight, Save, Wand2, Sparkles,
-    Quote, BookOpen, MessageSquare, History, Layout, Settings,
-    ChevronLeft, ChevronRight, Search, FileText, Trash2, Maximize2,
-    Copy, Lightbulb, FileCheck, Map, Music, UserCircle, StickyNote,
-    Layers, Zap, MousePointer2, PanelsTopLeft, Command, Library
+    Loader2, FileUp, Share2, X, Download, Layout, Link as LinkIcon,
+    BookOpen, MessageSquare, History, ChevronLeft, ChevronRight,
+    FileText, Trash2, Copy, FileCheck, Map, UserCircle, StickyNote,
+    Zap, PanelsTopLeft, Library, ArrowRight, Sparkles, Plus, CheckCircle2,
+    LayoutGrid, BarChart3, Send, AlertCircle
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- v8 Integrated Aesthetics & Themes ---
-const STUDIO_THEMES = [
-    { name: 'Studio Dark', bg: 'bg-[#0A0A0A]', border: 'border-white/10', card: 'bg-white/5', accent: 'text-[#E8FF41]', accentBg: 'bg-[#E8FF41]' },
-    { name: 'Slate Pro', bg: 'bg-[#0F172A]', border: 'border-white/10', card: 'bg-white/5', accent: 'text-sky-400', accentBg: 'bg-sky-400' }
-];
-
-type Source = {
-    id: string;
-    type: 'file' | 'link';
-    name: string;
-    url?: string;
-    file?: File;
-};
-
-type ChatMessage = {
-    role: 'user' | 'ai';
-    content: string;
-    sources?: string[];
-};
-
-type StickyNoteData = {
-    id: string;
-    content: string;
-    category: 'fact' | 'idea' | 'draft';
-    timestamp: number;
-};
-
+type Source = { id: string; type: 'file' | 'link'; name: string; url?: string; file?: File; };
+type ChatMsg = { role: 'user' | 'ai'; content: string; };
+type Note = { id: string; content: string; category: string; };
 type Phase = 'library' | 'research' | 'slides';
 
-export default function AISlideGenerator({
-    classes,
-    schoolName = "School",
-    teacherName = "Teacher"
-}: {
-    classes: any[],
-    schoolName?: string,
-    teacherName?: string
+export default function AISlideGenerator({ classes, schoolName = "School", teacherName = "Teacher" }: {
+    classes: any[]; schoolName?: string; teacherName?: string;
 }) {
-    // --- State: Research Studio v8 (Integrated) ---
+    const chatEndRef = useRef<HTMLDivElement>(null);
+    const linkInputRef = useRef<HTMLInputElement>(null);
+
+    const [phase, setPhase] = useState<Phase>('library');
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [outputPanelOpen, setOutputPanelOpen] = useState(true);
-    const [currentPhase, setCurrentPhase] = useState<Phase>('library');
+    const [notesOpen, setNotesOpen] = useState(false);
     const [sources, setSources] = useState<Source[]>([]);
-    const [language, setLanguage] = useState("English");
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [progressLabel, setProgressLabel] = useState("");
-
-    // --- State: Intelligence Suite ---
-    const [stickyNotes, setStickyNotes] = useState<StickyNoteData[]>([]);
     const [persona, setPersona] = useState("Academic Deep Dive");
-    const [mermaidCode, setMermaidCode] = useState<string | null>(null);
+    const [language, setLanguage] = useState("English");
+    const [loading, setLoading] = useState(false);
+    const [loadingMsg, setLoadingMsg] = useState("Processing...");
 
-    // --- State: Content & Storage ---
-    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-    const [userQuery, setUserQuery] = useState("");
-    const [synthesisText, setSynthesisText] = useState("");
-    const [slideData, setSlideData] = useState<any[] | null>(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const [synthesis, setSynthesis] = useState("");
+    const [chatHistory, setChatHistory] = useState<ChatMsg[]>([]);
+    const [query, setQuery] = useState("");
+    const [isChatting, setIsChatting] = useState(false);
+
+    const [slides, setSlides] = useState<any[]>([]);
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [notes, setNotes] = useState<Note[]>([]);
     const [selectedClass, setSelectedClass] = useState("");
     const [isSharing, setIsSharing] = useState(false);
 
-    // Dynamic Mermaid Import
-    useEffect(() => {
-        if (mermaidCode) {
-            // @ts-ignore
-            import('mermaid').then(m => {
-                m.default.initialize({ startOnLoad: true, theme: 'dark' });
-                m.default.contentLoaded();
-            });
-        }
-    }, [mermaidCode]);
+    // Scroll chat to bottom
+    useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory]);
 
-    // --- Persistence ---
+    // Load from LocalStorage
     useEffect(() => {
-        const savedNotebook = localStorage.getItem('active_notebook_studio_v8');
-        if (savedNotebook) {
-            try {
-                const data = JSON.parse(savedNotebook);
-                if (data.sources) setSources(data.sources.filter((s: any) => s.type === 'link'));
-                if (data.chatHistory) setChatHistory(data.chatHistory);
-                if (data.synthesisText) setSynthesisText(data.synthesisText);
-                if (data.slideData) setSlideData(data.slideData);
-                if (data.stickyNotes) setStickyNotes(data.stickyNotes);
-                if (data.persona) setPersona(data.persona);
-            } catch (e) { console.error("Persistence failed", e); }
-        }
+        try {
+            const saved = localStorage.getItem('studio_v9');
+            if (saved) {
+                const d = JSON.parse(saved);
+                if (d.synthesis) setSynthesis(d.synthesis);
+                if (d.chatHistory) setChatHistory(d.chatHistory);
+                if (d.slides) { setSlides(d.slides); }
+                if (d.notes) setNotes(d.notes);
+                if (d.persona) setPersona(d.persona);
+                if (d.sources) setSources(d.sources.filter((s: any) => s.type === 'link'));
+                if (d.phase) setPhase(d.phase);
+            }
+        } catch { }
     }, []);
 
     useEffect(() => {
-        const dataToSave = {
-            sources: sources.filter(s => s.type === 'link'),
-            chatHistory,
-            synthesisText,
-            slideData,
-            stickyNotes,
-            persona
-        };
-        localStorage.setItem('active_notebook_studio_v8', JSON.stringify(dataToSave));
-    }, [sources, chatHistory, synthesisText, slideData, stickyNotes, persona]);
+        try {
+            localStorage.setItem('studio_v9', JSON.stringify({
+                synthesis, chatHistory, slides, notes, persona,
+                sources: sources.filter(s => s.type === 'link'), phase
+            }));
+        } catch { }
+    }, [synthesis, chatHistory, slides, notes, persona, sources, phase]);
 
-    // --- Core Logic ---
-    const addLink = (url: string) => {
+    const addLink = () => {
+        const url = linkInputRef.current?.value?.trim();
         if (!url) return;
-        const newSource: Source = { id: Math.random().toString(36).substr(2, 9), type: 'link', name: url, url };
-        setSources([...sources, newSource]);
+        setSources(prev => [...prev, { id: Date.now().toString(), type: 'link', name: url, url }]);
+        if (linkInputRef.current) linkInputRef.current.value = '';
     };
 
-    const addFile = (file: File) => {
-        const newSource: Source = { id: Math.random().toString(36).substr(2, 9), type: 'file', name: file.name, file };
-        setSources([...sources, newSource]);
+    const addFiles = (files: FileList | null) => {
+        if (!files) return;
+        const newSources: Source[] = Array.from(files).map(f => ({ id: Date.now() + f.name, type: 'file', name: f.name, file: f }));
+        setSources(prev => [...prev, ...newSources]);
     };
 
-    const removeSource = (id: string) => setSources(sources.filter(s => s.id !== id));
+    const removeSource = (id: string) => setSources(prev => prev.filter(s => s.id !== id));
 
-    const saveNote = (content: string, category: 'fact' | 'idea' | 'draft' = 'fact') => {
-        const newNote: StickyNoteData = {
-            id: Math.random().toString(36).substr(2, 9),
-            content,
-            category,
-            timestamp: Date.now()
-        };
-        setStickyNotes([newNote, ...stickyNotes]);
-        setOutputPanelOpen(true);
-        toast.success("Saved to Insights Dashboard");
+    const saveNote = (content: string) => {
+        setNotes(prev => [{ id: Date.now().toString(), content: content.slice(0, 500), category: 'insight' }, ...prev]);
+        setNotesOpen(true);
+        toast.success("Saved to Notes!");
     };
 
-    const handleSynthesizeAll = async () => {
-        if (sources.length === 0) return toast.error("Please add at least one source");
-        setIsProcessing(true);
-        setProgressLabel(`Applying ${persona} Intelligence...`);
+    // ---- API Calls ----
+    const handleSynthesize = async () => {
+        if (!sources.length) return toast.error("Add at least one source first.");
+        setLoading(true); setLoadingMsg(`Synthesizing with "${persona}" persona...`);
         try {
-            const formData = new FormData();
-            const links = sources.filter(s => s.type === 'link').map(s => s.url);
-            const files = sources.filter(s => s.type === 'file').map(s => s.file);
-            files.forEach(f => formData.append('file', f!));
-            formData.append('links', JSON.stringify(links));
-            formData.append('language', language);
-            formData.append('persona', persona);
+            const fd = new FormData();
+            sources.filter(s => s.type === 'file' && s.file).forEach(s => fd.append('file', s.file!));
+            fd.append('links', JSON.stringify(sources.filter(s => s.type === 'link').map(s => s.url)));
+            fd.append('language', language);
+            fd.append('persona', persona);
 
-            const res = await fetch('/api/teacher/synthesize-research', { method: 'POST', body: formData });
+            const res = await fetch('/api/teacher/synthesize-research', { method: 'POST', body: fd });
             const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (!res.ok || data.error) throw new Error(data.error || "Synthesis failed");
 
-            setSynthesisText(data.synthesis);
-            setCurrentPhase('research');
-            setChatHistory([{ role: 'ai', content: `Knowledge Base Initialized. How would you like to explore these sources?` }]);
-        } catch (err: any) {
-            toast.error(err.message);
-        } finally {
-            setIsProcessing(false);
-        }
+            setSynthesis(data.synthesis);
+            setChatHistory([{ role: 'ai', content: `✅ Knowledge base ready! I've synthesized ${sources.length} source(s) using the "${persona}" lens. What would you like to explore?` }]);
+            setPhase('research');
+            toast.success("Knowledge base built!");
+        } catch (e: any) { toast.error(e.message); }
+        finally { setLoading(false); }
     };
 
-    const handleChatQuery = async () => {
-        if (!userQuery.trim() || !synthesisText) return;
-        const newUserMsg: ChatMessage = { role: 'user', content: userQuery };
-        setChatHistory(prev => [...prev, newUserMsg]);
-        setUserQuery("");
+    const handleChat = async () => {
+        if (!query.trim() || !synthesis) return;
+        const userMsg = query.trim();
+        setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
+        setQuery("");
+        setIsChatting(true);
         try {
             const res = await fetch('/api/teacher/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ summary: synthesisText, customQuery: userQuery, mode: 'chat', persona })
+                body: JSON.stringify({ summary: synthesis, customQuery: userMsg, mode: 'chat', persona, language })
             });
             const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error);
             setChatHistory(prev => [...prev, { role: 'ai', content: data.answer }]);
-        } catch (err) { toast.error("Hub Error"); }
+        } catch (e: any) {
+            setChatHistory(prev => [...prev, { role: 'ai', content: `⚠️ Error: ${e.message}` }]);
+        } finally { setIsChatting(false); }
     };
 
-    const handleTransform = async (template: 'briefing' | 'faq' | 'timeline' | 'graph') => {
-        if (!synthesisText) return;
-        setIsProcessing(true);
-        setProgressLabel(`Transforming to ${template}...`);
+    const handleTransform = async (template: string) => {
+        if (!synthesis) return toast.error("Build your knowledge base first.");
+        setLoading(true); setLoadingMsg(`Generating ${template}...`);
         try {
             const res = await fetch('/api/teacher/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ summary: synthesisText, mode: 'transform', template, language })
+                body: JSON.stringify({ summary: synthesis, mode: 'transform', template, language })
             });
             const data = await res.json();
-            if (template === 'graph') setMermaidCode(data.output);
-            else saveNote(data.output, 'draft');
-        } catch (err) { toast.error("Transform Failed"); }
-        finally { setIsProcessing(false); }
+            if (!res.ok || data.error) throw new Error(data.error);
+            if (template === 'graph') {
+                setChatHistory(prev => [...prev, { role: 'ai', content: `**Knowledge Graph Generated:**\n\`\`\`\n${data.output}\n\`\`\`` }]);
+            } else {
+                saveNote(data.output);
+                setChatHistory(prev => [...prev, { role: 'ai', content: `✅ **${template.toUpperCase()} generated** and saved to your notes!` }]);
+            }
+        } catch (e: any) { toast.error(e.message); }
+        finally { setLoading(false); }
     };
 
     const handleBuildSlides = async () => {
-        setIsProcessing(true);
-        setProgressLabel("Designing Studio Presentation...");
+        if (!synthesis) return toast.error("Build your knowledge base first.");
+        setLoading(true); setLoadingMsg("Designing your slides...");
         try {
             const res = await fetch('/api/teacher/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ summary: synthesisText, language, teacherName, schoolName, persona })
+                body: JSON.stringify({ summary: synthesis, language, teacherName, schoolName, persona })
             });
             const data = await res.json();
-            setSlideData(data.slideData);
-            setCurrentPhase('slides');
-            setCurrentSlide(0);
-        } catch (err: any) { toast.error(err.message); }
-        finally { setIsProcessing(false); }
-    };
-
-    const downloadPDF = () => {
-        if (!slideData) return;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        const W = doc.internal.pageSize.getWidth();
-        const H = doc.internal.pageSize.getHeight();
-        const theme = { bg: [10, 10, 10], accent: [232, 255, 65], sub: [150, 150, 150] };
-
-        slideData.forEach((slide: any, idx: number) => {
-            if (idx > 0) doc.addPage();
-            doc.setFillColor(theme.bg[0], theme.bg[1], theme.bg[2]);
-            doc.rect(0, 0, W, H, 'F');
-            doc.setFontSize(8);
-            doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.text(`GROUNDED RESEARCH | ${schoolName.toUpperCase()}`, 15, 12);
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(28);
-            doc.setFont('helvetica', 'bold');
-            const titleText = doc.splitTextToSize(slide.title?.toUpperCase() || "UNTITLED", W / 2 - 30);
-            doc.text(titleText, 20, 45);
-
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'normal');
-            let startY = 45 + (titleText.length * 12) + 12;
-            (slide.points || []).slice(0, 3).forEach((p: string) => {
-                const wrappedP = doc.splitTextToSize(p, W / 2 - 30);
-                doc.text(wrappedP, 20, startY);
-                startY += (wrappedP.length * 6) + 10;
-            });
-
-            doc.setFillColor(255, 255, 255, 0.05);
-            doc.roundedRect(W / 2 + 10, 30, W / 2 - 25, H - 60, 8, 8, 'F');
-            doc.setTextColor(theme.accent[0], theme.accent[1], theme.accent[2]);
-            doc.setFontSize(60);
-            doc.text(slide.emoji || "✨", W / 2 + (W / 4), H / 2, { align: 'center' });
-
-            doc.setFontSize(8);
-            doc.setTextColor(theme.sub[0], theme.sub[1], theme.sub[2]);
-            doc.text(`Instructor: ${teacherName} | PAGE ${idx + 1}`, 20, H - 10);
-        });
-        doc.save(`${schoolName}-ResearchStudio.pdf`);
+            if (!res.ok || data.error) throw new Error(data.error);
+            setSlides(data.slideData);
+            setActiveSlide(0);
+            setPhase('slides');
+            toast.success(`${data.slideData.length} slides generated!`);
+        } catch (e: any) { toast.error(e.message); }
+        finally { setLoading(false); }
     };
 
     const handleShare = async () => {
-        if (!selectedClass || !slideData) return toast.error("Select a class");
+        if (!selectedClass || !slides.length) return toast.error("Select a class first.");
         setIsSharing(true);
-        const res = await shareNoteWithClass({
-            classId: selectedClass,
-            title: slideData[0]?.title || "Research Hub Insight",
-            content: slideData,
-            fileUrl: "integrated-v8-studio"
-        });
-        setIsSharing(false);
-        if (res.error) toast.error(res.error);
-        else toast.success("Deployed to Classroom");
+        try {
+            const res = await shareNoteWithClass({ classId: selectedClass, title: slides[0]?.title || "Studio Slides", content: slides, fileUrl: "studio-v9" });
+            if (res.error) throw new Error(res.error);
+            toast.success("Deployed to class!");
+        } catch (e: any) { toast.error(e.message); }
+        finally { setIsSharing(false); }
     };
 
-    // --- Components: Unified Dashboard v8 ---
-    const SourcePanel = () => (
-        <motion.div
-            initial={false}
-            animate={{ width: sidebarOpen ? 300 : 0 }}
-            className="h-full bg-slate-50 dark:bg-[#0D0D0D] border-r border-slate-200 dark:border-white/10 hidden md:flex flex-col overflow-hidden"
-        >
-            <div className="w-[300px] p-6 space-y-8 flex flex-col h-full">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Knowledge Library</h2>
-                    <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="rounded-xl"><ChevronLeft className="w-4 h-4" /></Button>
-                </div>
+    const downloadPDF = () => {
+        if (!slides.length) return;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const W = doc.internal.pageSize.getWidth(); const H = doc.internal.pageSize.getHeight();
+        slides.forEach((slide, i) => {
+            if (i > 0) doc.addPage();
+            doc.setFillColor(10, 10, 10); doc.rect(0, 0, W, H, 'F');
+            doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+            doc.text(`${schoolName.toUpperCase()} | STUDIO v9`, 15, 12);
+            doc.setTextColor(232, 255, 65); doc.setFontSize(24); doc.setFont('helvetica', 'bold');
+            const title = doc.splitTextToSize((slide.title || 'UNTITLED').toUpperCase(), W - 40);
+            doc.text(title, 20, 35);
+            doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+            let y = 35 + title.length * 10 + 8;
+            (slide.points || []).forEach((p: string) => {
+                const wrapped = doc.splitTextToSize(`• ${p}`, W - 40);
+                doc.text(wrapped, 20, y); y += wrapped.length * 6 + 4;
+            });
+            doc.setFontSize(10); doc.setTextColor(100, 100, 100);
+            doc.text(`${teacherName} | ${i + 1}/${slides.length}`, 20, H - 10);
+        });
+        doc.save(`${schoolName.replace(/\s+/g, '_')}_Studio_v9.pdf`);
+    };
 
-                <div className="space-y-6">
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-indigo-500">Analysis Persona</Label>
-                        <Select value={persona} onValueChange={setPersona}>
-                            <SelectTrigger className="h-11 rounded-xl bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-xs font-bold">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
+    // ---- Render Sections ----
+    const navTabs = [
+        { id: 'library', label: 'Library', icon: BookOpen },
+        { id: 'research', label: 'Research Hub', icon: MessageSquare },
+        { id: 'slides', label: 'Slide Studio', icon: LayoutGrid }
+    ];
 
-                    <div className="space-y-4">
-                        <Label className="text-[10px] font-black uppercase text-slate-400">Active Sources ({sources.length})</Label>
-                        <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 no-scrollbar">
-                            <AnimatePresence>
-                                {sources.map(s => (
-                                    <motion.div key={s.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            {s.type === 'file' ? <FileText className="w-3 h-3 text-indigo-400" /> : <LinkIcon className="w-3 h-3 text-emerald-400" />}
-                                            <span className="text-[11px] font-bold truncate">{s.name}</span>
-                                        </div>
-                                        <button onClick={() => removeSource(s.id)} className="text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-auto space-y-4">
-                    <div className="relative group">
-                        <input type="file" multiple className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => {
-                            if (e.target.files) Array.from(e.target.files).forEach(addFile);
-                        }} />
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-indigo-600 text-white font-black text-xs shadow-xl shadow-indigo-600/30 group-hover:bg-indigo-700 transition-all">
-                            <FileUp className="w-4 h-4" />
-                            <span>Library Upload</span>
-                        </div>
-                    </div>
-                    <Input placeholder="Paste URL..." className="h-12 rounded-2xl border-dashed text-xs font-bold" onKeyDown={(e) => e.key === 'Enter' && (addLink((e.target as HTMLInputElement).value), (e.target as HTMLInputElement).value = '')} />
-                </div>
-            </div>
-        </motion.div>
-    );
-
-    const InsightPanel = () => (
-        <motion.div
-            initial={false}
-            animate={{ width: outputPanelOpen ? 300 : 0 }}
-            className="h-full bg-slate-50 dark:bg-[#0D0D0D] border-l border-slate-200 dark:border-white/10 hidden lg:flex flex-col overflow-hidden"
-        >
-            <div className="w-[300px] p-6 space-y-8 flex flex-col h-full">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-[#E8FF41]">Production Output</h2>
-                    <Button variant="ghost" size="icon" onClick={() => setOutputPanelOpen(false)} className="rounded-xl"><ChevronRight className="w-4 h-4" /></Button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-4 no-scrollbar">
-                    {stickyNotes.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-center opacity-10 py-20">
-                            <StickyNote className="w-12 h-12 mb-4" />
-                            <p className="text-xs font-black uppercase tracking-widest">Dashboard Empty</p>
-                        </div>
-                    ) : (
-                        stickyNotes.map(note => (
-                            <motion.div key={note.id} layout className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 space-y-2 group">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${note.category === 'fact' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-amber-500/10 text-amber-500'}`}>{note.category}</span>
-                                    <button onClick={() => setStickyNotes(stickyNotes.filter(n => n.id !== note.id))} className="opacity-0 group-hover:opacity-100"><Trash2 className="w-3 h-3 text-red-500" /></button>
-                                </div>
-                                <p className="text-xs font-bold leading-relaxed">{note.content}</p>
-                            </motion.div>
-                        ))
-                    )}
-                </div>
-
-                <div className="pt-4 border-t border-black/5 dark:border-white/10">
-                    <Button onClick={downloadPDF} className="w-full h-14 rounded-2xl bg-white dark:bg-white/5 hover:bg-[#E8FF41] hover:text-black font-black text-xs border border-slate-200 dark:border-white/10 transition-all">
-                        <FileCheck className="w-4 h-4 mr-3" /> EXPORT DASHBOARD
-                    </Button>
-                </div>
-            </div>
-        </motion.div>
-    );
-
-    // --- Main Integrated Layout ---
     return (
-        <div className="min-h-[85vh] bg-white dark:bg-[#0A0A0A] rounded-[32px] border border-slate-200 dark:border-white/10 flex flex-col overflow-hidden relative shadow-2xl">
-            {/* Header: Integrated Studio Navigation */}
-            <header className="h-20 border-b border-slate-200 dark:border-white/10 bg-white/50 dark:bg-[#0A0A0A]/50 backdrop-blur-3xl px-8 flex items-center justify-between z-30">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-xl">STUDIO</div>
-                        <div className="hidden sm:block">
-                            <h1 className="text-sm font-black uppercase tracking-widest">{schoolName} Hub</h1>
-                            <p className="text-[9px] font-bold text-indigo-500 uppercase">Intelligence Suite v8</p>
-                        </div>
+        <div className="flex flex-col w-full bg-white dark:bg-[#0A0A0A] rounded-3xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl min-h-[80vh]" style={{ fontFamily: 'Inter, sans-serif' }}>
+
+            {/* ===== TOP HEADER ===== */}
+            <div className="flex items-center justify-between px-8 h-16 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#0D0D0D] flex-shrink-0 gap-4">
+                {/* Brand */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-white" />
                     </div>
+                    <span className="font-black text-sm uppercase tracking-widest hidden sm:block">AI Studio <span className="text-indigo-500">v9</span></span>
                 </div>
 
-                <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 p-1 rounded-2xl border border-slate-200 dark:border-white/5">
-                    {[
-                        { id: 'library', icon: BookOpen, label: 'Sources' },
-                        { id: 'research', icon: MessageSquare, label: 'Research' },
-                        { id: 'slides', icon: Layout, label: 'Slides' }
-                    ].map((btn) => (
+                {/* Phase Navigation */}
+                <div className="flex items-center bg-slate-100 dark:bg-white/5 rounded-2xl p-1 gap-1">
+                    {navTabs.map(tab => (
                         <button
-                            key={btn.id}
-                            onClick={() => setCurrentPhase(btn.id as Phase)}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${currentPhase === btn.id ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xl' : 'opacity-40'}`}
+                            key={tab.id}
+                            onClick={() => {
+                                if (tab.id === 'research' && !synthesis) return toast.error("Build your knowledge base first.");
+                                if (tab.id === 'slides' && !slides.length) return toast.error("Generate slides first.");
+                                setPhase(tab.id as Phase);
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${phase === tab.id
+                                    ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-md'
+                                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                                }`}
                         >
-                            <btn.icon className="w-3.5 h-3.5" />
-                            <span className="hidden md:inline">{btn.label}</span>
+                            <tab.icon className="w-3.5 h-3.5" />
+                            <span className="hidden md:block">{tab.label}</span>
                         </button>
                     ))}
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className={`w-10 h-10 rounded-xl ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-white/5'}`}><Library className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => setOutputPanelOpen(!outputPanelOpen)} className={`w-10 h-10 rounded-xl ${outputPanelOpen ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-white/5'}`}><PanelsTopLeft className="w-4 h-4" /></Button>
+                {/* Controls */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <Select value={language} onValueChange={setLanguage}>
+                        <SelectTrigger className="w-28 h-9 rounded-xl text-xs font-bold border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5"><SelectValue /></SelectTrigger>
+                        <SelectContent><SelectItem value="English">🇬🇧 English</SelectItem><SelectItem value="Hindi">🇮🇳 Hindi</SelectItem><SelectItem value="Marathi">Marathi</SelectItem></SelectContent>
+                    </Select>
+                    <button onClick={() => setSidebarOpen(v => !v)} className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs transition-all ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}><Library className="w-4 h-4" /></button>
+                    <button onClick={() => setNotesOpen(v => !v)} className={`w-9 h-9 rounded-xl flex items-center justify-center relative transition-all ${notesOpen ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+                        <StickyNote className="w-4 h-4" />
+                        {notes.length > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black">{notes.length}</span>}
+                    </button>
                 </div>
-            </header>
+            </div>
 
-            <div className="flex-1 flex overflow-hidden relative">
-                {/* 3-Column Grid Implementation */}
-                <SourcePanel />
+            {/* ===== BODY ===== */}
+            <div className="flex flex-1 overflow-hidden relative">
 
-                <main className="flex-1 flex flex-col relative bg-white dark:bg-[#0A0A0A] overflow-hidden">
-                    {/* TRANSFORMATION TOOLS BAR (FLOATING) */}
-                    {synthesisText && currentPhase !== 'slides' && (
-                        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-1.5 bg-white/50 dark:bg-white/5 backdrop-blur-3xl rounded-2xl border border-slate-200 dark:border-white/10 z-40 shadow-2xl">
-                            <Button onClick={() => handleTransform('briefing')} variant="ghost" className="h-9 rounded-xl text-[9px] font-black uppercase px-4"><FileText className="w-3 h-3 mr-2" /> Briefing</Button>
-                            <Button onClick={() => handleTransform('faq')} variant="ghost" className="h-9 rounded-xl text-[9px] font-black uppercase px-4"><MessageSquare className="w-3 h-3 mr-2 text-emerald-400" /> FAQ</Button>
-                            <Button onClick={() => handleTransform('timeline')} variant="ghost" className="h-9 rounded-xl text-[9px] font-black uppercase px-4"><History className="w-3 h-3 mr-2 text-amber-500" /> Timeline</Button>
-                            <div className="w-px h-5 bg-white/10 mx-1"></div>
-                            <Button onClick={() => handleTransform('graph')} variant="ghost" className="h-9 rounded-xl text-[9px] font-black uppercase px-4"><Map className="w-3 h-3 mr-2 text-rose-500" /> Knowledge Graph</Button>
+                {/* LEFT SIDEBAR - Source Library */}
+                <AnimatePresence initial={false}>
+                    {sidebarOpen && (
+                        <motion.aside
+                            key="sidebar"
+                            initial={{ width: 0 }} animate={{ width: 280 }} exit={{ width: 0 }}
+                            transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                            className="border-r border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0D0D0D] flex-shrink-0 overflow-hidden"
+                        >
+                            <div className="w-[280px] h-full flex flex-col p-5 gap-5">
+                                <div>
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 block">Research Persona</Label>
+                                    <Select value={persona} onValueChange={setPersona}>
+                                        <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-white dark:bg-white/5 border-slate-200 dark:border-white/10"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex-1 min-h-0 flex flex-col gap-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Sources ({sources.length})</Label>
+                                    <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                                        {sources.length === 0 && (
+                                            <div className="text-center py-8 text-slate-300 dark:text-white/20">
+                                                <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                                                <p className="text-xs font-bold">No sources yet</p>
+                                            </div>
+                                        )}
+                                        {sources.map(s => (
+                                            <div key={s.id} className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                                                {s.type === 'file' ? <FileText className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" /> : <LinkIcon className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />}
+                                                <span className="text-[11px] font-semibold truncate flex-1 text-slate-700 dark:text-white/70">{s.name}</span>
+                                                <button onClick={() => removeSource(s.id)}><X className="w-3 h-3 text-slate-300 hover:text-red-500" /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="relative">
+                                        <input type="file" multiple accept=".pdf,.txt,.doc,.docx,.ppt,.pptx,image/*" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={e => addFiles(e.target.files)} />
+                                        <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-600 text-white text-xs font-black cursor-pointer hover:bg-indigo-700 transition-colors">
+                                            <FileUp className="w-4 h-4" /> Upload Files
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input ref={linkInputRef} type="url" placeholder="Paste a URL..." className="flex-1 h-10 px-3 rounded-xl text-xs bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 font-medium outline-none focus:ring-2 focus:ring-indigo-500" onKeyDown={e => e.key === 'Enter' && addLink()} />
+                                        <button onClick={addLink} className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600"><Plus className="w-4 h-4" /></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.aside>
+                    )}
+                </AnimatePresence>
+
+                {/* CENTER MAIN AREA */}
+                <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0A0A0A] overflow-hidden">
+
+                    {/* ── PHASE: LIBRARY ── */}
+                    {phase === 'library' && (
+                        <div className="flex-1 flex flex-col items-center justify-center p-10 text-center gap-8">
+                            <div className="w-20 h-20 rounded-[24px] bg-indigo-600/10 flex items-center justify-center">
+                                <BookOpen className="w-10 h-10 text-indigo-600" />
+                            </div>
+                            <div className="space-y-3 max-w-lg">
+                                <h2 className="text-3xl font-black uppercase tracking-tight">Research Studio</h2>
+                                <p className="text-slate-400 text-sm leading-relaxed">
+                                    {sources.length === 0
+                                        ? "Add PDFs, documents, or URLs to your library, then click \"Build Knowledge Base\" to begin."
+                                        : `${sources.length} source${sources.length > 1 ? 's' : ''} ready. Click the button below to synthesize your research.`}
+                                </p>
+                            </div>
+
+                            {sources.length > 0 && (
+                                <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+                                    <div className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-2">
+                                        {sources.slice(0, 3).map(s => (
+                                            <div key={s.id} className="flex items-center gap-2 text-xs text-slate-600 dark:text-white/60">
+                                                {s.type === 'file' ? <FileText className="w-3 h-3 text-indigo-400" /> : <LinkIcon className="w-3 h-3 text-emerald-400" />}
+                                                <span className="truncate">{s.name}</span>
+                                            </div>
+                                        ))}
+                                        {sources.length > 3 && <p className="text-xs text-slate-400">+{sources.length - 3} more</p>}
+                                    </div>
+                                    <Button
+                                        onClick={handleSynthesize}
+                                        disabled={loading}
+                                        className="w-full h-14 rounded-2xl bg-indigo-600 font-black text-sm shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 transition-all gap-3"
+                                    >
+                                        {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> {loadingMsg}</> : <><Zap className="w-5 h-5" /> Build Knowledge Base</>}
+                                    </Button>
+                                    <p className="text-xs text-slate-400">Persona: <span className="font-bold text-indigo-500">{persona}</span></p>
+                                </div>
+                            )}
+
+                            {sources.length === 0 && (
+                                <button onClick={() => setSidebarOpen(true)} className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/10 text-sm font-bold text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-all">
+                                    <Plus className="w-4 h-4" /> Open Source Library
+                                </button>
+                            )}
                         </div>
                     )}
 
-                    <div className="flex-1 overflow-y-auto p-10 no-scrollbar">
-                        {/* Phase 1: Knowledge Library */}
-                        {currentPhase === 'library' && (
-                            <div className="max-w-4xl mx-auto py-12">
-                                {sources.length === 0 ? (
-                                    <div className="text-center space-y-8 py-20 bg-slate-50 dark:bg-white/5 rounded-[48px] border-2 border-dashed border-slate-200 dark:border-white/10">
-                                        <div className="w-24 h-24 bg-indigo-600/10 rounded-[40px] flex items-center justify-center mx-auto text-indigo-600"><BookOpen className="w-10 h-10" /></div>
-                                        <div className="space-y-4">
-                                            <h2 className="text-4xl font-black uppercase tracking-tighter">Initialize Intelligence</h2>
-                                            <p className="text-slate-400 font-bold text-sm">Add research sources to activate the synthesis engine.</p>
+                    {/* ── PHASE: RESEARCH HUB ── */}
+                    {phase === 'research' && (
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            {/* Transform Bar */}
+                            <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02] overflow-x-auto flex-shrink-0">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300 mr-2 whitespace-nowrap">Transform:</span>
+                                {[
+                                    { id: 'briefing', label: 'Briefing Doc', color: 'indigo' },
+                                    { id: 'faq', label: 'FAQ Sheet', color: 'emerald' },
+                                    { id: 'timeline', label: 'Timeline', color: 'amber' },
+                                    { id: 'graph', label: 'Knowledge Graph', color: 'rose' }
+                                ].map(t => (
+                                    <button key={t.id} onClick={() => handleTransform(t.id)} disabled={loading}
+                                        className={`flex-shrink-0 px-4 h-8 rounded-full text-[10px] font-black uppercase tracking-wider border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all ${loading ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                        {t.label}
+                                    </button>
+                                ))}
+                                <div className="ml-auto flex-shrink-0">
+                                    <Button onClick={handleBuildSlides} disabled={loading} size="sm" className="h-8 rounded-full bg-indigo-600 font-black text-[10px] uppercase tracking-wider gap-2 px-5">
+                                        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <LayoutGrid className="w-3 h-3" />}
+                                        Build Slides
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Chat Area */}
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                {chatHistory.map((msg, i) => (
+                                    <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                        <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-xs font-black ${msg.role === 'user' ? 'bg-slate-200 dark:bg-white/10' : 'bg-indigo-600 text-white'}`}>
+                                            {msg.role === 'user' ? 'You' : 'AI'}
                                         </div>
-                                        <Button onClick={() => setSidebarOpen(true)} className="h-14 px-10 rounded-2xl bg-indigo-600 font-black shadow-xl shadow-indigo-600/30">Build Research Library</Button>
+                                        <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'user' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 font-medium' : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-white/80'}`}>
+                                            {msg.content}
+                                            {msg.role === 'ai' && (
+                                                <button onClick={() => saveNote(msg.content)} className="mt-3 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-indigo-400 transition-colors">
+                                                    <Copy className="w-3 h-3" /> Save to Notes
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="space-y-10">
-                                        <div className="p-10 rounded-[48px] bg-slate-50 dark:bg-indigo-600/5 border border-slate-200 dark:border-indigo-600/20 flex flex-col md:flex-row items-center justify-between gap-10">
-                                            <div className="space-y-2">
-                                                <h2 className="text-3xl font-black uppercase tracking-tighter">Library Synchronized</h2>
-                                                <p className="text-xs font-bold opacity-40 uppercase tracking-widest">{sources.length} active multi-source streams</p>
-                                            </div>
-                                            <Button onClick={handleSynthesizeAll} className="h-16 px-12 rounded-3xl bg-indigo-600 font-black text-base shadow-2xl shadow-indigo-600/20 hover:scale-105 transition-all">Generate Foundation</Button>
-                                        </div>
+                                ))}
+                                {isChatting && (
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center"><Loader2 className="w-4 h-4 text-white animate-spin" /></div>
+                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-sm text-slate-400 italic">Analyzing sources...</div>
                                     </div>
                                 )}
+                                <div ref={chatEndRef} />
                             </div>
-                        )}
 
-                        {/* Phase 2: Research Hub */}
-                        {currentPhase === 'research' && (
-                            <div className="h-full flex flex-col relative">
-                                <AnimatePresence>
-                                    {mermaidCode && (
-                                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-white dark:bg-white/5 border border-[#E8FF41]/20 my-10">
-                                            <div className="flex justify-between mb-8"><span className="text-[10px] font-black uppercase text-[#E8FF41]">Knowledge Map</span><Button variant="ghost" size="icon" onClick={() => setMermaidCode(null)}><X /></Button></div>
-                                            <div className="mermaid flex justify-center">{mermaidCode}</div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                            {/* Chat Input */}
+                            <div className="flex-shrink-0 p-4 border-t border-slate-100 dark:border-white/10">
+                                <div className="flex gap-3 items-end">
+                                    <Textarea
+                                        value={query}
+                                        onChange={e => setQuery(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleChat())}
+                                        placeholder="Ask anything about your research..."
+                                        rows={2}
+                                        className="flex-1 resize-none rounded-2xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-sm font-medium focus-visible:ring-indigo-500"
+                                    />
+                                    <Button onClick={handleChat} disabled={isChatting || !query.trim()} className="h-12 w-12 rounded-2xl bg-indigo-600 p-0 flex-shrink-0">
+                                        <Send className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                                <div className="max-w-3xl mx-auto w-full space-y-10 pb-32">
-                                    {chatHistory.map((msg, i) => (
-                                        <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-6 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${msg.role === 'user' ? 'bg-slate-100 dark:bg-white/10' : 'bg-[#E8FF41] text-black shadow-lg shadow-yellow-500/20'}`}>
-                                                {msg.role === 'user' ? <UserCircle className="w-6 h-6" /> : 'AI'}
-                                            </div>
-                                            <div className={`p-6 rounded-[28px] text-sm leading-relaxed max-w-[80%] ${msg.role === 'user' ? 'bg-slate-50 dark:bg-indigo-600/10 text-indigo-400 font-bold' : 'bg-slate-50 dark:bg-white/5 border border-white/5'}`}>
-                                                {msg.content}
-                                                {msg.role === 'ai' && (
-                                                    <div className="mt-6 flex gap-2 border-t border-black/5 dark:border-white/5 pt-4">
-                                                        <Button variant="ghost" size="sm" onClick={() => saveNote(msg.content)} className="h-8 rounded-lg text-[9px] font-black uppercase"><Copy className="w-3 h-3 mr-2" /> Save to Output</Button>
+                    {/* ── PHASE: SLIDE STUDIO ── */}
+                    {phase === 'slides' && (
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            {slides.length === 0 ? (
+                                <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center p-10">
+                                    <AlertCircle className="w-12 h-12 text-slate-200 dark:text-white/10" />
+                                    <p className="text-slate-400 font-bold text-sm">No slides yet. Go to Research Hub and click "Build Slides".</p>
+                                    <Button onClick={() => setPhase('research')} variant="outline" className="rounded-2xl">Go to Research Hub</Button>
+                                </div>
+                            ) : (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    {/* Slide View */}
+                                    <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center bg-[#0A0A0A]">
+                                        <div className="w-full max-w-4xl aspect-video rounded-[32px] overflow-hidden border border-white/10 shadow-2xl relative bg-[#0F0F0F] flex flex-col p-12 gap-6">
+                                            <div className="flex items-start gap-6">
+                                                <span className="text-7xl drop-shadow-2xl flex-shrink-0">{slides[activeSlide]?.emoji || '🎯'}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <h2 className="text-3xl font-black text-[#E8FF41] uppercase tracking-tight leading-none mb-4">
+                                                        {slides[activeSlide]?.title || 'Untitled'}
+                                                    </h2>
+                                                    <div className="space-y-3">
+                                                        {(slides[activeSlide]?.points || []).slice(0, 4).map((p: string, pi: number) => (
+                                                            <div key={pi} className="flex gap-3 items-start">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
+                                                                <p className="text-white/70 text-sm leading-relaxed">{p}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
-                                        </motion.div>
-                                    ))}
-
-                                    {synthesisText && (
-                                        <div className="p-8 rounded-[40px] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 mt-12 relative group">
-                                            <div className="absolute -top-3 left-8 px-4 py-1 bg-indigo-600 text-white rounded-full text-[9px] font-black uppercase tracking-widest">Synthetic Brain Summary</div>
-                                            <Textarea value={synthesisText} onChange={(e) => setSynthesisText(e.target.value)} className="min-h-[350px] border-none bg-transparent text-sm italic opacity-80 focus-visible:ring-0 p-2 scrollbar-hide" />
-                                            <div className="mt-6 flex justify-end"><Button onClick={handleBuildSlides} className="h-12 bg-indigo-600 px-10 rounded-2xl font-black text-xs">Transform to Slides</Button></div>
+                                            {slides[activeSlide]?.visual && (
+                                                <div className="mt-auto p-4 rounded-2xl bg-white/5 border border-white/5">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#E8FF41] mb-1">{slides[activeSlide].visual.label}</p>
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {(slides[activeSlide].visual.elements || []).map((el: string, ei: number) => (
+                                                            <span key={ei} className="px-3 py-1 rounded-full bg-white/5 text-xs font-bold text-white/50">{el}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="absolute bottom-6 right-8 text-[10px] font-black text-white/20">{activeSlide + 1} / {slides.length}</div>
                                         </div>
-                                    )}
-                                </div>
-
-                                <div className="sticky bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white dark:from-[#0A0A0A] to-transparent">
-                                    <div className="max-w-3xl mx-auto relative group">
-                                        <Input
-                                            placeholder="Ask your sources anything..."
-                                            className="h-16 rounded-[24px] bg-slate-100 dark:bg-white/10 border-none text-sm font-bold pl-8 shadow-2xl focus-visible:ring-2 focus-visible:ring-indigo-600"
-                                            value={userQuery} onChange={(e) => setUserQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleChatQuery()}
-                                        />
-                                        <Button onClick={handleChatQuery} className="absolute right-2 top-2 bottom-2 px-8 rounded-2xl bg-indigo-600 font-black text-xs hover:scale-105 transition-all">Analyze</Button>
                                     </div>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Phase 3: Slide Studio */}
-                        {currentPhase === 'slides' && slideData && (
-                            <div className="h-full flex flex-col space-y-12 py-12">
-                                <div className="max-w-4xl mx-auto w-full aspect-video scale-105">
-                                    <div className="h-full rounded-[40px] overflow-hidden bg-[#0A0A0A] text-white border border-white/10 relative p-16 shadow-2xl flex flex-col justify-center">
-                                        <div className="text-center space-y-10">
-                                            <span className="text-9xl block drop-shadow-2xl">{slideData[currentSlide]?.emoji || '🧬'}</span>
-                                            <h2 className="text-5xl font-black text-[#E8FF41] uppercase tracking-tighter leading-tight">{slideData[currentSlide]?.title}</h2>
-                                            <div className="space-y-4 max-w-2xl mx-auto">
-                                                {(slideData[currentSlide]?.points || []).slice(0, 3).map((p: string, pi: number) => (
-                                                    <p key={pi} className="text-base font-bold opacity-60 italic">{p}</p>
+                                    {/* Controls Bar */}
+                                    <div className="flex-shrink-0 p-4 bg-white dark:bg-[#0D0D0D] border-t border-slate-200 dark:border-white/10 flex items-center gap-4 flex-wrap">
+                                        {/* Prev/Next */}
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => setActiveSlide(v => Math.max(0, v - 1))} disabled={activeSlide === 0} className="w-9 h-9 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-white/5"><ChevronLeft className="w-4 h-4" /></button>
+                                            <div className="flex gap-1">
+                                                {slides.map((_, i) => (
+                                                    <button key={i} onClick={() => setActiveSlide(i)} className={`rounded-full transition-all ${i === activeSlide ? 'w-6 h-2 bg-indigo-600' : 'w-2 h-2 bg-slate-200 dark:bg-white/20 hover:bg-slate-400'}`} />
                                                 ))}
                                             </div>
+                                            <button onClick={() => setActiveSlide(v => Math.min(slides.length - 1, v + 1))} disabled={activeSlide === slides.length - 1} className="w-9 h-9 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-white/5"><ChevronRight className="w-4 h-4" /></button>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 ml-auto flex-wrap">
+                                            <Button onClick={downloadPDF} variant="outline" size="sm" className="rounded-xl h-9 gap-2 text-xs font-bold"><Download className="w-3.5 h-3.5" /> PDF</Button>
+                                            <Select value={selectedClass} onValueChange={setSelectedClass}>
+                                                <SelectTrigger className="w-44 h-9 rounded-xl text-xs font-bold"><SelectValue placeholder="Select Class" /></SelectTrigger>
+                                                <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Button onClick={handleShare} disabled={isSharing || !selectedClass} size="sm" className="h-9 rounded-xl bg-indigo-600 gap-2 text-xs font-bold px-5">
+                                                {isSharing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />} Share
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="max-w-4xl mx-auto w-full flex items-center justify-between bg-slate-50 dark:bg-white/5 p-8 rounded-[40px] border border-slate-200 dark:border-white/10">
-                                    <div className="flex items-center gap-3">
-                                        {slideData.map((_, i) => (
-                                            <button key={i} onClick={() => setCurrentSlide(i)} className={`h-2.5 rounded-full transition-all duration-500 ${i === currentSlide ? 'w-16 bg-[#E8FF41]' : 'w-2.5 bg-slate-300 dark:bg-white/10 hover:bg-white/30'}`}></button>
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <Button variant="ghost" onClick={downloadPDF} className="h-14 px-10 rounded-2xl border border-slate-200 dark:border-white/10 font-black text-[10px] uppercase tracking-widest"><Download className="w-4 h-4 mr-2" /> PDF</Button>
-                                        <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                            <SelectTrigger className="w-56 h-14 rounded-2xl border-none bg-indigo-600/10 text-indigo-600 font-black text-xs"><SelectValue placeholder="Distribution" /></SelectTrigger>
-                                            <SelectContent className="rounded-2xl">
-                                                {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        <Button disabled={isSharing || !selectedClass} onClick={handleShare} className="h-14 px-12 rounded-2xl bg-indigo-600 font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-600/30">
-                                            {isSharing ? <Loader2 className="animate-spin" /> : "Deploy Class"}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </main>
 
-                <InsightPanel />
+                {/* RIGHT PANEL - Notes */}
+                <AnimatePresence initial={false}>
+                    {notesOpen && (
+                        <motion.aside
+                            key="notes"
+                            initial={{ width: 0 }} animate={{ width: 280 }} exit={{ width: 0 }}
+                            transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                            className="border-l border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0D0D0D] flex-shrink-0 overflow-hidden"
+                        >
+                            <div className="w-[280px] h-full flex flex-col p-5 gap-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-amber-500">Saved Notes ({notes.length})</Label>
+                                    <button onClick={() => setNotesOpen(false)}><X className="w-4 h-4 text-slate-400" /></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                                    {notes.length === 0 && (
+                                        <div className="text-center py-8 text-slate-300 dark:text-white/20">
+                                            <StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                                            <p className="text-xs font-bold">No notes yet</p>
+                                        </div>
+                                    )}
+                                    {notes.map(n => (
+                                        <div key={n.id} className="p-3 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 group relative">
+                                            <p className="text-xs leading-relaxed text-slate-700 dark:text-white/70 line-clamp-4">{n.content}</p>
+                                            <button onClick={() => setNotes(prev => prev.filter(x => x.id !== n.id))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-3 h-3 text-red-400" /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {slides.length > 0 && (
+                                    <Button onClick={downloadPDF} variant="outline" size="sm" className="w-full rounded-xl h-10 gap-2 text-xs font-bold"><Download className="w-3.5 h-3.5" /> Export Slides PDF</Button>
+                                )}
+                            </div>
+                        </motion.aside>
+                    )}
+                </AnimatePresence>
             </div>
 
-            {/* v8 Processing Overlay (Studio Design) */}
+            {/* ===== GLOBAL LOADING OVERLAY ===== */}
             <AnimatePresence>
-                {isProcessing && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-3xl z-50 flex flex-col items-center justify-center p-10 text-center">
-                        <div className="relative mb-12">
-                            <motion.div animate={{ rotate: 360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="w-56 h-56 rounded-full border-[0.5px] border-indigo-500/20" />
-                            <motion.div animate={{ rotate: -360 }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }} className="absolute inset-3 rounded-full border-2 border-t-indigo-600 border-transparent shadow-[0_0_40px_rgba(79,70,229,0.3)]" />
-                            <div className="absolute inset-0 flex items-center justify-center"><Zap className="w-16 h-16 text-indigo-600 animate-pulse" /></div>
+                {loading && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-6"
+                    >
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+                            <div className="w-16 h-16 rounded-full border-4 border-t-indigo-600 border-slate-200 dark:border-white/10" />
+                        </motion.div>
+                        <div className="text-center">
+                            <p className="font-black text-lg">{loadingMsg}</p>
+                            <p className="text-xs text-slate-400 mt-1 animate-pulse">This may take up to 30 seconds...</p>
                         </div>
-                        <h3 className="text-4xl font-black uppercase tracking-[0.2em]">{progressLabel}</h3>
-                        <p className="mt-4 text-xs font-black uppercase tracking-[0.4em] opacity-30 animate-pulse">Syncing Knowledge Layers...</p>
                     </motion.div>
                 )}
             </AnimatePresence>
