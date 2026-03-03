@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         if (mode === 'chat') {
             const chatPrompt = `You are the Research Studio Hub Assistant for ${schoolName}. 
