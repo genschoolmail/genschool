@@ -43,68 +43,50 @@ export async function POST(req: NextRequest) {
         if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }); // Using Flash for speed and large context
-
-        let context = "THE RESEARCH LIBRARY:\n\n";
-
-        // 1. Process All Files
-        if (files.length > 0) {
-            for (const file of files) {
-                if (file.size === 0) continue;
-                const arrayBuffer = await file.arrayBuffer();
-                const base64 = Buffer.from(arrayBuffer).toString("base64");
-                const mimeType = file.type || "application/pdf";
-
-                context += `SOURCE FILE (${file.name}):\n`;
-                const fileResult = await model.generateContent([
-                    "Extract all critical instructional data, technical definitions, and core arguments from this document. Provide a dense, long-form reconstruction of the content (1000+ words if needed).",
-                    { inlineData: { data: base64, mimeType } }
-                ]);
-                context += fileResult.response.text() + "\n\n---\n";
-            }
-        }
-
-        // 2. Process All Links
-        if (links.length > 0) {
-            for (const link of links) {
-                const info = await scrapeLink(link);
-                context += `WEB SOURCE:\n${info}\n---\n`;
-            }
-        }
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Flash for speed
 
         const persona = (formData.get("persona") as string) || "Academic Deep Dive";
 
-        // 3. Master Synthesis for the Research Hub
-        const synthesisPrompt = `You are a World-Class Academic Researcher and Educator acting as a "${persona}".
-I have provided a MASSIVE amount of raw research data from multiple sources (Docs and Web).
+        // Build content parts for a SINGLE combined AI call
+        const parts: any[] = [];
+        const promptIntro = `You are a World-Class Academic Researcher acting as a "${persona}".
+Analyze ALL the provided sources and build a comprehensive research synthesis in ${language}.
 
-GOAL: Build a "Synthetic Brain" (Foundation) for a student lesson in ${language}.
+Persona style:
+- Academic Deep Dive: formal, theoretical, cite every concept.
+- Classroom Storytelling: use analogies and narrative flow.
+- Skeptical Analyst: find contradictions and data gaps.
+- Quick Summary: bullet-point, top 10% critical facts only.
+Active persona: ${persona}.
 
-TONE & PERSPECTIVE:
-- Use the perspective of a ${persona}.
-- ${persona === 'Academic Deep Dive' ? 'Be extremely formal, cite every theory, and focus on ontological foundations.' : ''}
-- ${persona === 'Classroom Storytelling' ? 'Use engaging analogies, vivid examples, and focus on narrative flow.' : ''}
-- ${persona === 'Skeptical Analyst' ? 'Focus on contradictions between sources, challenge the assumptions, and highlight data gaps.' : ''}
-- ${persona === 'Quick Summary' ? 'Be bulleted, punchy, and focus ONLY on the top 10% most critical facts.' : ''}
+Structure your response as:
+1. Executive Summary (2-3 paragraphs)
+2. Core Concepts & Mechanisms
+3. Key Facts & Statistics
+4. Strategic Takeaways for students
 
-REQUIRED STRUCTURE:
-1. Executive Summary: The big picture.
-2. Deep Dive: Exhaustive breakdown of core mechanics/theories.
-3. Comparative Analysis: How different sources agree or disagree.
-4. Key Statistics & Data Points: Explicit numbers and figures.
-5. Strategic Takeaways: What students MUST remember.
+Be concise but comprehensive. Respond in ${language}.`;
 
-RULES:
-- Be verbose and high-fidelity. If the source material is complex, keep it complex.
-- Use verbatim quotes for accuracy.
-- Respond in ${language}.
+        parts.push(promptIntro);
 
-RESEARCH DATA:
-${context}
+        // Add all file parts inline
+        for (const file of files) {
+            if (file.size === 0) continue;
+            const arrayBuffer = await file.arrayBuffer();
+            const base64 = Buffer.from(arrayBuffer).toString("base64");
+            const mimeType = file.type || "application/pdf";
+            parts.push({ inlineData: { data: base64, mimeType } });
+        }
 
-MASTER SYNTHESIS:`;
+        // Add scraped link content as text
+        for (const link of links) {
+            const info = await scrapeLink(link);
+            parts.push(`\nWEB SOURCE:\n${info}`);
+        }
 
-        const result = await model.generateContent(synthesisPrompt);
+        parts.push("\nMASTER SYNTHESIS:");
+
+        const result = await model.generateContent(parts);
         const synthesis = result.response.text();
 
         return NextResponse.json({ success: true, synthesis });

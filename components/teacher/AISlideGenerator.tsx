@@ -110,15 +110,26 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             fd.append('language', language);
             fd.append('persona', persona);
 
-            const res = await fetch('/api/teacher/synthesize-research', { method: 'POST', body: fd });
+            // Use AbortController to detect timeout
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 55000);
+
+            const res = await fetch('/api/teacher/synthesize-research', { method: 'POST', body: fd, signal: controller.signal });
+            clearTimeout(timeout);
             const data = await res.json();
             if (!res.ok || data.error) throw new Error(data.error || "Synthesis failed");
 
             setSynthesis(data.synthesis);
-            setChatHistory([{ role: 'ai', content: `✅ Knowledge base ready! I've synthesized ${sources.length} source(s) using the "${persona}" lens. What would you like to explore?` }]);
+            setChatHistory([{ role: 'ai', content: `✅ Knowledge base ready! Synthesized ${sources.length} source(s) using "${persona}" lens. Ask me anything!` }]);
             setPhase('research');
             toast.success("Knowledge base built!");
-        } catch (e: any) { toast.error(e.message); }
+        } catch (e: any) {
+            if (e.name === 'AbortError') {
+                toast.error("Synthesis timed out. Try with a smaller file or fewer sources.");
+            } else {
+                toast.error(e.message || "Synthesis failed. Please try again.");
+            }
+        }
         finally { setLoading(false); }
     };
 
@@ -242,11 +253,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                     {navTabs.map(tab => (
                         <button
                             key={tab.id}
-                            onClick={() => {
-                                if (tab.id === 'research' && !synthesis) return toast.error("Build your knowledge base first.");
-                                if (tab.id === 'slides' && !slides.length) return toast.error("Generate slides first.");
-                                setPhase(tab.id as Phase);
-                            }}
+                            onClick={() => setPhase(tab.id as Phase)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${phase === tab.id
                                     ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-md'
                                     : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
