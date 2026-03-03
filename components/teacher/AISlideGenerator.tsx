@@ -51,6 +51,16 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
     const [notes, setNotes] = useState<Note[]>([]);
     const [selectedClass, setSelectedClass] = useState("");
     const [isSharing, setIsSharing] = useState(false);
+    const [researchEditMode, setResearchEditMode] = useState(false);
+    const [editSynthesis, setEditSynthesis] = useState("");
+
+    // Safe render helper - prevents React Error #31
+    const safeStr = (val: any): string => {
+        if (val === null || val === undefined) return '';
+        if (typeof val === 'string') return val;
+        if (typeof val === 'number') return String(val);
+        return JSON.stringify(val);
+    };
 
     // Debug Logs
     const [logs, setLogs] = useState<{ t: string, m: string, type: 'info' | 'error' | 'success' }[]>([]);
@@ -490,72 +500,93 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                     {phase === 'research' && (
                         <div className="flex-1 flex flex-col overflow-hidden">
                             <div className="h-16 border-b border-slate-200 dark:border-white/[0.05] bg-white/50 dark:bg-[#0D0D0F]/50 backdrop-blur-2xl flex items-center gap-3 px-6 shrink-0 overflow-x-auto relative z-10">
-                                <div className="flex items-center gap-2 mr-4 shrink-0">
-                                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">AI TRANSFORMER</span>
+                                <div className="flex items-center bg-slate-100 dark:bg-white/[0.04] rounded-xl p-1 shrink-0">
+                                    <button onClick={() => setResearchEditMode(false)} className={`h-7 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!researchEditMode ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}>Chat</button>
+                                    <button onClick={() => { setResearchEditMode(true); setEditSynthesis(synthesis); }} className={`h-7 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${researchEditMode ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}>Edit Source</button>
                                 </div>
-                                <div className="flex gap-2">
+                                {!researchEditMode && <div className="flex gap-2">
                                     {['Teaching Briefing', 'FAQ List', 'Chronology'].map(t => (
                                         <button key={t} onClick={() => handleTransform(t)} disabled={!synthesis || loading} className="h-9 px-5 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/20 hover:text-indigo-500 transition-all disabled:opacity-20">{t}</button>
                                     ))}
-                                </div>
-                                <Button onClick={handleBuildSlides} disabled={!synthesis || loading} size="sm" className="ml-auto h-9 rounded-xl bg-indigo-600 font-black text-[10px] px-6 tracking-widest shadow-lg shadow-indigo-600/20">CREATE PRESENTATION</Button>
+                                </div>}
+                                {researchEditMode
+                                    ? <Button onClick={() => { setSynthesis(editSynthesis); setResearchEditMode(false); persistSnapshot({ synthesis: editSynthesis, chatHistory, slides, notes, persona, sources, phase }); toast.success("Source updated!"); }} size="sm" className="ml-auto h-9 rounded-xl bg-emerald-600 font-black text-[10px] px-6 tracking-widest shadow-lg">SAVE CHANGES</Button>
+                                    : <Button onClick={handleBuildSlides} disabled={!synthesis || loading} size="sm" className="ml-auto h-9 rounded-xl bg-indigo-600 font-black text-[10px] px-6 tracking-widest shadow-lg shadow-indigo-600/20">CREATE PRESENTATION</Button>
+                                }
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50 dark:bg-transparent">
-                                {!synthesis ? (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-5 max-w-sm mx-auto opacity-50">
-                                        <AlertCircle className="w-14 h-14" />
-                                        <div className="space-y-1">
-                                            <p className="font-black text-sm uppercase tracking-widest">Knowledge Base Locked</p>
-                                            <p className="text-xs font-medium">Please build your research library before accessing the intelligence hub.</p>
-                                        </div>
-                                        <Button onClick={() => setPhase('library')} size="sm" variant="outline" className="rounded-xl border-dashed px-8 font-black text-[10px]">BACK TO LIBRARY</Button>
+                            {researchEditMode ? (
+                                <div className="flex-1 flex flex-col p-8 overflow-hidden">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><FileText className="w-3.5 h-3.5 text-amber-500" /></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Research Source Editor — edit text below to refine AI grounding</span>
                                     </div>
-                                ) : (
-                                    <>
-                                        {chatHistory.map((m, i) => (
-                                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={i} className={`flex gap-5 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-[10px] font-black shadow-lg ${m.role === 'user' ? 'bg-slate-200 dark:bg-white/10' : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20'}`}>
-                                                    {m.role === 'user' ? 'YOU' : <Sparkles className="w-4 h-4" />}
+                                    <textarea
+                                        value={editSynthesis}
+                                        onChange={e => setEditSynthesis(e.target.value)}
+                                        className="flex-1 w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-[1.5rem] p-6 text-sm leading-[1.8] font-medium text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all custom-scrollbar"
+                                        placeholder="Your research synthesis will appear here for editing..."
+                                        spellCheck={false}
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-2 px-1">{editSynthesis.length.toLocaleString()} characters · Press "Save Changes" to update AI grounding</p>
+                                </div>
+                            ) : (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50 dark:bg-transparent">
+                                        {!synthesis ? (
+                                            <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-5 max-w-sm mx-auto opacity-50">
+                                                <AlertCircle className="w-14 h-14" />
+                                                <div className="space-y-1">
+                                                    <p className="font-black text-sm uppercase tracking-widest">Knowledge Base Locked</p>
+                                                    <p className="text-xs font-medium">Please build your research library before accessing the intelligence hub.</p>
                                                 </div>
-                                                <div className={`max-w-[80%] p-5 rounded-[1.75rem] text-sm leading-[1.6] whitespace-pre-wrap shadow-sm border ${m.role === 'user' ? 'bg-indigo-600 text-white border-none' : 'bg-white dark:bg-[#0F0F12] border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-slate-200'}`}>
-                                                    {m.content}
-                                                    {m.role === 'ai' && (
-                                                        <div className="flex gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05]">
-                                                            <button onClick={() => saveNote(m.content)} className="flex items-center gap-2 text-[10px] font-black text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-widest"><StickyNote className="w-3.5 h-3.5" /> SNAP TO NOTES</button>
-                                                            <button onClick={() => { navigator.clipboard.writeText(m.content); toast.success("Copied!"); }} className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"><Copy className="w-3.5 h-3.5" /> COPY RAW</button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                        {isChatting && (
-                                            <div className="flex gap-5">
-                                                <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20"><Loader2 className="w-5 h-5 text-white animate-spin" /></div>
-                                                <div className="p-5 rounded-[1.75rem] bg-white dark:bg-[#0F0F12] border border-slate-200 dark:border-white/[0.08] min-w-[120px] flex items-center gap-3">
-                                                    <span className="flex gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]" /><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]" /><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" /></span>
-                                                    <span className="text-[10px] font-black tracking-widest uppercase text-slate-400">Consulting Sources...</span>
-                                                </div>
+                                                <Button onClick={() => setPhase('library')} size="sm" variant="outline" className="rounded-xl border-dashed px-8 font-black text-[10px]">BACK TO LIBRARY</Button>
                                             </div>
+                                        ) : (
+                                            <>
+                                                {chatHistory.map((m, i) => (
+                                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={i} className={`flex gap-5 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-[10px] font-black shadow-lg ${m.role === 'user' ? 'bg-slate-200 dark:bg-white/10' : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20'}`}>
+                                                            {m.role === 'user' ? 'YOU' : <Sparkles className="w-4 h-4" />}
+                                                        </div>
+                                                        <div className={`max-w-[80%] p-5 rounded-[1.75rem] text-sm leading-[1.6] whitespace-pre-wrap shadow-sm border ${m.role === 'user' ? 'bg-indigo-600 text-white border-none' : 'bg-white dark:bg-[#0F0F12] border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-slate-200'}`}>
+                                                            {m.content}
+                                                            {m.role === 'ai' && (
+                                                                <div className="flex gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05]">
+                                                                    <button onClick={() => saveNote(m.content)} className="flex items-center gap-2 text-[10px] font-black text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-widest"><StickyNote className="w-3.5 h-3.5" /> SNAP TO NOTES</button>
+                                                                    <button onClick={() => { navigator.clipboard.writeText(m.content); toast.success("Copied!"); }} className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"><Copy className="w-3.5 h-3.5" /> COPY RAW</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                                {isChatting && (
+                                                    <div className="flex gap-5">
+                                                        <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20"><Loader2 className="w-5 h-5 text-white animate-spin" /></div>
+                                                        <div className="p-5 rounded-[1.75rem] bg-white dark:bg-[#0F0F12] border border-slate-200 dark:border-white/[0.08] min-w-[120px] flex items-center gap-3">
+                                                            <span className="flex gap-1.5"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]" /><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]" /><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" /></span>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase text-slate-400">Consulting Sources...</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div ref={chatEndRef} />
+                                            </>
                                         )}
-                                        <div ref={chatEndRef} />
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="p-8 border-t border-slate-200 dark:border-white/[0.05] bg-white/80 dark:bg-[#0D0D0F]/80 backdrop-blur-2xl">
-                                <div className="max-w-4xl mx-auto relative group">
-                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[1.5rem] opacity-0 group-focus-within:opacity-20 transition-all blur-md" />
-                                    <div className="relative flex gap-3 items-end p-2 rounded-[1.5rem] bg-slate-100/50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08]">
-                                        <Textarea value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleChat())}
-                                            placeholder={synthesis ? "Ask your research library anything..." : "Awaiting analysis..."}
-                                            disabled={!synthesis || isChatting}
-                                            className="flex-1 min-h-[56px] max-h-[250px] bg-transparent border-none text-sm font-semibold focus-visible:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-600 px-4 py-3" />
-                                        <Button onClick={handleChat} disabled={!query.trim() || !synthesis || isChatting} className="h-12 w-12 rounded-2xl bg-indigo-600 shrink-0 shadow-xl shadow-indigo-600/20 hover:scale-105 active:scale-95 transition-all"><Send className="w-5 h-5" /></Button>
+                                    </div>
+                                    <div className="p-8 border-t border-slate-200 dark:border-white/[0.05] bg-white/80 dark:bg-[#0D0D0F]/80 backdrop-blur-2xl">
+                                        <div className="max-w-4xl mx-auto relative group">
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[1.5rem] opacity-0 group-focus-within:opacity-20 transition-all blur-md" />
+                                            <div className="relative flex gap-3 items-end p-2 rounded-[1.5rem] bg-slate-100/50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08]">
+                                                <Textarea value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleChat())}
+                                                    placeholder={synthesis ? "Ask your research library anything..." : "Awaiting analysis..."}
+                                                    disabled={!synthesis || isChatting}
+                                                    className="flex-1 min-h-[56px] max-h-[250px] bg-transparent border-none text-sm font-semibold focus-visible:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-600 px-4 py-3" />
+                                                <Button onClick={handleChat} disabled={!query.trim() || !synthesis || isChatting} className="h-12 w-12 rounded-2xl bg-indigo-600 shrink-0 shadow-xl shadow-indigo-600/20 hover:scale-105 active:scale-95 transition-all"><Send className="w-5 h-5" /></Button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
 
@@ -572,18 +603,90 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                 <div className="flex-1 flex flex-col">
                                     <div className="flex-1 flex items-center justify-center p-12 bg-slate-200 dark:bg-black/60 relative overflow-hidden">
                                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-600/5 pointer-events-none" />
-                                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-5xl aspect-video bg-[#050508] rounded-[3.5rem] border border-white/[0.08] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.6)] overflow-hidden p-16 flex flex-col justify-center gap-8 relative ring-1 ring-white/10">
-                                            <div className="absolute top-10 left-16 text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] opacity-40">{schoolName} // {persona}</div>
-                                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter leading-[1.1] max-w-[90%]">{slides[activeSlide]?.title}</h2>
-                                            <ul className="space-y-4">
-                                                {slides[activeSlide]?.points?.map((p: string, pi: number) => (
-                                                    <motion.li initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} key={pi} className="flex gap-6 items-start">
-                                                        <div className="w-2 h-2 rounded-lg bg-indigo-500 mt-2.5 shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
-                                                        <p className="text-white/80 text-lg font-medium tracking-tight leading-relaxed">{p}</p>
-                                                    </motion.li>
-                                                ))}
-                                            </ul>
-                                            <div className="absolute bottom-10 right-16 text-[10px] font-black text-white/20 tracking-[0.25em]">{activeSlide + 1} OF {slides.length}</div>
+                                        <motion.div key={activeSlide} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.3 }} className="w-full max-w-5xl aspect-video bg-[#050508] rounded-[3.5rem] border border-white/[0.08] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.6)] overflow-hidden relative ring-1 ring-white/10">
+                                            {(() => {
+                                                const slide = slides[activeSlide] || {};
+                                                const layout: string = safeStr(slide.layout) || 'STUDIO_CENTER';
+                                                const emoji = safeStr(slide.emoji);
+                                                const title = safeStr(slide.title);
+                                                const points: string[] = Array.isArray(slide.points) ? slide.points.map((x: any) => safeStr(x)) : [];
+                                                const items: any[] = Array.isArray(slide.items) ? slide.items : [];
+                                                const steps: any[] = Array.isArray(slide.process_steps) ? slide.process_steps : [];
+                                                const branches: any[] = Array.isArray(slide.branches) ? slide.branches : [];
+                                                const centerNode = safeStr(slide.center_node || slide.title);
+                                                const visual = (slide.visual && typeof slide.visual === 'object') ? slide.visual : { label: '', elements: [] };
+                                                const keyStat = (slide.key_stat && typeof slide.key_stat === 'object') ? slide.key_stat : null;
+                                                const branchColors = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#f97316'];
+
+                                                if (layout === 'STUDIO_MINDMAP') return (
+                                                    <div className="flex flex-col h-full p-8">
+                                                        <div className="flex items-center gap-3 mb-3"><span className="text-2xl">{emoji}</span><h2 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                        <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                                                            <div className="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-[10px] text-center p-2 shadow-[0_0_40px_rgba(99,102,241,0.5)] absolute z-20">{centerNode}</div>
+                                                            {branches.slice(0, 6).map((branch: any, bi: number) => {
+                                                                const angle = (360 / Math.max(branches.length, 1)) * bi - 90;
+                                                                const rad = angle * (Math.PI / 180);
+                                                                const bx = Math.cos(rad) * 155;
+                                                                const by = Math.sin(rad) * 105;
+                                                                const color = branchColors[bi % branchColors.length];
+                                                                const kids: string[] = Array.isArray(branch.children) ? branch.children.map((c: any) => safeStr(c)) : [];
+                                                                return (
+                                                                    <div key={bi} className="absolute flex flex-col items-center gap-1.5" style={{ left: `calc(50% + ${bx}px)`, top: `calc(50% + ${by}px)`, transform: 'translate(-50%,-50%)' }}>
+                                                                        <div className="px-3 py-1 rounded-xl text-[9px] font-black text-white whitespace-nowrap shadow-lg" style={{ backgroundColor: color }}>{safeStr(branch.label)}</div>
+                                                                        <div className="flex flex-wrap gap-1 justify-center max-w-[140px]">
+                                                                            {kids.slice(0, 3).map((c, ci) => <span key={ci} className="text-[8px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/60 font-bold whitespace-nowrap">{c}</span>)}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                );
+
+                                                if (layout === 'STUDIO_SPLIT') {
+                                                    const elems: string[] = Array.isArray(visual.elements) ? visual.elements.map((e: any) => safeStr(e)) : [];
+                                                    return (
+                                                        <div className="flex h-full">
+                                                            <div className="flex-1 flex flex-col justify-center p-10 gap-5">
+                                                                <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                                <ul className="space-y-3">{points.map((p, pi) => <li key={pi} className="flex gap-3 items-start"><div className="w-1.5 h-1.5 rounded bg-indigo-500 mt-2 shrink-0" /><p className="text-white/80 text-sm font-medium leading-relaxed">{p}</p></li>)}</ul>
+                                                            </div>
+                                                            <div className="w-[36%] bg-white/[0.03] border-l border-white/[0.06] flex flex-col items-center justify-center gap-3 p-6">
+                                                                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{safeStr(visual.label) || 'DIAGRAM'}</p>
+                                                                <div className="w-full grid grid-cols-2 gap-2">{elems.map((el, ei) => <div key={ei} className="bg-indigo-600/20 rounded-xl px-3 py-2.5 text-[10px] font-bold text-indigo-200 text-center border border-indigo-500/20">{el}</div>)}</div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+
+                                                if (layout === 'STUDIO_GRID') return (
+                                                    <div className="flex flex-col h-full p-8 gap-4">
+                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                        <div className="flex-1 grid grid-cols-3 gap-3">{items.map((item: any, ii: number) => <motion.div key={ii} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: ii * 0.1 }} className="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 flex flex-col gap-2"><span className="text-2xl">{safeStr(item.emoji)}</span><p className="text-[10px] font-black text-white uppercase tracking-wide">{safeStr(item.title)}</p><p className="text-[10px] text-white/60 font-medium leading-relaxed">{safeStr(item.description)}</p></motion.div>)}</div>
+                                                    </div>
+                                                );
+
+                                                if (layout === 'STUDIO_TIMELINE') return (
+                                                    <div className="flex flex-col h-full p-8 gap-4">
+                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                        <div className="flex-1 flex items-center relative">
+                                                            <div className="absolute top-5 left-0 right-0 h-0.5 bg-indigo-500/20" />
+                                                            <div className="w-full flex">{steps.map((s: any, si: number) => <motion.div key={si} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: si * 0.12 }} className="flex-1 flex flex-col items-center gap-2 relative"><div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm z-10 shadow-[0_0_20px_rgba(99,102,241,0.4)]">{safeStr(s.step || si + 1)}</div><div className="text-center px-1"><p className="text-[9px] font-black text-[#E8FF41] uppercase tracking-wider">{safeStr(s.label)}</p><p className="text-[9px] text-white/55 mt-1 leading-relaxed">{safeStr(s.description)}</p></div></motion.div>)}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+
+                                                // STUDIO_CENTER (default)
+                                                return (
+                                                    <div className="flex flex-col justify-center h-full p-14 gap-6">
+                                                        <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter leading-tight max-w-[85%]">{title}</h2></div>
+                                                        {keyStat && <div className="flex items-baseline gap-3"><span className="text-6xl font-black text-white">{safeStr(keyStat.value)}</span><span className="text-sm font-bold text-white/40 uppercase tracking-wider">{safeStr(keyStat.label)}</span></div>}
+                                                        <ul className="space-y-4">{points.map((p, pi) => <motion.li key={pi} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} className="flex gap-6 items-start"><div className="w-2 h-2 rounded-lg bg-indigo-500 mt-2.5 shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.8)]" /><p className="text-white/80 text-lg font-medium tracking-tight leading-relaxed">{p}</p></motion.li>)}</ul>
+                                                    </div>
+                                                );
+                                            })()}
+                                            <div className="absolute top-6 left-10 text-[9px] font-black text-indigo-500 uppercase tracking-[0.4em] opacity-30">{schoolName} // {persona}</div>
+                                            <div className="absolute bottom-6 right-10 text-[9px] font-black text-white/15 tracking-[0.25em]">{activeSlide + 1} OF {slides.length}</div>
                                         </motion.div>
                                     </div>
 
@@ -648,27 +751,29 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                         </motion.aside>
                     )}
                 </AnimatePresence>
-            </div>
+            </div >
 
             {/* FULL SCREEN INITIALIZATION OVERLAY */}
             <AnimatePresence>
-                {loading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/95 dark:bg-[#08080A]/95 backdrop-blur-2xl z-[1000] flex flex-col items-center justify-center p-12 gap-10">
-                        <div className="relative">
-                            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-20 h-20 rounded-full border-t-[3px] border-indigo-600 border-slate-200 dark:border-white/[0.08]" />
-                            <Sparkles className="w-8 h-8 text-indigo-600 absolute inset-0 m-auto animate-pulse" />
-                            <motion.div initial={{ scale: 0.8 }} animate={{ scale: [0.8, 1.2, 0.8] }} transition={{ duration: 3, repeat: Infinity }} className="absolute -inset-8 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
-                        </div>
-                        <div className="text-center space-y-3">
-                            <motion.h3 animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="text-2xl font-black uppercase tracking-tight">{loadingMsg}</motion.h3>
-                            <p className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase">Deep Intelligence Bridge Active</p>
-                            <div className="max-w-xs mx-auto pt-4 flex gap-1 justify-center">
-                                {[0, 1, 2, 3, 4].map(i => <motion.div key={i} animate={{ backgroundColor: ['rgba(99,102,241,0.2)', 'rgba(99,102,241,1)', 'rgba(99,102,241,0.2)'] }} transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} className="w-8 h-1 rounded-full" />)}
+                {
+                    loading && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/95 dark:bg-[#08080A]/95 backdrop-blur-2xl z-[1000] flex flex-col items-center justify-center p-12 gap-10">
+                            <div className="relative">
+                                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="w-20 h-20 rounded-full border-t-[3px] border-indigo-600 border-slate-200 dark:border-white/[0.08]" />
+                                <Sparkles className="w-8 h-8 text-indigo-600 absolute inset-0 m-auto animate-pulse" />
+                                <motion.div initial={{ scale: 0.8 }} animate={{ scale: [0.8, 1.2, 0.8] }} transition={{ duration: 3, repeat: Infinity }} className="absolute -inset-8 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
                             </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                            <div className="text-center space-y-3">
+                                <motion.h3 animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="text-2xl font-black uppercase tracking-tight">{loadingMsg}</motion.h3>
+                                <p className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase">Deep Intelligence Bridge Active</p>
+                                <div className="max-w-xs mx-auto pt-4 flex gap-1 justify-center">
+                                    {[0, 1, 2, 3, 4].map(i => <motion.div key={i} animate={{ backgroundColor: ['rgba(99,102,241,0.2)', 'rgba(99,102,241,1)', 'rgba(99,102,241,0.2)'] }} transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} className="w-8 h-1 rounded-full" />)}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }

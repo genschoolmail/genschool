@@ -37,19 +37,11 @@ export async function POST(req: NextRequest) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
-        // --- DYNAMIC MODEL DISCOVERY & FALLBACK ---
         const authorized = await listAuthorizedModels(apiKey);
         const modelsToTry = [
-            "gemini-2.0-flash",
-            "gemini-2.0-flash-exp",
-            "gemini-2.0-pro-exp-02-05",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-pro"
+            "gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-2.0-pro-exp-02-05",
+            "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"
         ];
-
-        // Add discovered models that aren't in our list
         const discovered = authorized.split(', ').map(m => m.trim()).filter(m => m && !modelsToTry.includes(m));
         const finalModelsToTry = [...modelsToTry, ...discovered];
 
@@ -57,62 +49,78 @@ export async function POST(req: NextRequest) {
         let lastError = "";
         let usedModel = "";
 
-        // Prepare Prompts
         let prompt = "";
         if (mode === 'chat') {
             prompt = `You are the Research Studio Hub Assistant for ${schoolName}. 
 Role: You are communicating as a "${persona}".
 Using ONLY the "Research Summary" below, answer this specific educator query: "${customQuery}"
-RULES: Maintain persona, cite summary, respond in ${language}.
+RULES: Maintain persona, cite summary sections, respond in ${language}.
 RESEARCH SUMMARY: ${summary}
 ANSWER:`;
         } else if (mode === 'transform') {
-            if (template === 'briefing') {
+            if (template === 'Teaching Briefing') {
                 prompt = `Create a 2-page formal educator's BRIEFING DOC from this research summary. Focus on instructional strategies. Language: ${language}. Summary: ${summary}`;
-            } else if (template === 'faq') {
+            } else if (template === 'FAQ List') {
                 prompt = `Create a list of 10 complex FAQ items (Question + Answer) for students based on summary. Language: ${language}. Summary: ${summary}`;
-            } else if (template === 'timeline') {
-                prompt = `Convert core process into a structured CHRONOLOGICAL TIMELINE. Language: ${language}. Summary: ${summary}`;
+            } else if (template === 'Chronology') {
+                prompt = `Convert core process/events into a structured CHRONOLOGICAL TIMELINE with milestones. Language: ${language}. Summary: ${summary}`;
             } else {
                 prompt = `Summarize key insights. Language: ${language}. Summary: ${summary}`;
             }
         } else {
-            // Slide Generation
-            prompt = `Build a "Studio v2: Card-Native" slide deck in ${language} for ${teacherName}.
-Generate 10-12 slides using the STUDIO_CENTER, STUDIO_SPLIT, STUDIO_GRID, STUDIO_TIMELINE layouts.
-JSON SPEC: Array of objects with type, layout, emoji, title, points[], visual{type,label,elements[]}, speaker_notes.
-Respond ONLY with JSON. SUMMARY: ${summary}
-SLIDE JSON:`;
+            // Rich Slide Generation with MindMap + Visual Metadata
+            prompt = `You are a World-Class Curriculum Architect. Build an engaging slide deck in ${language} for ${teacherName} at ${schoolName}.
+
+AVAILABLE LAYOUTS:
+- "STUDIO_CENTER": Hero slide with massive title, a key_stat (value+label), and speaker_notes.
+- "STUDIO_SPLIT": Left side = text points, Right side = visual object with type/label/elements array.
+- "STUDIO_GRID": 3 grid items, each with emoji, title, description.
+- "STUDIO_TIMELINE": process_steps array, each with step number, label, description.
+- "STUDIO_MINDMAP": A concept map. Has center_node (string) and branches (array of {label, children: string[]}).
+
+RULES:
+1. Include AT LEAST 1 STUDIO_MINDMAP slide (typically the 2nd or 3rd slide) to show concept relationships.
+2. Include AT LEAST 2 STUDIO_SPLIT slides with descriptive visual objects.
+3. Include AT LEAST 1 STUDIO_TIMELINE for any process/sequence topics.
+4. All text fields must be strings (not objects). points must be an array of strings.
+5. speaker_notes must be a string of 1-2 sentences.
+6. Respond ONLY with a valid JSON array. No markdown, no code fences.
+
+JSON EXAMPLE:
+[
+  {"layout":"STUDIO_CENTER","emoji":"🧬","title":"DNA REPLICATION","key_stat":{"value":"99.99%","label":"Accuracy Rate"},"speaker_notes":"Emphasize the proofreading enzymes."},
+  {"layout":"STUDIO_MINDMAP","emoji":"🧠","title":"CORE CONCEPTS","center_node":"DNA","branches":[{"label":"Structure","children":["Double Helix","Base Pairs","Sugar-Phosphate"]},{"label":"Function","children":["Replication","Transcription","Translation"]}],"speaker_notes":"Walk through each branch slowly."},
+  {"layout":"STUDIO_SPLIT","emoji":"⚗️","title":"ENZYME ROLES","points":["Helicase unzips the double helix","DNA Polymerase adds new nucleotides","Ligase seals the backbone"],"visual":{"type":"diagram","label":"REPLICATION FORK","color":"indigo","elements":["Helicase","Template","Polymerase","New Strand"]},"speaker_notes":"Draw the fork on the board."},
+  {"layout":"STUDIO_GRID","emoji":"🔬","title":"THREE KEY PLAYERS","items":[{"emoji":"🔩","title":"Helicase","description":"Unwinds and separates the DNA double helix at the replication fork"},{"emoji":"🏗️","title":"Polymerase","description":"Synthesizes new DNA strands by adding complementary nucleotides"},{"emoji":"🔗","title":"Ligase","description":"Joins Okazaki fragments on the lagging strand together"}],"speaker_notes":"Students often confuse these three."},
+  {"layout":"STUDIO_TIMELINE","emoji":"⏱️","title":"REPLICATION STEPS","process_steps":[{"step":1,"label":"Initiation","description":"Origin of replication opens"},{"step":2,"label":"Unwinding","description":"Helicase separates strands"},{"step":3,"label":"Synthesis","description":"DNA Polymerase builds new strands"},{"step":4,"label":"Termination","description":"Strands rejoin and proofread"}],"speaker_notes":"This is a linear process."}
+]
+
+Generate 10-12 slides covering the full topic. Use all layout types.
+RESEARCH SUMMARY:
+${summary}
+
+JSON ONLY:`;
         }
 
-        // --- FALLBACK LOOP (Quota Resilience) ---
         for (const modelName of finalModelsToTry) {
             try {
                 console.log(`[GEN_SLIDES] Trying ${modelName}...`);
                 const genAI = new GoogleGenerativeAI(apiKey);
                 const model = genAI.getGenerativeModel({ model: modelName });
-
                 const response = await model.generateContent(prompt);
-                if (response && response.response) {
+                if (response?.response) {
                     result = response;
                     usedModel = modelName;
                     break;
                 }
             } catch (e: any) {
-                console.error(`[GEN_SLIDES] ${modelName} failed:`, e.message);
+                console.error(`[GEN_SLIDES] ${modelName} failed:`, e.message.slice(0, 80));
                 lastError = e.message;
-                // If it's a 429 or 404, we continue to the next model
-                if (e.message?.includes("429") || e.message?.includes("404")) continue;
-                // For other errors, we might want to stop, but let's be aggressive and try all
             }
         }
 
         if (!result) {
-            return NextResponse.json({
-                error: "All AI Engines exhausted or over quota.",
-                debug: lastError,
-                discovery: `Tried: ${finalModelsToTry.join(', ')}`
-            }, { status: 500 });
+            return NextResponse.json({ error: "All AI Engines exhausted or over quota.", debug: lastError }, { status: 500 });
         }
 
         const text = result.response.text();
@@ -120,9 +128,11 @@ SLIDE JSON:`;
         if (mode === 'chat') return NextResponse.json({ success: true, answer: text, model: usedModel });
         if (mode === 'transform') return NextResponse.json({ success: true, output: text, model: usedModel });
 
-        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        // Clean JSON - remove markdown fences if present
+        const cleaned = text.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+        const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
         if (!jsonMatch) {
-            return NextResponse.json({ error: "AI failed to build valid JSON deck.", debug: text.slice(0, 100) }, { status: 500 });
+            return NextResponse.json({ error: "AI failed to build valid JSON deck.", debug: text.slice(0, 200) }, { status: 500 });
         }
 
         const slideData = JSON.parse(jsonMatch[0]);
