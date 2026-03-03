@@ -306,21 +306,96 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const W = doc.internal.pageSize.getWidth();
         const H = doc.internal.pageSize.getHeight();
+
         slides.forEach((slide, i) => {
             if (i > 0) doc.addPage();
-            doc.setFillColor(15, 15, 20).rect(0, 0, W, H, 'F');
-            doc.setTextColor(232, 255, 65).setFontSize(26).setFont('helvetica', 'bold');
-            doc.text((slide.title || '').toUpperCase(), 20, 35);
-            doc.setTextColor(255, 255, 255).setFontSize(14).setFont('helvetica', 'normal');
-            let y = 55;
-            (slide.points || []).forEach((p: string) => {
-                const lines = doc.splitTextToSize(`• ${p}`, W - 40);
-                doc.text(lines, 20, y);
-                y += lines.length * 9;
-            });
-            doc.setFontSize(9).setTextColor(80, 80, 100).text(`${schoolName} | Slide ${i + 1}`, 20, H - 12);
+
+            // Background
+            doc.setFillColor(10, 10, 15).rect(0, 0, W, H, 'F');
+
+            const layout = safeStr(slide.layout) || 'STUDIO_CENTER';
+            const title = safeStr(slide.title).toUpperCase();
+            const emoji = safeStr(slide.emoji);
+
+            // Header for all slides
+            doc.setTextColor(232, 255, 65).setFontSize(22).setFont('helvetica', 'bold');
+            doc.text(`${emoji} ${title}`, 15, 20);
+
+            if (layout === 'STUDIO_MINDMAP') {
+                const center = safeStr(slide.center_node || slide.title);
+                const branches = Array.isArray(slide.branches) ? slide.branches : [];
+                doc.setDrawColor(99, 102, 241).setLineWidth(0.5);
+                doc.setFillColor(99, 102, 241).circle(W / 2, H / 2, 15, 'F');
+                doc.setTextColor(255).setFontSize(10).text(doc.splitTextToSize(center, 25), W / 2, H / 2 + 2, { align: 'center' });
+
+                branches.slice(0, 6).forEach((b: any, bi: number) => {
+                    const angle = (360 / Math.max(branches.length, 1)) * bi - 90;
+                    const rad = angle * (Math.PI / 180);
+                    const bx = W / 2 + Math.cos(rad) * 60;
+                    const by = H / 2 + Math.sin(rad) * 45;
+                    doc.line(W / 2, H / 2, bx, by);
+                    doc.setFillColor(255, 255, 255, 0.1).rect(bx - 20, by - 5, 40, 10, 'F');
+                    doc.setTextColor(232, 255, 65).setFontSize(8).text(safeStr(b.label), bx, by + 1, { align: 'center' });
+                });
+            } else if (layout === 'STUDIO_GRAPH') {
+                const labels = Array.isArray(slide.labels) ? slide.labels : [];
+                const values = Array.isArray(slide.values) ? slide.values.map(Number) : [];
+                const chartType = safeStr(slide.chart_type);
+                if (chartType === 'pie') {
+                    doc.setDrawColor(255, 255, 255, 0.2).circle(W / 2, H / 2 + 10, 30, 'S');
+                    doc.setTextColor(255).setFontSize(12).text("PIE CHART DATA", W / 2, H / 2 + 12, { align: 'center' });
+                } else {
+                    const max = Math.max(...values, 1);
+                    values.forEach((v: number, vi: number) => {
+                        const bw = 20;
+                        const bh = (v / max) * 50;
+                        const bx = 40 + vi * 30;
+                        doc.setFillColor(99, 102, 241).rect(bx, H - 40 - bh, bw, bh, 'F');
+                        doc.setTextColor(255).setFontSize(7).text(labels[vi] || "", bx + 10, H - 35, { align: 'center', angle: 45 });
+                    });
+                }
+            } else if (layout === 'STUDIO_GRID') {
+                const items = Array.isArray(slide.items) ? slide.items : [];
+                items.slice(0, 3).forEach((item: any, ii: number) => {
+                    const x = 20 + ii * 85;
+                    doc.setFillColor(255, 255, 255, 0.05).rect(x, 40, 80, 80, 'F');
+                    doc.setTextColor(255).setFontSize(12).text(safeStr(item.emoji), x + 10, 55);
+                    doc.setTextColor(232, 255, 65).setFontSize(10).text(safeStr(item.title).toUpperCase(), x + 10, 65);
+                    doc.setTextColor(200).setFontSize(8).text(doc.splitTextToSize(safeStr(item.description), 70), x + 10, 75);
+                });
+            } else if (layout === 'STUDIO_TIMELINE') {
+                const steps = Array.isArray(slide.process_steps) ? slide.process_steps : [];
+                doc.setDrawColor(99, 102, 241).line(20, 70, W - 20, 70);
+                steps.slice(0, 4).forEach((s: any, si: number) => {
+                    const x = 40 + si * 60;
+                    doc.setFillColor(99, 102, 241).circle(x, 70, 5, 'F');
+                    doc.setTextColor(232, 255, 65).setFontSize(9).text(safeStr(s.label), x, 60, { align: 'center' });
+                    doc.setTextColor(180).setFontSize(7).text(doc.splitTextToSize(safeStr(s.description), 50), x, 80, { align: 'center' });
+                });
+            } else if (layout === 'STUDIO_SPLIT') {
+                const points = Array.isArray(slide.points) ? slide.points : [];
+                doc.setTextColor(255).setFontSize(12);
+                points.forEach((p: string, pi: number) => {
+                    doc.text(`• ${safeStr(p)}`, 20, 50 + pi * 10);
+                });
+                doc.setFillColor(255, 255, 255, 0.05).rect(W - 100, 40, 80, 100, 'F');
+                doc.setTextColor(99, 102, 241).setFontSize(10).text("VISUAL ASSET", W - 60, 90, { align: 'center' });
+            } else {
+                // Default / STUDIO_CENTER
+                const keyStat = slide.key_stat || {};
+                doc.setTextColor(255).setFontSize(40).text(safeStr(keyStat.value || ""), W / 2, H / 2, { align: 'center' });
+                doc.setTextColor(150).setFontSize(14).text(safeStr(keyStat.label || "").toUpperCase(), W / 2, H / 2 + 15, { align: 'center' });
+                const points = Array.isArray(slide.points) ? slide.points : [];
+                doc.setTextColor(200).setFontSize(12);
+                points.slice(0, 3).forEach((p: string, pi: number) => doc.text(`• ${safeStr(p)}`, W / 2, H / 2 + 35 + pi * 10, { align: 'center' }));
+            }
+
+            // Footer
+            doc.setFontSize(8).setTextColor(80, 80, 100).text(`${schoolName.toUpperCase()} // ${teacherName.toUpperCase()}`, 15, H - 10);
+            doc.text(`PAGE ${i + 1} OF ${slides.length}`, W - 15, H - 10, { align: 'right' });
         });
-        doc.save(`${schoolName.replace(/\s/g, '_')}_Slides.pdf`);
+
+        doc.save(`${schoolName.replace(/\s/g, '_')}_Presentation.pdf`);
     };
 
     return (
@@ -616,6 +691,11 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 const centerNode = safeStr(slide.center_node || slide.title);
                                                 const visual = (slide.visual && typeof slide.visual === 'object') ? slide.visual : { label: '', elements: [] };
                                                 const keyStat = (slide.key_stat && typeof slide.key_stat === 'object') ? slide.key_stat : null;
+                                                const chartType = safeStr(slide.chart_type) || 'bar';
+                                                const labels: string[] = Array.isArray(slide.labels) ? slide.labels.map((x: any) => safeStr(x)) : [];
+                                                const values: number[] = Array.isArray(slide.values) ? slide.values.map((x: any) => Number(x) || 0) : [];
+                                                const nodes: string[] = Array.isArray(slide.nodes) ? slide.nodes.map((x: any) => safeStr(x)) : [];
+                                                const edges: any[] = Array.isArray(slide.edges) ? slide.edges : [];
                                                 const branchColors = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#f97316'];
 
                                                 if (layout === 'STUDIO_MINDMAP') return (
@@ -672,6 +752,70 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                         <div className="flex-1 flex items-center relative">
                                                             <div className="absolute top-5 left-0 right-0 h-0.5 bg-indigo-500/20" />
                                                             <div className="w-full flex">{steps.map((s: any, si: number) => <motion.div key={si} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: si * 0.12 }} className="flex-1 flex flex-col items-center gap-2 relative"><div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm z-10 shadow-[0_0_20px_rgba(99,102,241,0.4)]">{safeStr(s.step || si + 1)}</div><div className="text-center px-1"><p className="text-[9px] font-black text-[#E8FF41] uppercase tracking-wider">{safeStr(s.label)}</p><p className="text-[9px] text-white/55 mt-1 leading-relaxed">{safeStr(s.description)}</p></div></motion.div>)}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+
+                                                if (layout === 'STUDIO_GRAPH') return (
+                                                    <div className="flex flex-col h-full p-8 gap-6">
+                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                        <div className="flex-1 flex items-center justify-center">
+                                                            {chartType === 'pie' ? (
+                                                                <div className="relative w-64 h-64">
+                                                                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                                                                        {(() => {
+                                                                            let total = values.reduce((a, b) => a + b, 0) || 1;
+                                                                            let acc = 0;
+                                                                            return values.map((v, i) => {
+                                                                                const p = (v / total) * 100;
+                                                                                const dash = `${p} ${100 - p}`;
+                                                                                const offset = -acc;
+                                                                                acc += p;
+                                                                                return <circle key={i} cx="50" cy="50" r="40" fill="transparent" stroke={['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6'][i % 5]} strokeWidth="20" strokeDasharray={dash} strokeDashoffset={offset} className="transition-all duration-1000" />;
+                                                                            });
+                                                                        })()}
+                                                                    </svg>
+                                                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                                                                        <span className="text-[10px] font-black opacity-40 uppercase">Total</span>
+                                                                        <span className="text-xl font-bold">{values.reduce((a, b) => a + b, 0)}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-end gap-4 px-10 pb-10 border-l border-b border-white/10">
+                                                                    {values.map((v, i) => {
+                                                                        const max = Math.max(...values, 1);
+                                                                        const h = (v / max) * 100;
+                                                                        return (
+                                                                            <div key={i} className="flex-1 flex flex-col items-center gap-3">
+                                                                                <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} className="w-full rounded-t-xl bg-gradient-to-t from-indigo-600 to-indigo-400 relative group shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                                                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">{v}</div>
+                                                                                </motion.div>
+                                                                                <span className="text-[9px] font-bold text-white/40 rotate-45 origin-left whitespace-nowrap">{labels[i] || `Item ${i + 1}`}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+
+                                                if (layout === 'STUDIO_DIAGRAM') return (
+                                                    <div className="flex flex-col h-full p-8 gap-6">
+                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                        <div className="flex-1 flex flex-wrap items-center justify-center gap-10 p-10">
+                                                            {nodes.map((node, ni) => (
+                                                                <React.Fragment key={ni}>
+                                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: ni * 0.1 }} className="px-6 py-4 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-100 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/10 min-w-[120px] text-center">
+                                                                        {node}
+                                                                    </motion.div>
+                                                                    {ni < nodes.length - 1 && (
+                                                                        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: ni * 0.1 + 0.2 }}>
+                                                                            <ArrowRight className="w-6 h-6 text-indigo-500/40" />
+                                                                        </motion.div>
+                                                                    )}
+                                                                </React.Fragment>
+                                                            ))}
                                                         </div>
                                                     </div>
                                                 );

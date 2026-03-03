@@ -77,22 +77,25 @@ AVAILABLE LAYOUTS:
 - "STUDIO_GRID": 3 grid items, each with emoji, title, description.
 - "STUDIO_TIMELINE": process_steps array, each with step number, label, description.
 - "STUDIO_MINDMAP": A concept map. Has center_node (string) and branches (array of {label, children: string[]}).
+- "STUDIO_GRAPH": Data visualization. Has chart_type ("bar" | "pie"), labels (string[]), and values (number[]).
+- "STUDIO_DIAGRAM": Flowchart/Process. Has nodes (string[]) and edges (array of {from, to, label}).
 
 RULES:
 1. Include AT LEAST 1 STUDIO_MINDMAP slide (typically the 2nd or 3rd slide) to show concept relationships.
-2. Include AT LEAST 2 STUDIO_SPLIT slides with descriptive visual objects.
-3. Include AT LEAST 1 STUDIO_TIMELINE for any process/sequence topics.
-4. All text fields must be strings (not objects). points must be an array of strings.
-5. speaker_notes must be a string of 1-2 sentences.
-6. Respond ONLY with a valid JSON array. No markdown, no code fences.
+2. Include AT LEAST 1 STUDIO_GRAPH if there are any statistics or comparisons in the summary.
+3. Include AT LEAST 1 STUDIO_DIAGRAM for any complex logic or "how it works" sections.
+4. Include AT LEAST 2 STUDIO_SPLIT slides with descriptive visual objects.
+5. All text fields must be strings (not objects). points must be an array of strings.
+6. speaker_notes must be a string of 1-2 sentences.
+7. Respond ONLY with a valid JSON array. No markdown, no code fences.
 
 JSON EXAMPLE:
 [
   {"layout":"STUDIO_CENTER","emoji":"🧬","title":"DNA REPLICATION","key_stat":{"value":"99.99%","label":"Accuracy Rate"},"speaker_notes":"Emphasize the proofreading enzymes."},
+  {"layout":"STUDIO_GRAPH","emoji":"📊","title":"MARKET GROWTH","chart_type":"bar","labels":["2022","2023","2024"],"values":[45,78,120],"speaker_notes":"Notice the exponential jump in 2024."},
   {"layout":"STUDIO_MINDMAP","emoji":"🧠","title":"CORE CONCEPTS","center_node":"DNA","branches":[{"label":"Structure","children":["Double Helix","Base Pairs","Sugar-Phosphate"]},{"label":"Function","children":["Replication","Transcription","Translation"]}],"speaker_notes":"Walk through each branch slowly."},
-  {"layout":"STUDIO_SPLIT","emoji":"⚗️","title":"ENZYME ROLES","points":["Helicase unzips the double helix","DNA Polymerase adds new nucleotides","Ligase seals the backbone"],"visual":{"type":"diagram","label":"REPLICATION FORK","color":"indigo","elements":["Helicase","Template","Polymerase","New Strand"]},"speaker_notes":"Draw the fork on the board."},
-  {"layout":"STUDIO_GRID","emoji":"🔬","title":"THREE KEY PLAYERS","items":[{"emoji":"🔩","title":"Helicase","description":"Unwinds and separates the DNA double helix at the replication fork"},{"emoji":"🏗️","title":"Polymerase","description":"Synthesizes new DNA strands by adding complementary nucleotides"},{"emoji":"🔗","title":"Ligase","description":"Joins Okazaki fragments on the lagging strand together"}],"speaker_notes":"Students often confuse these three."},
-  {"layout":"STUDIO_TIMELINE","emoji":"⏱️","title":"REPLICATION STEPS","process_steps":[{"step":1,"label":"Initiation","description":"Origin of replication opens"},{"step":2,"label":"Unwinding","description":"Helicase separates strands"},{"step":3,"label":"Synthesis","description":"DNA Polymerase builds new strands"},{"step":4,"label":"Termination","description":"Strands rejoin and proofread"}],"speaker_notes":"This is a linear process."}
+  {"layout":"STUDIO_DIAGRAM","emoji":"⚙️","title":"WORKFLOW","nodes":["Input","Process","Output"],"edges":[{"from":"Input","to":"Process","label":"Upload"},{"from":"Process","to":"Output","label":"Analyze"}],"speaker_notes":"This is the core pipeline."},
+  {"layout":"STUDIO_SPLIT","emoji":"⚗️","title":"ENZYME ROLES","points":["Helicase unzips the double helix","DNA Polymerase adds new nucleotides","Ligase seals the backbone"],"visual":{"type":"diagram","label":"REPLICATION FORK","color":"indigo","elements":["Helicase","Template","Polymerase","New Strand"]},"speaker_notes":"Draw the fork on the board."}
 ]
 
 Generate 10-12 slides covering the full topic. Use all layout types.
