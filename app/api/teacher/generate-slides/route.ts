@@ -12,7 +12,16 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { summary, language = "English", teacherName = "Teacher", schoolName = "School" } = body;
+        const {
+            summary,
+            language = "English",
+            teacherName = "Teacher",
+            schoolName = "School",
+            mode = 'slides',
+            customQuery = '',
+            persona = "Academic Deep Dive",
+            template = 'briefing'
+        } = body;
 
         if (!summary) return NextResponse.json({ error: "No research summary provided" }, { status: 400 });
 
@@ -20,37 +29,79 @@ export async function POST(req: NextRequest) {
         if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-        const prompt = `You are a world-class curriculum designer for ${schoolName}. Use the provided Research Summary to create an ultra-premium, NotebookLM (2025 Edition) slide deck in ${language} for ${teacherName}'s class.
+        if (mode === 'chat') {
+            const chatPrompt = `You are the Research Studio Hub Assistant for ${schoolName}. 
+Role: You are communicating as a "${persona}".
+Using ONLY the "Research Summary" below, answer this specific educator query: "${customQuery}"
 
 RULES:
-1. **DITTO DESIGN:** Mimic the latest NotebookLM aesthetics: soft pastel gradients, clean white containers, and bold modern typography.
-2. **LAYOUT DIVERSITY:** Every slide MUST specify a "layout" from these types:
-   - "SPLIT_IMAGE": 50% technical illustration / 50% narrative text.
-   - "GRID_CARDS": 2x2 or 3-column micro-cards for features/steps.
-   - "HERO_STAT": Center-aligned massive typography for a single profound fact or quote.
-   - "DEEP_DIVE": Traditional content layout but with 32px rounded padding.
+1. Maintain the persona: ${persona}.
+2. Be professional, detailed, and cite sections of the summary.
+3. If the user asks for a simplification, provide it while maintaining technical accuracy.
+4. Respond in ${language}.
 
-3. **VISUAL DATA:** The "visual" object must be extremely detailed for vector rendering:
-   - For "process": steps must be specific.
-   - For "comparison": include "label_left", "label_right", "contrast_point".
-   - For "mindmap": include "central_node" and "branches".
+RESEARCH SUMMARY:
+${summary}
 
-4. **TEACHER SYNC:** Every slide MUST include "speaker_notes" (2-4 sentences of deep context for the teacher).
+ANSWER:`;
+            const result = await model.generateContent(chatPrompt);
+            return NextResponse.json({ success: true, answer: result.response.text() });
+        }
 
-JSON FORMAT:
+        if (mode === 'transform') {
+            let transformPrompt = "";
+            if (template === 'briefing') {
+                transformPrompt = `Create a 2-page formal educator's BRIEFING DOC from this research summary. 
+Focus on instructional strategies and core concepts. Language: ${language}. Ground yourself strictly in this text: ${summary}`;
+            } else if (template === 'faq') {
+                transformPrompt = `Create a list of 10 complex FAQ items (Question + Answer) for students based on this research summary. 
+Include deep-learning questions. Language: ${language}. Ground yourself strictly in this text: ${summary}`;
+            } else if (template === 'timeline') {
+                transformPrompt = `Convert the core process or historical events in this research summary into a structured CHRONOLOGICAL TIMELINE. 
+Use clear timestamps/milestones. Language: ${language}. Text: ${summary}`;
+            } else if (template === 'graph') {
+                transformPrompt = `Create a Mermaid.js flowchart or mindmap representing the Knowledge Graph of this research summary.
+Use [Node Label] format. Focus on connections between entities. 
+IMPORTANT: Give ONLY the Mermaid code block starting with 'graph TD' or 'mindmap'.
+Text: ${summary}`;
+            }
+
+            const result = await model.generateContent(transformPrompt);
+            return NextResponse.json({ success: true, output: result.response.text() });
+        }
+
+        // --- Slide Generation Mode ---
+        const prompt = `You are a World-Class Curriculum Architect and Gamma-Style Presentation Designer.
+Build a "Studio v2: Card-Native" slide deck in ${language} for ${teacherName}.
+
+DESIGN PHILOSOPHY (GAMMA-STYLE):
+- **Card-Native:** Slides must feel like interconnected "web cards" rather than static pages.
+- **Visual Storytelling:** Use complex 3D minimalist descriptions for visuals.
+- **Studio Aesthetics:** Deep navy backgrounds (#0A0A0A), Magic Yellow accents (#E8FF41), and Extra-Bold tracking-tight typography.
+
+REQUIRED LAYOUTS:
+- "STUDIO_CENTER": Massive hero typography with a single "Visual Fact" (e.g., a statistic with a sub-label).
+- "STUDIO_SPLIT": 50/50 division. Detailed text with Yellow Highlighters on left | High-fidelity technical 3D visual on right.
+- "STUDIO_GRID": 3 items with distinct emojis and narrative blocks.
+- "STUDIO_TIMELINE": A horizontal process flow with 3-4 steps.
+
+JSON SPECIFICATION:
 [
   { 
-    "type": "title", 
-    "layout": "SPLIT_IMAGE",
-    "emoji": "🧬", 
-    "title": "Topic Name", 
-    "subtitle": "Overview",
-    "visual": { "type": "facts", "data": [{"label": "Difficulty", "value": "Advanced"}] },
-    "speaker_notes": "Hook the students with a question about X."
-  },
-  ...
+    "type": "content", 
+    "layout": "STUDIO_SPLIT",
+    "emoji": "🔋", 
+    "title": "ENERGY STORAGE SYSTEMS", 
+    "points": ["Point 1 with detail", "Point 2 with detail", "Point 3 with detail"],
+    "visual": { 
+        "type": "technical_diagram", 
+        "label": "ION FLOW SYSTEM",
+        "elements": ["Anode", "Cathode", "Electrolyte"] 
+    },
+    "speaker_notes": "Deep dive into the ion transfer mechanism..."
+  }
 ]
 
 Generate 10-12 slides. Stay 100% faithful to the Research Summary. Respond ONLY with JSON.
@@ -65,8 +116,8 @@ SLIDE JSON:`;
 
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) {
-            console.error("[GENERATE_SLIDES_V3] JSON MATCH FAILED:", text.substring(0, 500));
-            return NextResponse.json({ error: "AI failed to build slides. Check your summary format." }, { status: 500 });
+            console.error("[STUDIO_GEN_V2] JSON MATCH FAILED:", text.substring(0, 500));
+            return NextResponse.json({ error: "AI failed to build the studio deck." }, { status: 500 });
         }
 
         const slideData = JSON.parse(jsonMatch[0]);

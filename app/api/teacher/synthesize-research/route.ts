@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         }
 
         const formData = await req.formData();
-        const file = formData.get("file") as File;
+        const files = formData.getAll("file") as File[];
         const linksJson = formData.get("links") as string;
         const language = (formData.get("language") as string) || "English";
         const links: string[] = JSON.parse(linksJson || "[]");
@@ -43,50 +43,66 @@ export async function POST(req: NextRequest) {
         if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }); // Using Flash for speed and large context
 
-        let context = "EXTRACTED RESEARCH DATA:\n\n";
+        let context = "THE RESEARCH LIBRARY:\n\n";
 
-        // 1. Process File
-        if (file && file.size > 0) {
-            const arrayBuffer = await file.arrayBuffer();
-            const base64 = Buffer.from(arrayBuffer).toString("base64");
-            const mimeType = file.type || "application/pdf";
+        // 1. Process All Files
+        if (files.length > 0) {
+            for (const file of files) {
+                if (file.size === 0) continue;
+                const arrayBuffer = await file.arrayBuffer();
+                const base64 = Buffer.from(arrayBuffer).toString("base64");
+                const mimeType = file.type || "application/pdf";
 
-            context += `PRIMARY DOCUMENT (${file.name}): [Content provided via multimodal input]\n`;
-
-            // Initial analysis of the file to get its core message
-            const fileResult = await model.generateContent([
-                "Extract the core educational content from this file and summarize it in 500 words for a teacher's lesson foundation.",
-                { inlineData: { data: base64, mimeType } }
-            ]);
-            context += fileResult.response.text() + "\n\n";
-        }
-
-        // 2. Process Links
-        if (links.length > 0) {
-            context += "EXTERNAL RESEARCH LINKS:\n";
-            for (const link of links) {
-                const info = await scrapeLink(link);
-                context += info + "---\n";
+                context += `SOURCE FILE (${file.name}):\n`;
+                const fileResult = await model.generateContent([
+                    "Extract all critical instructional data, technical definitions, and core arguments from this document. Provide a dense, long-form reconstruction of the content (1000+ words if needed).",
+                    { inlineData: { data: base64, mimeType } }
+                ]);
+                context += fileResult.response.text() + "\n\n---\n";
             }
         }
 
-        // 3. Synthesize Everything
-        const synthesisPrompt = `You are an elite educational researcher. I have provided research data from a document and external links in ${language}.
+        // 2. Process All Links
+        if (links.length > 0) {
+            for (const link of links) {
+                const info = await scrapeLink(link);
+                context += `WEB SOURCE:\n${info}\n---\n`;
+            }
+        }
 
-TASK: Consolidate all this information into a single, high-fidelity "Lesson Foundation" summary. 
+        const persona = (formData.get("persona") as string) || "Academic Deep Dive";
+
+        // 3. Master Synthesis for the Research Hub
+        const synthesisPrompt = `You are a World-Class Academic Researcher and Educator acting as a "${persona}".
+I have provided a MASSIVE amount of raw research data from multiple sources (Docs and Web).
+
+GOAL: Build a "Synthetic Brain" (Foundation) for a student lesson in ${language}.
+
+TONE & PERSPECTIVE:
+- Use the perspective of a ${persona}.
+- ${persona === 'Academic Deep Dive' ? 'Be extremely formal, cite every theory, and focus on ontological foundations.' : ''}
+- ${persona === 'Classroom Storytelling' ? 'Use engaging analogies, vivid examples, and focus on narrative flow.' : ''}
+- ${persona === 'Skeptical Analyst' ? 'Focus on contradictions between sources, challenge the assumptions, and highlight data gaps.' : ''}
+- ${persona === 'Quick Summary' ? 'Be bulleted, punchy, and focus ONLY on the top 10% most critical facts.' : ''}
+
+REQUIRED STRUCTURE:
+1. Executive Summary: The big picture.
+2. Deep Dive: Exhaustive breakdown of core mechanics/theories.
+3. Comparative Analysis: How different sources agree or disagree.
+4. Key Statistics & Data Points: Explicit numbers and figures.
+5. Strategic Takeaways: What students MUST remember.
+
 RULES:
-1. Stay 100% faithful to the source material. Use verbatim quotes where possible.
-2. Organize it logically: Overview, Core Concepts, Detailed Explanations, and Key Takeaways.
-3. Keep it deep and technical; do not oversimplify.
-4. This summary will be used to generate slides, so make it comprehensive (approx 800-1200 words).
-5. Respond in ${language}.
+- Be verbose and high-fidelity. If the source material is complex, keep it complex.
+- Use verbatim quotes for accuracy.
+- Respond in ${language}.
 
 RESEARCH DATA:
 ${context}
 
-MASTER LESSON FOUNDATION:`;
+MASTER SYNTHESIS:`;
 
         const result = await model.generateContent(synthesisPrompt);
         const synthesis = result.response.text();
@@ -94,7 +110,7 @@ MASTER LESSON FOUNDATION:`;
         return NextResponse.json({ success: true, synthesis });
 
     } catch (error: any) {
-        console.error("[SYNTHESIZE_API]", error);
+        console.error("[RESEARCH_STUDIO_API]", error);
         return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
     }
 }
