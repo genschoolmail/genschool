@@ -13,7 +13,7 @@ import {
     BookOpen, MessageSquare, ChevronLeft, ChevronRight,
     FileText, Trash2, Copy, StickyNote,
     Zap, Library, Sparkles, Plus, ArrowRight,
-    LayoutGrid, Send, AlertCircle, Terminals, Bug
+    LayoutGrid, Send, AlertCircle, Terminal, Bug
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -157,7 +157,8 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
                 const msg = errData.error || `Server error ${res.status}`;
-                if (errData.debug) addLog(`DEEP DEBUG: ${errData.debug}`, 'error');
+                if (errData.discovery) addLog(`DISCOVERY: ${errData.discovery}`, 'error');
+                if (errData.debug) addLog(`LAST ERR: ${errData.debug}`, 'error');
                 addLog(`API FAILED (${res.status}): ${msg}`, 'error');
                 throw new Error(msg);
             }
@@ -271,6 +272,25 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         } finally { setLoading(false); }
     };
 
+    const handleShare = async () => {
+        if (!selectedClass || !slides.length) return;
+        setIsSharing(true);
+        addLog(`Sharing research deck with ${selectedClass}...`, 'info');
+        try {
+            await shareNoteWithClass({
+                classId: selectedClass,
+                title: slides[0]?.title || "Research Project",
+                content: slides,
+                fileUrl: "studio-v11"
+            });
+            addLog("Successfully shared with class!", 'success');
+            toast.success("Shared successfully!");
+        } catch (e: any) {
+            addLog(`Share error: ${e.message}`, 'error');
+            toast.error("Sharing failed.");
+        } finally { setIsSharing(false); }
+    };
+
     const downloadPDF = () => {
         if (!slides.length) return;
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -344,7 +364,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                     <Select value={persona} onValueChange={setPersona}>
                                         <SelectTrigger className="h-12 rounded-[1rem] text-xs font-bold bg-white dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.08] shadow-sm"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map(p => <SelectItem key={p} value={p} className="text-xs font-bold">{p}</SelectItem>)}
+                                            {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -503,7 +523,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                     {m.content}
                                                     {m.role === 'ai' && (
                                                         <div className="flex gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05]">
-                                                            <button onClick={() => saveNote(m.content)} className="flex items-center gap-2 text-[10px] font-black text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-widest"><stickyNote className="w-3.5 h-3.5" /> SNAP TO NOTES</button>
+                                                            <button onClick={() => saveNote(m.content)} className="flex items-center gap-2 text-[10px] font-black text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-widest"><StickyNote className="w-3.5 h-3.5" /> SNAP TO NOTES</button>
                                                             <button onClick={() => { navigator.clipboard.writeText(m.content); toast.success("Copied!"); }} className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"><Copy className="w-3.5 h-3.5" /> COPY RAW</button>
                                                         </div>
                                                     )}
@@ -581,7 +601,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                             <div className="h-12 w-px bg-slate-200 dark:bg-white/10 mx-2" />
                                             <Select value={selectedClass} onValueChange={setSelectedClass}>
                                                 <SelectTrigger className="w-52 h-12 rounded-[1.25rem] text-[10px] font-black tracking-widest border-2 shadow-sm"><SelectValue placeholder="SELECT TARGET CLASS" /></SelectTrigger>
-                                                <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id} className="text-[10px] font-black">{c.name.toUpperCase()}</SelectItem>)}</SelectContent>
+                                                <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name.toUpperCase()}</SelectItem>)}</SelectContent>
                                             </Select>
                                             <Button onClick={handleShare} disabled={isSharing || !selectedClass} className="h-12 px-12 rounded-[1.25rem] bg-indigo-600 font-black text-[10px] tracking-[0.2em] shadow-xl shadow-indigo-600/30 hover:scale-[1.03] transition-all">
                                                 {isSharing ? <Loader2 className="w-5 h-5 animate-spin" /> : "PUBLISH DECK"}

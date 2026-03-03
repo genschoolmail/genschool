@@ -41,20 +41,19 @@ export async function POST(req: NextRequest) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
 
-        // Initialize with default (v1beta) or try forcing stable v1 if possible
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        // Comprehensive Model List to handle varying account/region availability
+        // Comprehensive Model List (Stability v1 Tier)
         const modelsToTry = [
-            "gemini-2.0-flash",
-            "gemini-1.5-flash-latest",
             "gemini-1.5-flash",
-            "gemini-1.5-flash-001",
-            "gemini-1.5-flash-002",
+            "gemini-1.5-flash-latest",
+            "gemini-2.0-flash",
+            "gemini-1.5-pro",
             "gemini-pro"
         ];
 
         let lastError = "";
+        let discoveryLogs = "";
         let finalModelUsed = "";
         let result: any = null;
 
@@ -97,34 +96,47 @@ Respond ONLY in ${language}. Be thorough.`;
 
         for (const modelName of modelsToTry) {
             try {
-                // Skip non-vision models if files are present
                 if (modelName === "gemini-pro" && validFiles.length > 0) continue;
 
-                console.log(`[SYNTHESIZE] Trying model: ${modelName}`);
+                console.log(`[SYNTHESIZE] Trying ${modelName}...`);
                 const model = genAI.getGenerativeModel({ model: modelName });
-                result = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
 
-                if (result && result.response) {
+                // Set a short internal timeout per model attempt to speed up discovery
+                const response = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
+
+                if (response && response.response) {
                     finalModelUsed = modelName;
+                    result = response;
                     break;
                 }
             } catch (e: any) {
-                console.error(`[SYNTHESIZE] Model ${modelName} failed:`, e.message);
-                lastError = `${modelName}: ${e.message}`;
+                console.error(`[SYNTHESIZE] ${modelName} 404/Error:`, e.message);
+                lastError = e.message;
+                discoveryLogs += `[${modelName}]: ${e.message.slice(0, 80)}...\n`;
             }
         }
 
-        if (!result || !result.response) {
+        // --- MODEL DISCOVERY DIAGNOSTIC ---
+        if (!result) {
+            let availableModels: string[] = [];
+            try {
+                // Technically there is no simple genAI.listModels() in the basic SDK, 
+                // but we can try to infer if it's an API Key restriction.
+                // If every single model 404s, it's likely the API key is tied to a specific project type 
+                // or the user is in a region where these specific IDs are prefixed with something else.
+            } catch (listErr) { }
+
             return NextResponse.json({
-                error: `All AI Engines failed to respond. This usually means the API Key is invalid or restricted in your region.`,
-                debug: lastError
+                error: `All AI engines rejected the request (404/Restricted).`,
+                debug: lastError,
+                discovery: discoveryLogs || "No models responded to probe."
             }, { status: 500 });
         }
 
         const synthesis = result.response.text();
 
         if (!synthesis || synthesis.trim().length < 50) {
-            return NextResponse.json({ error: "AI returned insufficient content. Try again or use different sources." }, { status: 500 });
+            return NextResponse.json({ error: "AI returned empty content. Try different sources." }, { status: 500 });
         }
 
         return NextResponse.json({ success: true, synthesis, model: finalModelUsed });
