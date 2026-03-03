@@ -42,7 +42,11 @@ export async function POST(req: NextRequest) {
         if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // Multi-model Fallback Chain to resolve 404 errors
+        const modelsToTry = ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-pro"];
+        let lastError = "";
+        let result: any = null;
 
         const systemPrompt = `You are a World-Class Academic Researcher working as a "${persona}".
 Analyze ALL provided source materials and synthesize a comprehensive research summary in ${language}.
@@ -65,11 +69,7 @@ Structure your synthesis as:
 
 Respond ONLY in ${language}. Be thorough.`;
 
-        // Build parts array with CORRECT Gemini SDK format
-        // Text parts must be { text: "..." }, inlineData as { inlineData: { mimeType, data } }
         const contentParts: any[] = [{ text: systemPrompt }];
-
-        // Add files inline
         const validFiles = files.filter(f => f.size > 0);
         for (const file of validFiles) {
             const arrayBuffer = await file.arrayBuffer();
@@ -78,16 +78,30 @@ Respond ONLY in ${language}. Be thorough.`;
             contentParts.push({ text: `\n[FILE: ${file.name}]` });
             contentParts.push({ inlineData: { data: base64, mimeType } });
         }
-
-        // Add scraped links as text
         for (const link of links) {
             const linkContent = await scrapeLink(link);
             contentParts.push({ text: linkContent });
         }
-
         contentParts.push({ text: "\n\n---\nSYNTHESIS:" });
 
-        const result = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
+        for (const modelName of modelsToTry) {
+            try {
+                // gemini-pro doesn't support inlineData (files), so skip if files exist
+                if (modelName === "gemini-pro" && validFiles.length > 0) continue;
+
+                const model = genAI.getGenerativeModel({ model: modelName });
+                result = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
+                if (result) break;
+            } catch (e: any) {
+                console.warn(`Model ${modelName} failed:`, e.message);
+                lastError = e.message;
+            }
+        }
+
+        if (!result) {
+            throw new Error(`AI Engines exhausted. Last error: ${lastError}`);
+        }
+
         const synthesis = result.response.text();
 
         if (!synthesis || synthesis.trim().length < 50) {
@@ -98,9 +112,6 @@ Respond ONLY in ${language}. Be thorough.`;
 
     } catch (error: any) {
         console.error("[SYNTHESIZE_API_ERROR]", error);
-        const message = error.message?.includes("SAFETY") ? "Content blocked by safety filters. Try different sources." :
-            error.message?.includes("quota") ? "API quota exceeded. Try again later." :
-                error.message || "Internal server error";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
     }
 }
