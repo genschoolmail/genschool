@@ -384,25 +384,48 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                     {/* ── LIBRARY PHASE ── */}
                     {phase === 'library' && (
                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 flex items-center justify-center"><BookOpen className="w-8 h-8 text-indigo-600" /></div>
+                            <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 flex items-center justify-center">
+                                {loading ? <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" /> : <BookOpen className="w-8 h-8 text-indigo-600" />}
+                            </div>
+
                             <div className="max-w-md space-y-2">
                                 <h2 className="text-2xl font-black uppercase tracking-tight">
-                                    {synthesis ? "Knowledge Base Ready ✅" : "Add Research Sources"}
+                                    {loading ? "Synthesizing..." : synthesis ? "Knowledge Base Ready ✅" : sources.length > 0 ? "Sources Ready 📚" : "Research Library"}
                                 </h2>
                                 <p className="text-slate-400 text-sm">
-                                    {synthesis
-                                        ? `Your synthesis is ready. Switch to the Research Hub to chat with your sources or build slides.`
-                                        : `Upload PDFs, documents, or add URLs in the library panel (left). Then click "Build Knowledge Base".`}
+                                    {loading
+                                        ? `Reading ${sources.length} sources and building your instructional foundation. Please wait...`
+                                        : synthesis
+                                            ? `Your synthesis is ready. Switch to the Research Hub to chat with your sources or build slides.`
+                                            : sources.length > 0
+                                                ? `You have added ${sources.length} source(s). Click "Build Knowledge Base" below to start the AI analysis.`
+                                                : `Upload PDFs, documents, or add URLs in the library panel (left). Then click "Build Knowledge Base".`}
                                 </p>
                             </div>
+
                             {synthesis ? (
                                 <div className="flex gap-3">
-                                    <Button onClick={() => setPhase('research')} className="h-11 px-8 rounded-xl bg-indigo-600 font-black text-xs gap-2"><MessageSquare className="w-3.5 h-3.5" /> Open Research Hub</Button>
+                                    <Button onClick={() => setPhase('research')} className="h-11 px-8 rounded-xl bg-indigo-600 font-black text-xs gap-2 shadow-lg shadow-indigo-600/20"><MessageSquare className="w-3.5 h-3.5" /> Open Research Hub</Button>
                                     <Button onClick={() => setPhase('slides')} variant="outline" className="h-11 px-8 rounded-xl font-black text-xs gap-2"><LayoutGrid className="w-3.5 h-3.5" /> View Slides {slides.length > 0 ? `(${slides.length})` : ''}</Button>
+                                </div>
+                            ) : sources.length > 0 ? (
+                                <div className="flex flex-col items-center gap-3">
+                                    <Button
+                                        onClick={handleSynthesize}
+                                        disabled={loading}
+                                        className="h-14 px-10 rounded-2xl bg-indigo-600 font-black text-sm gap-3 shadow-xl shadow-indigo-600/30 hover:scale-105 transition-all"
+                                    >
+                                        {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> {loadingMsg}</> : <><Zap className="w-5 h-5" /> Build Knowledge Base</>}
+                                    </Button>
+                                    {!sidebarOpen && (
+                                        <button onClick={() => setSidebarOpen(true)} className="text-[10px] font-bold text-slate-400 hover:text-indigo-500 flex items-center gap-1 uppercase tracking-widest">
+                                            <Plus className="w-3 h-3" /> Add More Sources
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <Button onClick={() => setSidebarOpen(true)} variant="outline" className="h-11 px-8 rounded-xl font-black text-xs gap-2 border-dashed border-2">
-                                    <Plus className="w-3.5 h-3.5" /> Open Library Panel
+                                    <Plus className="w-3.5 h-3.5" /> {sidebarOpen ? "Upload Files on the Left" : "Open Library Panel"}
                                 </Button>
                             )}
                         </div>
