@@ -14,7 +14,7 @@ import {
     Quote, BookOpen, MessageSquare, History, Layout, Settings,
     ChevronLeft, ChevronRight, Search, FileText, Trash2, Maximize2,
     Copy, Lightbulb, FileCheck, Map, Music, UserCircle, StickyNote,
-    Layers, Zap, MousePointer2, PanelsTopLeft, Command
+    Layers, Zap, MousePointer2, PanelsTopLeft, Command, Library
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
