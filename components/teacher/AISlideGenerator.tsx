@@ -155,9 +155,11 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
             if (!res.ok) {
-                const errText = await res.text();
-                addLog(`API failed (${res.status}): ${errText.slice(0, 200)}`, 'error');
-                throw new Error(`Server returned ${res.status}. Check debug log.`);
+                const errData = await res.json().catch(() => ({}));
+                const msg = errData.error || `Server error ${res.status}`;
+                if (errData.debug) addLog(`DEEP DEBUG: ${errData.debug}`, 'error');
+                addLog(`API FAILED (${res.status}): ${msg}`, 'error');
+                throw new Error(msg);
             }
 
             const data = await res.json();

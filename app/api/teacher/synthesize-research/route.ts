@@ -41,11 +41,21 @@ export async function POST(req: NextRequest) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
 
+        // Initialize with default (v1beta) or try forcing stable v1 if possible
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        // Multi-model Fallback Chain to resolve 404 errors
-        const modelsToTry = ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-pro"];
+        // Comprehensive Model List to handle varying account/region availability
+        const modelsToTry = [
+            "gemini-2.0-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-001",
+            "gemini-1.5-flash-002",
+            "gemini-pro"
+        ];
+
         let lastError = "";
+        let finalModelUsed = "";
         let result: any = null;
 
         const systemPrompt = `You are a World-Class Academic Researcher working as a "${persona}".
@@ -71,6 +81,7 @@ Respond ONLY in ${language}. Be thorough.`;
 
         const contentParts: any[] = [{ text: systemPrompt }];
         const validFiles = files.filter(f => f.size > 0);
+
         for (const file of validFiles) {
             const arrayBuffer = await file.arrayBuffer();
             const base64 = Buffer.from(arrayBuffer).toString("base64");
@@ -86,20 +97,28 @@ Respond ONLY in ${language}. Be thorough.`;
 
         for (const modelName of modelsToTry) {
             try {
-                // gemini-pro doesn't support inlineData (files), so skip if files exist
+                // Skip non-vision models if files are present
                 if (modelName === "gemini-pro" && validFiles.length > 0) continue;
 
+                console.log(`[SYNTHESIZE] Trying model: ${modelName}`);
                 const model = genAI.getGenerativeModel({ model: modelName });
                 result = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
-                if (result) break;
+
+                if (result && result.response) {
+                    finalModelUsed = modelName;
+                    break;
+                }
             } catch (e: any) {
-                console.warn(`Model ${modelName} failed:`, e.message);
-                lastError = e.message;
+                console.error(`[SYNTHESIZE] Model ${modelName} failed:`, e.message);
+                lastError = `${modelName}: ${e.message}`;
             }
         }
 
-        if (!result) {
-            throw new Error(`AI Engines exhausted. Last error: ${lastError}`);
+        if (!result || !result.response) {
+            return NextResponse.json({
+                error: `All AI Engines failed to respond. This usually means the API Key is invalid or restricted in your region.`,
+                debug: lastError
+            }, { status: 500 });
         }
 
         const synthesis = result.response.text();
@@ -108,7 +127,7 @@ Respond ONLY in ${language}. Be thorough.`;
             return NextResponse.json({ error: "AI returned insufficient content. Try again or use different sources." }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, synthesis });
+        return NextResponse.json({ success: true, synthesis, model: finalModelUsed });
 
     } catch (error: any) {
         console.error("[SYNTHESIZE_API_ERROR]", error);
