@@ -68,41 +68,46 @@ ANSWER:`;
                 prompt = `Summarize key insights. Language: ${language}. Summary: ${summary}`;
             }
         } else {
-            // Rich Slide Generation with MindMap + Visual Metadata
-            prompt = `You are a World-Class Curriculum Architect. Build an engaging slide deck in ${language} for ${teacherName} at ${schoolName}.
+            prompt = `You are a World-Class Curriculum Architect and Senior Graphic Designer. 
+Your goal is to build a high-fidelity, professional slides deck in ${language} for ${teacherName} at ${schoolName}.
 
-AVAILABLE LAYOUTS:
-- "STUDIO_CENTER": Hero slide with massive title, a key_stat (value+label), and speaker_notes.
-- "STUDIO_SPLIT": Left side = text points, Right side = visual object with type/label/elements array.
-- "STUDIO_GRID": 3 grid items, each with emoji, title, description.
-- "STUDIO_TIMELINE": process_steps array, each with step number, label, description.
-- "STUDIO_MINDMAP": A concept map. Has center_node (string) and branches (array of {label, children: string[]}).
-- "STUDIO_GRAPH": Data visualization. Has chart_type ("bar" | "pie"), labels (string[]), and values (number[]).
-- "STUDIO_DIAGRAM": Flowchart/Process. Has nodes (string[]) and edges (array of {from, to, label}).
+TOPIC COMPREHENSION & DEPTH:
+1. Thoroughly analyze the entire RESEARCH SUMMARY below.
+2. Produce content that goes beyond surface-level bullet points. 
+3. Use professional terminology and provide deep, accurate insights. 
+4. Ensure the logical flow follows a curriculum-grade narrative (Intro -> Core Principles -> Complex Mechanics -> Case Study/Data -> Conclusion).
 
-RULES:
-1. Include AT LEAST 1 STUDIO_MINDMAP slide (typically the 2nd or 3rd slide) to show concept relationships.
-2. Include AT LEAST 1 STUDIO_GRAPH if there are any statistics or comparisons in the summary.
-3. Include AT LEAST 1 STUDIO_DIAGRAM for any complex logic or "how it works" sections.
-4. Include AT LEAST 2 STUDIO_SPLIT slides with descriptive visual objects.
-5. All text fields must be strings (not objects). points must be an array of strings.
-6. speaker_notes must be a string of 1-2 sentences.
-7. Respond ONLY with a valid JSON array. No markdown, no code fences.
+AVAILABLE LAYOUTS (MANDATORY MIX):
+- "STUDIO_CENTER": High-impact hero slide. Use for Intro/Module headers. Must include a meaningful "key_stat" (value + label).
+- "STUDIO_SPLIT": Detailed comparisons or evidence. Left: points. Right: deep visual definition (type, label, elements).
+- "STUDIO_GRID": Categorizing 3 parallel concepts. Elements must be distinct but related.
+- "STUDIO_TIMELINE": Procedural, historical, or mechanical steps (up to 4).
+- "STUDIO_MINDMAP": Hierarchical breakdown. center_node must be the core theme. branches must show sub-themes and leaf nodes.
+- "STUDIO_GRAPH": Mandatory for any quantitative data found in summary. chart_type ("bar" | "pie").
+- "STUDIO_DIAGRAM": Mandatory for logic flows, structural relationships, or feedback loops. nodes[] + edges[].
 
-JSON EXAMPLE:
+STYLING RULES:
+- emoji: Use sophisticated, relevant emojis (e.g., 🔬 🧬 🏛️ 📊).
+- speaker_notes: 2-3 sentences of deep educational context for each slide.
+- No markdown, no prefixes. Only a valid JSON array.
+
+GENERATE 10-12 SLIDES. COVER EVERY ASPECT OF THE SUMMARY WITH PROFESSIONAL RIGOUR.
+
+JSON EXAMPLE (Strict adherence required):
 [
-  {"layout":"STUDIO_CENTER","emoji":"🧬","title":"DNA REPLICATION","key_stat":{"value":"99.99%","label":"Accuracy Rate"},"speaker_notes":"Emphasize the proofreading enzymes."},
-  {"layout":"STUDIO_GRAPH","emoji":"📊","title":"MARKET GROWTH","chart_type":"bar","labels":["2022","2023","2024"],"values":[45,78,120],"speaker_notes":"Notice the exponential jump in 2024."},
-  {"layout":"STUDIO_MINDMAP","emoji":"🧠","title":"CORE CONCEPTS","center_node":"DNA","branches":[{"label":"Structure","children":["Double Helix","Base Pairs","Sugar-Phosphate"]},{"label":"Function","children":["Replication","Transcription","Translation"]}],"speaker_notes":"Walk through each branch slowly."},
-  {"layout":"STUDIO_DIAGRAM","emoji":"⚙️","title":"WORKFLOW","nodes":["Input","Process","Output"],"edges":[{"from":"Input","to":"Process","label":"Upload"},{"from":"Process","to":"Output","label":"Analyze"}],"speaker_notes":"This is the core pipeline."},
-  {"layout":"STUDIO_SPLIT","emoji":"⚗️","title":"ENZYME ROLES","points":["Helicase unzips the double helix","DNA Polymerase adds new nucleotides","Ligase seals the backbone"],"visual":{"type":"diagram","label":"REPLICATION FORK","color":"indigo","elements":["Helicase","Template","Polymerase","New Strand"]},"speaker_notes":"Draw the fork on the board."}
+  {
+    "layout": "STUDIO_CENTER",
+    "emoji": "🌟",
+    "title": "Module Title",
+    "key_stat": {"value": "100%", "label": "Retention"},
+    "speaker_notes": "Expert narrative about this module."
+  }
 ]
 
-Generate 10-12 slides covering the full topic. Use all layout types.
 RESEARCH SUMMARY:
 ${summary}
 
-JSON ONLY:`;
+JSON RESPONSE ONLY:`;
         }
 
         for (const modelName of finalModelsToTry) {

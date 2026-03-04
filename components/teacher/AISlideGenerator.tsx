@@ -16,14 +16,58 @@ import {
     LayoutGrid, Send, AlertCircle, Terminal, Bug
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import pptxgen from "pptxgenjs";
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Source = { id: string; type: 'file' | 'link'; name: string; url?: string; file?: File; };
 type ChatMsg = { role: 'user' | 'ai'; content: string; };
 type Note = { id: string; content: string; };
 type Phase = 'library' | 'research' | 'slides';
+type ThemeID = 'gamma-aurora' | 'skywork-slate' | 'canvas-cloud';
 
 const STORAGE_KEY = 'ai_studio_v9';
+
+const THEMES: Record<ThemeID, { name: string, bg: string, slideBg: string, text: string, primary: string, accent: string, secondary: string, card: string, border: string, hexBg: string, hexText: string }> = {
+    'gamma-aurora': {
+        name: 'Gamma Aurora',
+        bg: 'bg-[#0D0D0F]',
+        slideBg: 'bg-[#121216]',
+        text: 'text-white',
+        primary: '#6366f1',
+        accent: '#E8FF41',
+        secondary: '#BAFF4A',
+        card: 'bg-white/[0.04]',
+        border: 'border-white/[0.08]',
+        hexBg: '#121216',
+        hexText: '#FFFFFF'
+    },
+    'skywork-slate': {
+        name: 'Skywork Slate',
+        bg: 'bg-[#0F172A]',
+        slideBg: 'bg-[#1E293B]',
+        text: 'text-slate-100',
+        primary: '#38bdf8',
+        accent: '#fbbf24',
+        secondary: '#f59e0b',
+        card: 'bg-slate-800/50',
+        border: 'border-slate-700',
+        hexBg: '#1E293B',
+        hexText: '#F1F5F9'
+    },
+    'canvas-cloud': {
+        name: 'Canvas Cloud',
+        bg: 'bg-[#F8FAFC]',
+        slideBg: 'bg-white',
+        text: 'text-slate-900',
+        primary: '#4f46e5',
+        accent: '#0ea5e9',
+        secondary: '#6366f1',
+        card: 'bg-slate-50',
+        border: 'border-slate-200',
+        hexBg: '#FFFFFF',
+        hexText: '#0F172A'
+    }
+};
 
 export default function AISlideGenerator({ classes, schoolName = "School", teacherName = "Teacher" }: {
     classes: any[]; schoolName?: string; teacherName?: string;
@@ -53,6 +97,9 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
     const [isSharing, setIsSharing] = useState(false);
     const [researchEditMode, setResearchEditMode] = useState(false);
     const [editSynthesis, setEditSynthesis] = useState("");
+    const [currentTheme, setCurrentTheme] = useState<ThemeID>('gamma-aurora');
+
+    const theme = THEMES[currentTheme];
 
     // Safe render helper - prevents React Error #31
     const safeStr = (val: any): string => {
@@ -81,9 +128,10 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         persona: string;
         sources: Source[];
         phase: Phase;
+        theme?: ThemeID;
     }) => {
         try {
-            const payload = { ...data, sources: data.sources.filter(s => s.type === 'link') };
+            const payload = { ...data, sources: data.sources.filter(s => s.type === 'link'), theme: currentTheme };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
             addLog("Progress saved to storage", 'success');
         } catch (e: any) {
@@ -106,6 +154,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                 setSynthesis(d.synthesis);
                 setChatHistory(d.chatHistory?.length ? d.chatHistory : [{ role: 'ai', content: 'Session restored.' }]);
                 setPhase(d.phase || 'research');
+                if (d.theme) setCurrentTheme(d.theme);
                 addLog("Previous session restored successfully", 'success');
             }
             if (d.slides?.length) setSlides(d.slides);
@@ -306,26 +355,35 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const W = doc.internal.pageSize.getWidth();
         const H = doc.internal.pageSize.getHeight();
+        const hexToRgb = (hex: string) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return [r, g, b];
+        };
+
+        const [br, bg, bb] = hexToRgb(theme.hexBg);
+        const [tr, tg, tb] = hexToRgb(theme.hexText);
+        const [pr, pg, pb] = hexToRgb(theme.primary);
+        const [ar, ag, ab] = hexToRgb(theme.accent);
 
         slides.forEach((slide, i) => {
             if (i > 0) doc.addPage();
-
-            // Background
-            doc.setFillColor(10, 10, 15).rect(0, 0, W, H, 'F');
+            doc.setFillColor(br, bg, bb).rect(0, 0, W, H, 'F');
 
             const layout = safeStr(slide.layout) || 'STUDIO_CENTER';
             const title = safeStr(slide.title).toUpperCase();
             const emoji = safeStr(slide.emoji);
 
-            // Header for all slides
-            doc.setTextColor(232, 255, 65).setFontSize(22).setFont('helvetica', 'bold');
-            doc.text(`${emoji} ${title}`, 15, 20);
+            // Header/Title for all slides
+            doc.setTextColor(ar, ag, ab).setFontSize(22).setFont('helvetica', 'bold');
+            doc.text(`${emoji} ${title}`, 20, 20);
 
             if (layout === 'STUDIO_MINDMAP') {
                 const center = safeStr(slide.center_node || slide.title);
                 const branches = Array.isArray(slide.branches) ? slide.branches : [];
-                doc.setDrawColor(99, 102, 241).setLineWidth(0.5);
-                doc.setFillColor(99, 102, 241).circle(W / 2, H / 2, 15, 'F');
+                doc.setDrawColor(pr, pg, pb).setLineWidth(0.5);
+                doc.setFillColor(pr, pg, pb).circle(W / 2, H / 2, 15, 'F');
                 doc.setTextColor(255).setFontSize(10).text(doc.splitTextToSize(center, 25), W / 2, H / 2 + 2, { align: 'center' });
 
                 branches.slice(0, 6).forEach((b: any, bi: number) => {
@@ -335,67 +393,160 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                     const by = H / 2 + Math.sin(rad) * 45;
                     doc.line(W / 2, H / 2, bx, by);
                     doc.setFillColor(255, 255, 255, 0.1).rect(bx - 20, by - 5, 40, 10, 'F');
-                    doc.setTextColor(232, 255, 65).setFontSize(8).text(safeStr(b.label), bx, by + 1, { align: 'center' });
+                    doc.setTextColor(ar, ag, ab).setFontSize(8).text(safeStr(b.label), bx, by + 1, { align: 'center' });
                 });
             } else if (layout === 'STUDIO_GRAPH') {
                 const labels = Array.isArray(slide.labels) ? slide.labels : [];
                 const values = Array.isArray(slide.values) ? slide.values.map(Number) : [];
                 const chartType = safeStr(slide.chart_type);
                 if (chartType === 'pie') {
-                    doc.setDrawColor(255, 255, 255, 0.2).circle(W / 2, H / 2 + 10, 30, 'S');
-                    doc.setTextColor(255).setFontSize(12).text("PIE CHART DATA", W / 2, H / 2 + 12, { align: 'center' });
+                    doc.setDrawColor(tr, tg, tb, 0.2).circle(W / 2, H / 2 + 10, 30, 'S');
+                    doc.setTextColor(tr, tg, tb).setFontSize(12).text("PIE CHART DATA", W / 2, H / 2 + 12, { align: 'center' });
                 } else {
                     const max = Math.max(...values, 1);
                     values.forEach((v: number, vi: number) => {
                         const bw = 20;
                         const bh = (v / max) * 50;
                         const bx = 40 + vi * 30;
-                        doc.setFillColor(99, 102, 241).rect(bx, H - 40 - bh, bw, bh, 'F');
-                        doc.setTextColor(255).setFontSize(7).text(labels[vi] || "", bx + 10, H - 35, { align: 'center', angle: 45 });
+                        doc.setFillColor(pr, pg, pb).rect(bx, H - 40 - bh, bw, bh, 'F');
+                        doc.setTextColor(tr, tg, tb).setFontSize(7).text(labels[vi] || "", bx + 10, H - 35, { align: 'center', angle: 45 });
                     });
                 }
             } else if (layout === 'STUDIO_GRID') {
                 const items = Array.isArray(slide.items) ? slide.items : [];
                 items.slice(0, 3).forEach((item: any, ii: number) => {
-                    const x = 20 + ii * 85;
-                    doc.setFillColor(255, 255, 255, 0.05).rect(x, 40, 80, 80, 'F');
-                    doc.setTextColor(255).setFontSize(12).text(safeStr(item.emoji), x + 10, 55);
-                    doc.setTextColor(232, 255, 65).setFontSize(10).text(safeStr(item.title).toUpperCase(), x + 10, 65);
-                    doc.setTextColor(200).setFontSize(8).text(doc.splitTextToSize(safeStr(item.description), 70), x + 10, 75);
+                    const ix = 20 + ii * 85;
+                    doc.setFillColor(255, 255, 255, 0.05).rect(ix, 40, 80, 100, 'F');
+                    doc.setTextColor(tr, tg, tb).setFontSize(10).text(safeStr(item.emoji), ix + 5, 50);
+                    doc.setFontSize(12).text(safeStr(item.title).toUpperCase(), ix + 5, 60);
+                    doc.setFontSize(9).setTextColor(tr, tg, tb, 0.7).text(doc.splitTextToSize(safeStr(item.description), 70), ix + 5, 70);
                 });
             } else if (layout === 'STUDIO_TIMELINE') {
                 const steps = Array.isArray(slide.process_steps) ? slide.process_steps : [];
-                doc.setDrawColor(99, 102, 241).line(20, 70, W - 20, 70);
+                doc.setDrawColor(pr, pg, pb).line(20, 70, W - 20, 70);
                 steps.slice(0, 4).forEach((s: any, si: number) => {
                     const x = 40 + si * 60;
-                    doc.setFillColor(99, 102, 241).circle(x, 70, 5, 'F');
-                    doc.setTextColor(232, 255, 65).setFontSize(9).text(safeStr(s.label), x, 60, { align: 'center' });
-                    doc.setTextColor(180).setFontSize(7).text(doc.splitTextToSize(safeStr(s.description), 50), x, 80, { align: 'center' });
+                    doc.setFillColor(pr, pg, pb).circle(x, 70, 5, 'F');
+                    doc.setTextColor(ar, ag, ab).setFontSize(9).text(safeStr(s.label), x, 60, { align: 'center' });
+                    doc.setTextColor(tr, tg, tb, 0.7).setFontSize(7).text(doc.splitTextToSize(safeStr(s.description), 50), x, 80, { align: 'center' });
                 });
             } else if (layout === 'STUDIO_SPLIT') {
                 const points = Array.isArray(slide.points) ? slide.points : [];
-                doc.setTextColor(255).setFontSize(12);
+                doc.setTextColor(tr, tg, tb).setFontSize(12);
                 points.forEach((p: string, pi: number) => {
                     doc.text(`• ${safeStr(p)}`, 20, 50 + pi * 10);
                 });
                 doc.setFillColor(255, 255, 255, 0.05).rect(W - 100, 40, 80, 100, 'F');
-                doc.setTextColor(99, 102, 241).setFontSize(10).text("VISUAL ASSET", W - 60, 90, { align: 'center' });
+                doc.setTextColor(pr, pg, pb).setFontSize(10).text("VISUAL ASSET", W - 60, 90, { align: 'center' });
+            } else if (layout === 'STUDIO_DIAGRAM') {
+                const nodes = Array.isArray(slide.nodes) ? slide.nodes : [];
+                nodes.forEach((node: string, ni: number) => {
+                    const nx = 40 + (ni % 3) * 60;
+                    const ny = 60 + Math.floor(ni / 3) * 30;
+                    doc.setDrawColor(pr, pg, pb).setFillColor(pr, pg, pb, 0.1).roundedRect(nx - 25, ny - 10, 50, 20, 3, 3, 'FD');
+                    doc.setTextColor(tr, tg, tb).setFontSize(8).text(doc.splitTextToSize(safeStr(node), 40), nx, ny + 1, { align: 'center' });
+                    if (ni < nodes.length - 1 && (ni + 1) % 3 !== 0) {
+                        doc.setDrawColor(pr, pg, pb).setLineWidth(0.2).line(nx + 25, ny, nx + 35, ny);
+                    }
+                });
             } else {
-                // Default / STUDIO_CENTER
+                // STUDIO_CENTER
                 const keyStat = slide.key_stat || {};
-                doc.setTextColor(255).setFontSize(40).text(safeStr(keyStat.value || ""), W / 2, H / 2, { align: 'center' });
-                doc.setTextColor(150).setFontSize(14).text(safeStr(keyStat.label || "").toUpperCase(), W / 2, H / 2 + 15, { align: 'center' });
+                doc.setTextColor(tr, tg, tb).setFontSize(48).text(safeStr(keyStat.value || ""), W / 2, H / 2, { align: 'center' });
+                doc.setTextColor(tr, tg, tb, 0.5).setFontSize(16).text(safeStr(keyStat.label || "").toUpperCase(), W / 2, H / 2 + 15, { align: 'center' });
                 const points = Array.isArray(slide.points) ? slide.points : [];
-                doc.setTextColor(200).setFontSize(12);
+                doc.setTextColor(tr, tg, tb, 0.8).setFontSize(12);
                 points.slice(0, 3).forEach((p: string, pi: number) => doc.text(`• ${safeStr(p)}`, W / 2, H / 2 + 35 + pi * 10, { align: 'center' }));
             }
 
             // Footer
-            doc.setFontSize(8).setTextColor(80, 80, 100).text(`${schoolName.toUpperCase()} // ${teacherName.toUpperCase()}`, 15, H - 10);
-            doc.text(`PAGE ${i + 1} OF ${slides.length}`, W - 15, H - 10, { align: 'right' });
+            doc.setFontSize(8).setTextColor(tr, tg, tb, 0.3).text(`${schoolName.toUpperCase()} // ${teacherName.toUpperCase()}`, 20, H - 10);
+            doc.text(`PAGE ${i + 1} OF ${slides.length}`, W - 20, H - 10, { align: 'right' });
         });
 
         doc.save(`${schoolName.replace(/\s/g, '_')}_Presentation.pdf`);
+    };
+
+    const downloadPPTX = () => {
+        if (!slides.length) return;
+        const pres = new pptxgen();
+        pres.layout = 'LAYOUT_16x9';
+
+        slides.forEach((slide) => {
+            const pptSlide = pres.addSlide();
+            pptSlide.background = { fill: theme.hexBg };
+
+            const layout = safeStr(slide.layout) || 'STUDIO_CENTER';
+            const title = safeStr(slide.title);
+            const emoji = safeStr(slide.emoji);
+            const tColor = theme.accent.replace('#', '');
+            const pColor = theme.primary.replace('#', '');
+            const txtColor = theme.hexText.replace('#', '');
+
+            // Title for all slides
+            pptSlide.addText(`${emoji} ${title}`, {
+                x: 0.5, y: 0.5, w: '90%', h: 0.8,
+                fontSize: 28, bold: true, color: tColor
+            });
+
+            if (layout === 'STUDIO_MINDMAP') {
+                const centerNode = safeStr(slide.center_node || slide.title);
+                pptSlide.addShape(pres.ShapeType.ellipse, { x: 4.5, y: 2.2, w: 2, h: 2, fill: { color: pColor } });
+                pptSlide.addText(centerNode, { x: 4.5, y: 2.2, w: 2, h: 2, fontSize: 14, color: 'FFFFFF', align: 'center', valign: 'middle' });
+            } else if (layout === 'STUDIO_GRAPH') {
+                const vals = Array.isArray(slide.values) ? slide.values.map(Number) : [];
+                const lbls = Array.isArray(slide.labels) ? slide.labels.map(String) : [];
+                const type = safeStr(slide.chart_type) === 'pie' ? pres.ChartType.pie : pres.ChartType.bar;
+                pptSlide.addChart(type, [{ name: 'Data', labels: lbls, values: vals }], { x: 1, y: 1.5, w: 8, h: 3.5 });
+            } else if (layout === 'STUDIO_GRID') {
+                const items = Array.isArray(slide.items) ? slide.items : [];
+                items.slice(0, 3).forEach((item: any, idx: number) => {
+                    const xPos = 0.5 + idx * 3.2;
+                    pptSlide.addShape(pres.ShapeType.rect, { x: xPos, y: 1.8, w: 3, h: 3, fill: { color: pColor, alpha: 90 } });
+                    pptSlide.addText(`${safeStr(item.emoji)}\n${safeStr(item.title)}\n${safeStr(item.description)}`, {
+                        x: xPos, y: 1.8, w: 3, h: 3, fontSize: 12, color: txtColor, align: 'center', valign: 'middle'
+                    });
+                });
+            } else if (layout === 'STUDIO_TIMELINE') {
+                const steps = Array.isArray(slide.process_steps) ? slide.process_steps : [];
+                steps.slice(0, 4).forEach((s: any, idx: number) => {
+                    const xPos = 0.5 + idx * 2.3;
+                    pptSlide.addShape(pres.ShapeType.ellipse, { x: xPos, y: 2.5, w: 1, h: 1, fill: { color: pColor } });
+                    pptSlide.addText(safeStr(s.label), { x: xPos, y: 2, w: 1.5, h: 0.5, fontSize: 12, color: tColor, align: 'center' });
+                    pptSlide.addText(safeStr(s.description), { x: xPos, y: 3.6, w: 1.5, h: 1, fontSize: 9, color: txtColor, opacity: 70, align: 'center' });
+                });
+            } else if (layout === 'STUDIO_DIAGRAM') {
+                const nodes = Array.isArray(slide.nodes) ? slide.nodes : [];
+                nodes.slice(0, 6).forEach((node: string, idx: number) => {
+                    const xPos = 1 + (idx % 3) * 3;
+                    const yPos = 1.8 + Math.floor(idx / 3) * 1.5;
+                    pptSlide.addShape(pres.ShapeType.roundRect, { x: xPos, y: yPos, w: 2.5, h: 1, fill: { color: pColor, alpha: 85 } });
+                    pptSlide.addText(safeStr(node), { x: xPos, y: yPos, w: 2.5, h: 1, fontSize: 11, color: 'FFFFFF', align: 'center', valign: 'middle' });
+                });
+            } else if (layout === 'STUDIO_SPLIT') {
+                const points = Array.isArray(slide.points) ? slide.points : [];
+                pptSlide.addText(points.map((p: string) => ({ text: `• ${safeStr(p)}`, options: { bullet: true } })), { x: 0.5, y: 1.8, w: 5, h: 3, fontSize: 18, color: txtColor });
+                pptSlide.addShape(pres.ShapeType.rect, { x: 6, y: 1.8, w: 3.5, h: 3, fill: { color: pColor, alpha: 90 } });
+                pptSlide.addText("VISUAL ELEMENT", { x: 6, y: 1.8, w: 3.5, h: 3, fontSize: 14, color: 'FFFFFF', align: 'center', valign: 'middle' });
+            } else {
+                // STUDIO_CENTER / Default
+                const keyStat = slide.key_stat || {};
+                if (keyStat.value) {
+                    pptSlide.addText(safeStr(keyStat.value), { x: 0, y: 2.2, w: '100%', h: 1.5, fontSize: 72, bold: true, color: txtColor, align: 'center' });
+                    pptSlide.addText(safeStr(keyStat.label), { x: 0, y: 3.5, w: '100%', h: 0.5, fontSize: 20, color: txtColor, opacity: 50, align: 'center' });
+                } else {
+                    const points = Array.isArray(slide.points) ? slide.points : [];
+                    pptSlide.addText(points.map((p: string) => ({ text: `• ${safeStr(p)}`, options: { bullet: true } })), { x: 1, y: 1.8, w: 8, h: 3, fontSize: 22, color: txtColor });
+                }
+            }
+
+            // Footer
+            pptSlide.addText(`${schoolName} // ${teacherName} // PAGE ${slides.indexOf(slide) + 1}`, {
+                x: 0.5, y: 5.2, w: 9, h: 0.3, fontSize: 9, color: '888888', align: 'center'
+            });
+        });
+
+        pres.writeFile({ fileName: `${schoolName.replace(/\s/g, '_')}_Deck.pptx` });
     };
 
     return (
@@ -419,7 +570,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                         { id: 'library', label: 'Library', icon: Library },
                         { id: 'research', label: 'Research Hub', icon: MessageSquare },
                         { id: 'slides', label: 'Slide Deck', icon: LayoutGrid }
-                    ].map(tab => (
+                    ].map((tab: { id: string, label: string, icon: any }) => (
                         <button key={tab.id} onClick={() => setPhase(tab.id as Phase)}
                             className={`flex items-center gap-2.5 px-6 py-2.5 rounded-[0.85rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${phase === tab.id ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xl shadow-indigo-600/10 scale-105' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
                             <tab.icon className="w-4 h-4" />
@@ -449,7 +600,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                     <Select value={persona} onValueChange={setPersona}>
                                         <SelectTrigger className="h-12 rounded-[1rem] text-xs font-bold bg-white dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.08] shadow-sm"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                            {["Academic Deep Dive", "Classroom Storytelling", "Skeptical Analyst", "Quick Summary"].map((p: string) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -676,9 +827,10 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                 </div>
                             ) : (
                                 <div className="flex-1 flex flex-col">
-                                    <div className="flex-1 flex items-center justify-center p-12 bg-slate-200 dark:bg-black/60 relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-600/5 pointer-events-none" />
-                                        <motion.div key={activeSlide} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.3 }} className="w-full max-w-5xl aspect-video bg-[#050508] rounded-[3.5rem] border border-white/[0.08] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.6)] overflow-hidden relative ring-1 ring-white/10">
+                                    <div className={`flex-1 flex flex-col items-center justify-center p-8 ${theme.bg} relative overflow-hidden transition-colors duration-700`}>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-black/5 pointer-events-none" />
+                                        <motion.div key={activeSlide} initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}
+                                            className={`w-full max-w-5xl aspect-video ${theme.slideBg} rounded-xl border ${theme.border} shadow-2xl overflow-hidden relative transition-all duration-500`}>
                                             {(() => {
                                                 const slide = slides[activeSlide] || {};
                                                 const layout: string = safeStr(slide.layout) || 'STUDIO_CENTER';
@@ -696,13 +848,16 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 const values: number[] = Array.isArray(slide.values) ? slide.values.map((x: any) => Number(x) || 0) : [];
                                                 const nodes: string[] = Array.isArray(slide.nodes) ? slide.nodes.map((x: any) => safeStr(x)) : [];
                                                 const edges: any[] = Array.isArray(slide.edges) ? slide.edges : [];
-                                                const branchColors = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#f97316'];
+                                                const branchColors = [theme.primary, theme.accent, theme.secondary, '#ec4899', '#14b8a6', '#f97316'];
 
                                                 if (layout === 'STUDIO_MINDMAP') return (
-                                                    <div className="flex flex-col h-full p-8">
-                                                        <div className="flex items-center gap-3 mb-3"><span className="text-2xl">{emoji}</span><h2 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                    <div className={`flex flex-col h-full p-10 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-4 mb-4">
+                                                            <span className="text-3xl">{emoji}</span>
+                                                            <h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2>
+                                                        </div>
                                                         <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-                                                            <div className="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-[10px] text-center p-2 shadow-[0_0_40px_rgba(99,102,241,0.5)] absolute z-20">{centerNode}</div>
+                                                            <div className="w-24 h-24 rounded-full flex items-center justify-center text-white font-black text-xs text-center p-3 shadow-2xl absolute z-20 transition-all duration-500" style={{ backgroundColor: theme.primary, boxShadow: `0 0 40px ${theme.primary}50` }}>{centerNode}</div>
                                                             {branches.slice(0, 6).map((branch: any, bi: number) => {
                                                                 const angle = (360 / Math.max(branches.length, 1)) * bi - 90;
                                                                 const rad = angle * (Math.PI / 180);
@@ -726,42 +881,42 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 if (layout === 'STUDIO_SPLIT') {
                                                     const elems: string[] = Array.isArray(visual.elements) ? visual.elements.map((e: any) => safeStr(e)) : [];
                                                     return (
-                                                        <div className="flex h-full">
-                                                            <div className="flex-1 flex flex-col justify-center p-10 gap-5">
-                                                                <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
-                                                                <ul className="space-y-3">{points.map((p, pi) => <li key={pi} className="flex gap-3 items-start"><div className="w-1.5 h-1.5 rounded bg-indigo-500 mt-2 shrink-0" /><p className="text-white/80 text-sm font-medium leading-relaxed">{p}</p></li>)}</ul>
+                                                        <div className={`flex h-full ${theme.slideBg}`}>
+                                                            <div className="flex-[1.5] flex flex-col justify-center p-14 gap-6">
+                                                                <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className={`text-3xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                                <ul className="space-y-4">{points.map((p: any, pi: number) => <li key={pi} className="flex gap-4 items-start"><div className="w-2 h-2 rounded-full mt-2.5 shrink-0" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-lg font-medium leading-relaxed`}>{p}</p></li>)}</ul>
                                                             </div>
-                                                            <div className="w-[36%] bg-white/[0.03] border-l border-white/[0.06] flex flex-col items-center justify-center gap-3 p-6">
-                                                                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{safeStr(visual.label) || 'DIAGRAM'}</p>
-                                                                <div className="w-full grid grid-cols-2 gap-2">{elems.map((el, ei) => <div key={ei} className="bg-indigo-600/20 rounded-xl px-3 py-2.5 text-[10px] font-bold text-indigo-200 text-center border border-indigo-500/20">{el}</div>)}</div>
+                                                            <div className={`flex-1 ${theme.card} border-l ${theme.border} flex flex-col items-center justify-center gap-5 p-10`}>
+                                                                <p className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-40`} style={{ color: theme.primary }}>{safeStr(visual.label) || 'DIAGRAM'}</p>
+                                                                <div className="w-full grid grid-cols-1 gap-3">{elems.map((el, ei) => <div key={ei} className={`rounded-2xl px-5 py-4 text-xs font-bold text-center border transition-all duration-300`} style={{ backgroundColor: `${theme.primary}10`, borderColor: `${theme.primary}30`, color: theme.text }}>{el}</div>)}</div>
                                                             </div>
                                                         </div>
                                                     );
                                                 }
 
                                                 if (layout === 'STUDIO_GRID') return (
-                                                    <div className="flex flex-col h-full p-8 gap-4">
-                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
-                                                        <div className="flex-1 grid grid-cols-3 gap-3">{items.map((item: any, ii: number) => <motion.div key={ii} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: ii * 0.1 }} className="bg-white/[0.04] rounded-2xl border border-white/[0.08] p-4 flex flex-col gap-2"><span className="text-2xl">{safeStr(item.emoji)}</span><p className="text-[10px] font-black text-white uppercase tracking-wide">{safeStr(item.title)}</p><p className="text-[10px] text-white/60 font-medium leading-relaxed">{safeStr(item.description)}</p></motion.div>)}</div>
+                                                    <div className={`flex flex-col h-full p-12 gap-6 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className={`text-3xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        <div className="flex-1 grid grid-cols-3 gap-5">{items.map((item: any, ii: number) => <motion.div key={ii} initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: ii * 0.1 }} className={`${theme.card} rounded-3xl border ${theme.border} p-6 flex flex-col gap-3 shadow-xl`}><span className="text-3xl">{safeStr(item.emoji)}</span><p className={`text-xs font-black uppercase tracking-widest ${theme.text}`}>{safeStr(item.title)}</p><p className={`text-[11px] opacity-60 font-medium leading-relaxed ${theme.text}`}>{safeStr(item.description)}</p></motion.div>)}</div>
                                                     </div>
                                                 );
 
                                                 if (layout === 'STUDIO_TIMELINE') return (
-                                                    <div className="flex flex-col h-full p-8 gap-4">
-                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
-                                                        <div className="flex-1 flex items-center relative">
-                                                            <div className="absolute top-5 left-0 right-0 h-0.5 bg-indigo-500/20" />
-                                                            <div className="w-full flex">{steps.map((s: any, si: number) => <motion.div key={si} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: si * 0.12 }} className="flex-1 flex flex-col items-center gap-2 relative"><div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm z-10 shadow-[0_0_20px_rgba(99,102,241,0.4)]">{safeStr(s.step || si + 1)}</div><div className="text-center px-1"><p className="text-[9px] font-black text-[#E8FF41] uppercase tracking-wider">{safeStr(s.label)}</p><p className="text-[9px] text-white/55 mt-1 leading-relaxed">{safeStr(s.description)}</p></div></motion.div>)}</div>
+                                                    <div className={`flex flex-col h-full p-12 gap-8 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className={`text-3xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        <div className="flex-1 flex items-center relative px-4">
+                                                            <div className="absolute top-[4.5rem] left-20 right-20 h-0.5 opacity-20" style={{ backgroundColor: theme.primary }} />
+                                                            <div className="w-full flex justify-between">{steps.map((s: any, si: number) => <motion.div key={si} initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: si * 0.12 }} className="flex-1 flex flex-col items-center gap-4 relative"><div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-base z-10 shadow-2xl transition-all duration-500" style={{ backgroundColor: theme.primary, boxShadow: `0 0 30px ${theme.primary}50` }}>{safeStr(s.step || si + 1)}</div><div className="text-center px-4"><p className={`text-[11px] font-black uppercase tracking-widest mb-1.5`} style={{ color: theme.accent }}>{safeStr(s.label)}</p><p className={`text-[10px] opacity-50 font-medium leading-relaxed ${theme.text}`}>{safeStr(s.description)}</p></div></motion.div>)}</div>
                                                         </div>
                                                     </div>
                                                 );
 
                                                 if (layout === 'STUDIO_GRAPH') return (
-                                                    <div className="flex flex-col h-full p-8 gap-6">
-                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
+                                                    <div className={`flex flex-col h-full p-10 gap-8 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-4"><span className="text-3xl">{emoji}</span><h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
                                                         <div className="flex-1 flex items-center justify-center">
                                                             {chartType === 'pie' ? (
-                                                                <div className="relative w-64 h-64">
+                                                                <div className="relative w-80 h-80">
                                                                     <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                                                                         {(() => {
                                                                             let total = values.reduce((a, b) => a + b, 0) || 1;
@@ -771,26 +926,26 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                                                 const dash = `${p} ${100 - p}`;
                                                                                 const offset = -acc;
                                                                                 acc += p;
-                                                                                return <circle key={i} cx="50" cy="50" r="40" fill="transparent" stroke={['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6'][i % 5]} strokeWidth="20" strokeDasharray={dash} strokeDashoffset={offset} className="transition-all duration-1000" />;
+                                                                                return <circle key={i} cx="50" cy="50" r="40" fill="transparent" stroke={[theme.primary, theme.accent, theme.secondary, '#ec4899', '#14b8a6'][i % 5]} strokeWidth="20" strokeDasharray={dash} strokeDashoffset={offset} className="transition-all duration-1000" />;
                                                                             });
                                                                         })()}
                                                                     </svg>
-                                                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                                                                    <div className={`absolute inset-0 flex flex-col items-center justify-center ${theme.text}`}>
                                                                         <span className="text-[10px] font-black opacity-40 uppercase">Total</span>
-                                                                        <span className="text-xl font-bold">{values.reduce((a, b) => a + b, 0)}</span>
+                                                                        <span className="text-2xl font-bold">{values.reduce((a, b) => a + b, 0)}</span>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="w-full h-full flex items-end gap-4 px-10 pb-10 border-l border-b border-white/10">
+                                                                <div className={`w-full h-full flex items-end gap-6 px-16 pb-12 border-l border-b ${theme.border}`}>
                                                                     {values.map((v, i) => {
                                                                         const max = Math.max(...values, 1);
                                                                         const h = (v / max) * 100;
                                                                         return (
-                                                                            <div key={i} className="flex-1 flex flex-col items-center gap-3">
-                                                                                <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} className="w-full rounded-t-xl bg-gradient-to-t from-indigo-600 to-indigo-400 relative group shadow-[0_0_30px_rgba(99,102,241,0.2)]">
-                                                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[9px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">{v}</div>
+                                                                            <div key={i} className="flex-1 flex flex-col items-center gap-4">
+                                                                                <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} className="w-full rounded-t-xl relative group transition-all duration-500" style={{ background: `linear-gradient(to top, ${theme.primary}, ${theme.primary}cc)`, boxShadow: `0 0 20px ${theme.primary}30` }}>
+                                                                                    <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-black px-3 py-1.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity`}>{v}</div>
                                                                                 </motion.div>
-                                                                                <span className="text-[9px] font-bold text-white/40 rotate-45 origin-left whitespace-nowrap">{labels[i] || `Item ${i + 1}`}</span>
+                                                                                <span className={`text-[10px] font-black uppercase tracking-wider origin-left whitespace-nowrap opacity-60 ${theme.text}`}>{labels[i] || `Item ${i + 1}`}</span>
                                                                             </div>
                                                                         );
                                                                     })}
@@ -801,17 +956,17 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 );
 
                                                 if (layout === 'STUDIO_DIAGRAM') return (
-                                                    <div className="flex flex-col h-full p-8 gap-6">
-                                                        <div className="flex items-center gap-3"><span className="text-3xl">{emoji}</span><h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter">{title}</h2></div>
-                                                        <div className="flex-1 flex flex-wrap items-center justify-center gap-10 p-10">
+                                                    <div className={`flex flex-col h-full p-10 gap-8 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-4"><span className="text-3xl">{emoji}</span><h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        <div className="flex-1 flex flex-wrap items-center justify-center gap-12 p-12">
                                                             {nodes.map((node, ni) => (
                                                                 <React.Fragment key={ni}>
-                                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: ni * 0.1 }} className="px-6 py-4 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-100 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/10 min-w-[120px] text-center">
+                                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: ni * 0.1 }} className={`px-8 py-5 rounded-2xl border ${theme.card} ${theme.border} ${theme.text} text-xs font-black uppercase tracking-[0.2em] shadow-2xl min-w-[140px] text-center`}>
                                                                         {node}
                                                                     </motion.div>
                                                                     {ni < nodes.length - 1 && (
                                                                         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: ni * 0.1 + 0.2 }}>
-                                                                            <ArrowRight className="w-6 h-6 text-indigo-500/40" />
+                                                                            <ArrowRight className="w-8 h-8 opacity-20" style={{ color: theme.primary }} />
                                                                         </motion.div>
                                                                     )}
                                                                 </React.Fragment>
@@ -822,10 +977,10 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
 
                                                 // STUDIO_CENTER (default)
                                                 return (
-                                                    <div className="flex flex-col justify-center h-full p-14 gap-6">
-                                                        <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#E8FF41] to-[#BAFF4A] uppercase tracking-tighter leading-tight max-w-[85%]">{title}</h2></div>
-                                                        {keyStat && <div className="flex items-baseline gap-3"><span className="text-6xl font-black text-white">{safeStr(keyStat.value)}</span><span className="text-sm font-bold text-white/40 uppercase tracking-wider">{safeStr(keyStat.label)}</span></div>}
-                                                        <ul className="space-y-4">{points.map((p, pi) => <motion.li key={pi} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} className="flex gap-6 items-start"><div className="w-2 h-2 rounded-lg bg-indigo-500 mt-2.5 shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.8)]" /><p className="text-white/80 text-lg font-medium tracking-tight leading-relaxed">{p}</p></motion.li>)}</ul>
+                                                    <div className={`flex flex-col justify-center h-full p-16 gap-8 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-5"><span className="text-5xl">{emoji}</span><h2 className={`text-5xl font-black uppercase tracking-tighter leading-[1.1] max-w-[90%]`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        {keyStat && <div className="flex items-baseline gap-4"><span className={`text-8xl font-black ${theme.text}`}>{safeStr(keyStat.value)}</span><span className={`text-lg font-bold opacity-40 uppercase tracking-[0.2em] ${theme.text}`}>{safeStr(keyStat.label)}</span></div>}
+                                                        <ul className="space-y-5">{points.map((p, pi) => <motion.li key={pi} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} className="flex gap-6 items-start"><div className="w-2.5 h-2.5 rounded-full mt-3 shrink-0 shadow-lg" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-xl font-medium tracking-tight leading-relaxed`}>{p}</p></motion.li>)}</ul>
                                                     </div>
                                                 );
                                             })()}
@@ -834,23 +989,34 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                         </motion.div>
                                     </div>
 
-                                    <div className="h-24 border-t border-slate-200 dark:border-white/[0.05] bg-white dark:bg-[#0D0D0F] flex items-center px-10 gap-10 shrink-0 relative z-10 shadow-up-xl">
-                                        <div className="flex items-center gap-4">
-                                            <button onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className="w-12 h-12 rounded-2xl border border-slate-200 dark:border-white/[0.1] flex items-center justify-center disabled:opacity-20 hover:bg-slate-50 transition-all"><ChevronLeft className="w-6 h-6" /></button>
-                                            <div className="flex gap-2.5 px-4 h-6 items-center">
-                                                {slides.map((_, i) => <button key={i} onClick={() => setActiveSlide(i)} className={`h-2 transition-all duration-500 rounded-full ${i === activeSlide ? 'w-10 bg-indigo-600' : 'w-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-400'}`} />)}
+                                    <div className={`h-28 border-t ${theme.border} ${theme.bg} flex items-center px-10 gap-8 shrink-0 relative z-10 shadow-up-2xl transition-colors duration-700`}>
+                                        <div className="flex items-center gap-5">
+                                            <button onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className={`w-12 h-12 rounded-2xl border ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text}`}><ChevronLeft className="w-6 h-6" /></button>
+                                            <div className="flex gap-3 px-5 h-8 items-center bg-black/10 rounded-full">
+                                                {slides.map((_, i) => <button key={i} onClick={() => setActiveSlide(i)} className={`h-1.5 transition-all duration-500 rounded-full ${i === activeSlide ? 'w-10' : 'w-1.5 opacity-20 hover:opacity-100 hover:w-6'}`} style={{ backgroundColor: i === activeSlide ? theme.primary : theme.primary }} />)}
                                             </div>
-                                            <button onClick={() => setActiveSlide(Math.min(slides.length - 1, activeSlide + 1))} disabled={activeSlide === slides.length - 1} className="w-12 h-12 rounded-2xl border border-slate-200 dark:border-white/[0.1] flex items-center justify-center disabled:opacity-20 hover:bg-slate-50 transition-all"><ChevronRight className="w-6 h-6" /></button>
+                                            <button onClick={() => setActiveSlide(Math.min(slides.length - 1, activeSlide + 1))} disabled={activeSlide === slides.length - 1} className={`w-12 h-12 rounded-2xl border ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text}`}><ChevronRight className="w-6 h-6" /></button>
                                         </div>
 
-                                        <div className="ml-auto flex items-center gap-4">
-                                            <Button onClick={downloadPDF} variant="outline" className="h-12 rounded-2xl text-[10px] font-black border-2 tracking-[0.2em] px-10 hover:bg-slate-50 transition-all"><Download className="w-4 h-4 mr-3" /> EXPORT PDF</Button>
-                                            <div className="h-12 w-px bg-slate-200 dark:bg-white/10 mx-2" />
+                                        <div className={`h-12 flex items-center bg-black/10 rounded-2xl p-1 shrink-0 ml-10 border ${theme.border}`}>
+                                            {(Object.keys(THEMES) as ThemeID[]).map((tid) => (
+                                                <button key={tid} onClick={() => setCurrentTheme(tid)} className={`h-full px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-500 ${currentTheme === tid ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                                                    {THEMES[tid].name}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="ml-auto flex items-center gap-5">
+                                            <div className="flex gap-2">
+                                                <Button onClick={downloadPDF} variant="outline" className={`h-12 rounded-2xl text-[9px] font-black border-2 tracking-[0.2em] px-8 hover:scale-105 transition-all ${theme.text} ${theme.border}`}><Download className="w-4 h-4 mr-2.5 opacity-50" /> PDF</Button>
+                                                <Button onClick={downloadPPTX} variant="outline" className={`h-12 rounded-2xl text-[9px] font-black border-2 tracking-[0.2em] px-8 hover:scale-105 transition-all ${theme.text} ${theme.border}`}><FileText className="w-4 h-4 mr-2.5 opacity-50" /> PPTX</Button>
+                                            </div>
+                                            <div className={`h-12 w-px opacity-10 mx-1`} style={{ backgroundColor: theme.primary }} />
                                             <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                                <SelectTrigger className="w-52 h-12 rounded-[1.25rem] text-[10px] font-black tracking-widest border-2 shadow-sm"><SelectValue placeholder="SELECT TARGET CLASS" /></SelectTrigger>
+                                                <SelectTrigger className={`w-52 h-12 rounded-2xl text-[9px] font-black tracking-widest border-2 shadow-sm ${theme.text} ${theme.border}`}><SelectValue placeholder="CLASS TARGET" /></SelectTrigger>
                                                 <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name.toUpperCase()}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button onClick={handleShare} disabled={isSharing || !selectedClass} className="h-12 px-12 rounded-[1.25rem] bg-indigo-600 font-black text-[10px] tracking-[0.2em] shadow-xl shadow-indigo-600/30 hover:scale-[1.03] transition-all">
+                                            <Button onClick={handleShare} disabled={isSharing || !selectedClass} className="h-12 px-10 rounded-2xl bg-indigo-600 font-black text-[9px] tracking-[0.3em] shadow-2xl shadow-indigo-600/40 hover:scale-[1.05] active:scale-95 transition-all">
                                                 {isSharing ? <Loader2 className="w-5 h-5 animate-spin" /> : "PUBLISH DECK"}
                                             </Button>
                                         </div>
@@ -890,7 +1056,14 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                         </div>
                                     )}
                                 </div>
-                                <Button onClick={downloadPDF} disabled={!slides.length} variant="outline" className="w-full rounded-2xl h-12 gap-3 text-[10px] font-black tracking-widest uppercase border-2 shadow-sm"><Download className="w-4 h-4" /> EXPORT AS PDF</Button>
+                                <div className="grid grid-cols-2 gap-2 mt-auto pt-4 border-t border-slate-200/50 dark:border-white/[0.05]">
+                                    <Button onClick={downloadPDF} disabled={!slides.length} variant="outline" className="rounded-2xl h-12 text-[9px] font-black tracking-widest uppercase border-2 shadow-sm gap-2">
+                                        <Download className="w-3 h-3" /> PDF
+                                    </Button>
+                                    <Button onClick={downloadPPTX} disabled={!slides.length} variant="outline" className="rounded-2xl h-12 text-[9px] font-black tracking-widest uppercase border-2 shadow-sm gap-2">
+                                        <FileText className="w-3 h-3" /> PPTX
+                                    </Button>
+                                </div>
                             </div>
                         </motion.aside>
                     )}
