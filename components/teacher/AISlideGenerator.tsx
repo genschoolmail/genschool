@@ -851,25 +851,25 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 const branchColors = [theme.primary, theme.accent, theme.secondary, '#ec4899', '#14b8a6', '#f97316'];
 
                                                 if (layout === 'STUDIO_MINDMAP') return (
-                                                    <div className={`flex flex-col h-full p-10 ${theme.slideBg}`}>
-                                                        <div className="flex items-center gap-4 mb-4">
-                                                            <span className="text-3xl">{emoji}</span>
-                                                            <h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2>
+                                                    <div className={`flex flex-col h-full p-12 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-5 mb-6">
+                                                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-4xl shadow-inner">{emoji}</div>
+                                                            <h2 className={`text-4xl font-black uppercase tracking-tight`} style={{ color: theme.accent }}>{title}</h2>
                                                         </div>
-                                                        <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-                                                            <div className="w-24 h-24 rounded-full flex items-center justify-center text-white font-black text-xs text-center p-3 shadow-2xl absolute z-20 transition-all duration-500" style={{ backgroundColor: theme.primary, boxShadow: `0 0 40px ${theme.primary}50` }}>{centerNode}</div>
+                                                        <div className="flex-1 relative flex items-center justify-center">
+                                                            <div className="w-32 h-32 rounded-full flex items-center justify-center text-white font-black text-sm text-center p-4 shadow-[0_0_50px_rgba(0,0,0,0.3)] absolute z-20 transition-all duration-700 hover:scale-110" style={{ backgroundColor: theme.primary, boxShadow: `0 0 60px ${theme.primary}40` }}>{centerNode}</div>
                                                             {branches.slice(0, 6).map((branch: any, bi: number) => {
                                                                 const angle = (360 / Math.max(branches.length, 1)) * bi - 90;
                                                                 const rad = angle * (Math.PI / 180);
-                                                                const bx = Math.cos(rad) * 155;
-                                                                const by = Math.sin(rad) * 105;
+                                                                const bx = Math.cos(rad) * 190;
+                                                                const by = Math.sin(rad) * 130;
                                                                 const color = branchColors[bi % branchColors.length];
                                                                 const kids: string[] = Array.isArray(branch.children) ? branch.children.map((c: any) => safeStr(c)) : [];
                                                                 return (
-                                                                    <div key={bi} className="absolute flex flex-col items-center gap-1.5" style={{ left: `calc(50% + ${bx}px)`, top: `calc(50% + ${by}px)`, transform: 'translate(-50%,-50%)' }}>
-                                                                        <div className="px-3 py-1 rounded-xl text-[9px] font-black text-white whitespace-nowrap shadow-lg" style={{ backgroundColor: color }}>{safeStr(branch.label)}</div>
-                                                                        <div className="flex flex-wrap gap-1 justify-center max-w-[140px]">
-                                                                            {kids.slice(0, 3).map((c, ci) => <span key={ci} className="text-[8px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/60 font-bold whitespace-nowrap">{c}</span>)}
+                                                                    <div key={bi} className="absolute flex flex-col items-center gap-2 group" style={{ left: `calc(50% + ${bx}px)`, top: `calc(50% + ${by}px)`, transform: 'translate(-50%,-50%)' }}>
+                                                                        <div className="px-5 py-2 rounded-2xl text-[10px] font-black text-white whitespace-nowrap shadow-xl transition-all duration-300 group-hover:scale-105" style={{ backgroundColor: color }}>{safeStr(branch.label)}</div>
+                                                                        <div className="flex flex-wrap gap-1.5 justify-center max-w-[160px] opacity-60 group-hover:opacity-100 transition-opacity">
+                                                                            {kids.slice(0, 3).map((c, ci) => <span key={ci} className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-white/80 font-bold border border-white/5 whitespace-nowrap">{c}</span>)}
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -882,13 +882,13 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                     const elems: string[] = Array.isArray(visual.elements) ? visual.elements.map((e: any) => safeStr(e)) : [];
                                                     return (
                                                         <div className={`flex h-full ${theme.slideBg}`}>
-                                                            <div className="flex-[1.5] flex flex-col justify-center p-14 gap-6">
-                                                                <div className="flex items-center gap-4"><span className="text-4xl">{emoji}</span><h2 className={`text-3xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
-                                                                <ul className="space-y-4">{points.map((p: any, pi: number) => <li key={pi} className="flex gap-4 items-start"><div className="w-2 h-2 rounded-full mt-2.5 shrink-0" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-lg font-medium leading-relaxed`}>{p}</p></li>)}</ul>
+                                                            <div className="flex-[1.4] flex flex-col justify-center p-16 gap-8">
+                                                                <div className="flex items-center gap-5"><span className="text-5xl">{emoji}</span><h2 className={`text-4xl font-black uppercase tracking-tight`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                                <ul className="space-y-5">{points.map((p: any, pi: number) => <li key={pi} className="flex gap-5 items-start"><div className="w-2.5 h-2.5 rounded-full mt-3 shrink-0" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-xl font-medium leading-relaxed tracking-tight`}>{p}</p></li>)}</ul>
                                                             </div>
-                                                            <div className={`flex-1 ${theme.card} border-l ${theme.border} flex flex-col items-center justify-center gap-5 p-10`}>
-                                                                <p className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-40`} style={{ color: theme.primary }}>{safeStr(visual.label) || 'DIAGRAM'}</p>
-                                                                <div className="w-full grid grid-cols-1 gap-3">{elems.map((el, ei) => <div key={ei} className={`rounded-2xl px-5 py-4 text-xs font-bold text-center border transition-all duration-300`} style={{ backgroundColor: `${theme.primary}10`, borderColor: `${theme.primary}30`, color: theme.text }}>{el}</div>)}</div>
+                                                            <div className={`flex-1 ${theme.card} border-l ${theme.border} flex flex-col items-center justify-center gap-6 p-12 bg-black/5`}>
+                                                                <p className={`text-[11px] font-black uppercase tracking-[0.4em] opacity-40`} style={{ color: theme.primary }}>{safeStr(visual.label) || 'TECHNICAL ANALYSIS'}</p>
+                                                                <div className="w-full space-y-3">{elems.map((el, ei) => <div key={ei} className={`rounded-2xl px-6 py-4 text-xs font-bold text-center border transition-all duration-500 backdrop-blur-sm shadow-sm hover:translate-x-1`} style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30`, color: theme.text }}>{el}</div>)}</div>
                                                             </div>
                                                         </div>
                                                     );
@@ -912,12 +912,12 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 );
 
                                                 if (layout === 'STUDIO_GRAPH') return (
-                                                    <div className={`flex flex-col h-full p-10 gap-8 ${theme.slideBg}`}>
-                                                        <div className="flex items-center gap-4"><span className="text-3xl">{emoji}</span><h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                    <div className={`flex flex-col h-full p-12 gap-10 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-5"><div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-3xl shadow-inner">{emoji}</div><h2 className={`text-3xl font-black uppercase tracking-tight`} style={{ color: theme.accent }}>{title}</h2></div>
                                                         <div className="flex-1 flex items-center justify-center">
                                                             {chartType === 'pie' ? (
-                                                                <div className="relative w-80 h-80">
-                                                                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                                                                <div className="relative w-96 h-96 flex items-center justify-center">
+                                                                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 filter drop-shadow-2xl">
                                                                         {(() => {
                                                                             let total = values.reduce((a, b) => a + b, 0) || 1;
                                                                             let acc = 0;
@@ -926,26 +926,26 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                                                 const dash = `${p} ${100 - p}`;
                                                                                 const offset = -acc;
                                                                                 acc += p;
-                                                                                return <circle key={i} cx="50" cy="50" r="40" fill="transparent" stroke={[theme.primary, theme.accent, theme.secondary, '#ec4899', '#14b8a6'][i % 5]} strokeWidth="20" strokeDasharray={dash} strokeDashoffset={offset} className="transition-all duration-1000" />;
+                                                                                return <circle key={i} cx="50" cy="50" r="35" fill="transparent" stroke={[theme.primary, theme.accent, theme.secondary, '#ec4899', '#14b8a6'][i % 5]} strokeWidth="20" strokeDasharray={dash} strokeDashoffset={offset} className="transition-all duration-1000 hover:scale-105 origin-center" />;
                                                                             });
                                                                         })()}
                                                                     </svg>
                                                                     <div className={`absolute inset-0 flex flex-col items-center justify-center ${theme.text}`}>
-                                                                        <span className="text-[10px] font-black opacity-40 uppercase">Total</span>
-                                                                        <span className="text-2xl font-bold">{values.reduce((a, b) => a + b, 0)}</span>
+                                                                        <span className="text-[12px] font-black opacity-40 uppercase tracking-widest">Total</span>
+                                                                        <span className="text-4xl font-black">{values.reduce((a, b) => a + b, 0).toLocaleString()}</span>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className={`w-full h-full flex items-end gap-6 px-16 pb-12 border-l border-b ${theme.border}`}>
+                                                                <div className={`w-full max-w-4xl h-full flex items-end gap-10 px-20 pb-16 border-l-2 border-b-2 ${theme.border} bg-white/5 rounded-bl-3xl`}>
                                                                     {values.map((v, i) => {
                                                                         const max = Math.max(...values, 1);
                                                                         const h = (v / max) * 100;
                                                                         return (
-                                                                            <div key={i} className="flex-1 flex flex-col items-center gap-4">
-                                                                                <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} className="w-full rounded-t-xl relative group transition-all duration-500" style={{ background: `linear-gradient(to top, ${theme.primary}, ${theme.primary}cc)`, boxShadow: `0 0 20px ${theme.primary}30` }}>
-                                                                                    <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-black px-3 py-1.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity`}>{v}</div>
+                                                                            <div key={i} className="flex-1 flex flex-col items-center gap-5 group">
+                                                                                <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} className="w-full rounded-t-2xl relative transition-all duration-700 shadow-xl" style={{ background: `linear-gradient(to top, ${theme.primary}, ${theme.primary}aa)`, boxShadow: `0 0 30px ${theme.primary}40` }}>
+                                                                                    <div className={`absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[11px] font-black px-4 py-2 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100`}>{v.toLocaleString()}</div>
                                                                                 </motion.div>
-                                                                                <span className={`text-[10px] font-black uppercase tracking-wider origin-left whitespace-nowrap opacity-60 ${theme.text}`}>{labels[i] || `Item ${i + 1}`}</span>
+                                                                                <span className={`text-[11px] font-black uppercase tracking-wider whitespace-nowrap opacity-50 ${theme.text} group-hover:opacity-100 transition-all`}>{labels[i] || `Data ${i + 1}`}</span>
                                                                             </div>
                                                                         );
                                                                     })}
@@ -956,17 +956,17 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 );
 
                                                 if (layout === 'STUDIO_DIAGRAM') return (
-                                                    <div className={`flex flex-col h-full p-10 gap-8 ${theme.slideBg}`}>
-                                                        <div className="flex items-center gap-4"><span className="text-3xl">{emoji}</span><h2 className={`text-2xl font-black uppercase tracking-tighter`} style={{ color: theme.accent }}>{title}</h2></div>
-                                                        <div className="flex-1 flex flex-wrap items-center justify-center gap-12 p-12">
-                                                            {nodes.map((node, ni) => (
+                                                    <div className={`flex flex-col h-full p-12 gap-10 ${theme.slideBg}`}>
+                                                        <div className="flex items-center gap-5"><div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-3xl shadow-inner">{emoji}</div><h2 className={`text-3xl font-black uppercase tracking-tight`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        <div className="flex-1 flex flex-wrap items-center justify-center gap-x-14 gap-y-12 p-16">
+                                                            {nodes.slice(0, 6).map((node, ni) => (
                                                                 <React.Fragment key={ni}>
-                                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: ni * 0.1 }} className={`px-8 py-5 rounded-2xl border ${theme.card} ${theme.border} ${theme.text} text-xs font-black uppercase tracking-[0.2em] shadow-2xl min-w-[140px] text-center`}>
+                                                                    <motion.div initial={{ scale: 0, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ delay: ni * 0.1 }} className={`px-10 py-6 rounded-3xl border-2 ${theme.card} ${theme.border} ${theme.text} text-sm font-black uppercase tracking-[0.25em] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.4)] min-w-[180px] text-center backdrop-blur-md transition-all hover:scale-105 hover:border-indigo-500/50`}>
                                                                         {node}
                                                                     </motion.div>
-                                                                    {ni < nodes.length - 1 && (
-                                                                        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: ni * 0.1 + 0.2 }}>
-                                                                            <ArrowRight className="w-8 h-8 opacity-20" style={{ color: theme.primary }} />
+                                                                    {ni < nodes.length - 1 && ni % 3 !== 2 && (
+                                                                        <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: ni * 0.1 + 0.2 }}>
+                                                                            <ArrowRight className="w-10 h-10 opacity-30" style={{ color: theme.primary }} />
                                                                         </motion.div>
                                                                     )}
                                                                 </React.Fragment>
@@ -989,34 +989,34 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                         </motion.div>
                                     </div>
 
-                                    <div className={`h-28 border-t ${theme.border} ${theme.bg} flex items-center px-10 gap-8 shrink-0 relative z-10 shadow-up-2xl transition-colors duration-700`}>
-                                        <div className="flex items-center gap-5">
-                                            <button onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className={`w-12 h-12 rounded-2xl border ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text}`}><ChevronLeft className="w-6 h-6" /></button>
-                                            <div className="flex gap-3 px-5 h-8 items-center bg-black/10 rounded-full">
-                                                {slides.map((_, i) => <button key={i} onClick={() => setActiveSlide(i)} className={`h-1.5 transition-all duration-500 rounded-full ${i === activeSlide ? 'w-10' : 'w-1.5 opacity-20 hover:opacity-100 hover:w-6'}`} style={{ backgroundColor: i === activeSlide ? theme.primary : theme.primary }} />)}
+                                    <div className={`min-h-[112px] py-4 border-t ${theme.border} ${theme.bg} flex flex-wrap items-center px-10 gap-x-12 gap-y-6 shrink-0 relative z-10 shadow-up-2xl transition-colors duration-700`}>
+                                        <div className="flex items-center gap-6">
+                                            <button onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className={`w-12 h-12 rounded-2xl border-2 ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text} bg-white/5`}><ChevronLeft className="w-6 h-6" /></button>
+                                            <div className="flex gap-3 px-6 h-10 items-center bg-black/20 rounded-full border border-white/5 shadow-inner">
+                                                {slides.map((_, i) => <button key={i} onClick={() => setActiveSlide(i)} className={`h-2 transition-all duration-500 rounded-full ${i === activeSlide ? 'w-10 bg-indigo-500' : 'w-2 bg-white/10 hover:bg-white/30 hover:w-6'}`} />)}
                                             </div>
-                                            <button onClick={() => setActiveSlide(Math.min(slides.length - 1, activeSlide + 1))} disabled={activeSlide === slides.length - 1} className={`w-12 h-12 rounded-2xl border ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text}`}><ChevronRight className="w-6 h-6" /></button>
+                                            <button onClick={() => setActiveSlide(Math.min(slides.length - 1, activeSlide + 1))} disabled={activeSlide === slides.length - 1} className={`w-12 h-12 rounded-2xl border-2 ${theme.border} flex items-center justify-center disabled:opacity-20 hover:scale-110 active:scale-90 transition-all ${theme.text} bg-white/5`}><ChevronRight className="w-6 h-6" /></button>
                                         </div>
 
-                                        <div className={`h-12 flex items-center bg-black/10 rounded-2xl p-1 shrink-0 ml-10 border ${theme.border}`}>
+                                        <div className={`h-12 flex items-center bg-black/20 rounded-2xl p-1 shrink-0 border border-white/5 shadow-inner`}>
                                             {(Object.keys(THEMES) as ThemeID[]).map((tid) => (
-                                                <button key={tid} onClick={() => setCurrentTheme(tid)} className={`h-full px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-500 ${currentTheme === tid ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                                                <button key={tid} onClick={() => setCurrentTheme(tid)} className={`h-full px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${currentTheme === tid ? 'bg-indigo-600 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-300'}`}>
                                                     {THEMES[tid].name}
                                                 </button>
                                             ))}
                                         </div>
 
-                                        <div className="ml-auto flex items-center gap-5">
-                                            <div className="flex gap-2">
-                                                <Button onClick={downloadPDF} variant="outline" className={`h-12 rounded-2xl text-[9px] font-black border-2 tracking-[0.2em] px-8 hover:scale-105 transition-all ${theme.text} ${theme.border}`}><Download className="w-4 h-4 mr-2.5 opacity-50" /> PDF</Button>
-                                                <Button onClick={downloadPPTX} variant="outline" className={`h-12 rounded-2xl text-[9px] font-black border-2 tracking-[0.2em] px-8 hover:scale-105 transition-all ${theme.text} ${theme.border}`}><FileText className="w-4 h-4 mr-2.5 opacity-50" /> PPTX</Button>
+                                        <div className="ml-auto flex items-center gap-6 flex-wrap justify-end">
+                                            <div className="flex gap-2.5 bg-black/20 p-1.5 rounded-2xl border border-white/5">
+                                                <Button onClick={downloadPDF} className={`h-11 rounded-xl text-[10px] font-black tracking-widest px-6 shadow-lg transition-all hover:scale-105 active:scale-95 bg-indigo-500 hover:bg-indigo-600 text-white border-none`}><Download className="w-3.5 h-3.5 mr-2 opacity-80" /> PDF</Button>
+                                                <Button onClick={downloadPPTX} className={`h-11 rounded-xl text-[10px] font-black tracking-widest px-6 shadow-lg transition-all hover:scale-105 active:scale-95 bg-emerald-500 hover:bg-emerald-600 text-white border-none`}><FileText className="w-3.5 h-3.5 mr-2 opacity-80" /> PPTX</Button>
                                             </div>
-                                            <div className={`h-12 w-px opacity-10 mx-1`} style={{ backgroundColor: theme.primary }} />
+                                            <div className={`h-10 w-px opacity-20 hidden md:block`} style={{ backgroundColor: theme.primary }} />
                                             <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                                <SelectTrigger className={`w-52 h-12 rounded-2xl text-[9px] font-black tracking-widest border-2 shadow-sm ${theme.text} ${theme.border}`}><SelectValue placeholder="CLASS TARGET" /></SelectTrigger>
+                                                <SelectTrigger className={`w-52 h-12 rounded-2xl text-[10px] font-black tracking-widest border-2 shadow-sm bg-white/5 ${theme.text} ${theme.border}`}><SelectValue placeholder="CLASS TARGET" /></SelectTrigger>
                                                 <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name.toUpperCase()}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button onClick={handleShare} disabled={isSharing || !selectedClass} className="h-12 px-10 rounded-2xl bg-indigo-600 font-black text-[9px] tracking-[0.3em] shadow-2xl shadow-indigo-600/40 hover:scale-[1.05] active:scale-95 transition-all">
+                                            <Button onClick={handleShare} disabled={isSharing || !selectedClass} className={`h-14 px-10 rounded-[1.25rem] bg-indigo-600 font-black text-[10px] tracking-[0.3em] shadow-[0_12px_24px_-8px_rgba(79,70,229,0.5)] hover:scale-105 active:scale-95 transition-all text-white border-none`}>
                                                 {isSharing ? <Loader2 className="w-5 h-5 animate-spin" /> : "PUBLISH DECK"}
                                             </Button>
                                         </div>
