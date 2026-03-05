@@ -23,51 +23,24 @@ type Source = { id: string; type: 'file' | 'link'; name: string; url?: string; f
 type ChatMsg = { role: 'user' | 'ai'; content: string; };
 type Note = { id: string; content: string; };
 type Phase = 'library' | 'research' | 'slides';
-type ThemeID = 'gamma-aurora' | 'skywork-slate' | 'canvas-cloud';
 
 const STORAGE_KEY = 'ai_studio_v9';
 
-const THEMES: Record<ThemeID, { name: string, bg: string, slideBg: string, text: string, primary: string, accent: string, secondary: string, card: string, border: string, hexBg: string, hexText: string }> = {
-    'gamma-aurora': {
-        name: 'Gamma Aurora',
-        bg: 'bg-[#0D0D0F]',
-        slideBg: 'bg-[#121216]',
-        text: 'text-white',
-        primary: '#6366f1',
-        accent: '#E8FF41',
-        secondary: '#BAFF4A',
-        card: 'bg-white/[0.04]',
-        border: 'border-white/[0.08]',
-        hexBg: '#121216',
-        hexText: '#FFFFFF'
-    },
-    'skywork-slate': {
-        name: 'Skywork Slate',
-        bg: 'bg-[#0F172A]',
-        slideBg: 'bg-[#1E293B]',
-        text: 'text-slate-100',
-        primary: '#38bdf8',
-        accent: '#fbbf24',
-        secondary: '#f59e0b',
-        card: 'bg-slate-800/50',
-        border: 'border-slate-700',
-        hexBg: '#1E293B',
-        hexText: '#F1F5F9'
-    },
-    'canvas-cloud': {
-        name: 'Canvas Cloud',
-        bg: 'bg-[#F8FAFC]',
-        slideBg: 'bg-white',
-        text: 'text-slate-900',
-        primary: '#4f46e5',
-        accent: '#0ea5e9',
-        secondary: '#6366f1',
-        card: 'bg-slate-50',
-        border: 'border-slate-200',
-        hexBg: '#FFFFFF',
-        hexText: '#0F172A'
-    }
+const BASE_THEME = {
+
+    name: 'Quantum Core',
+    bg: 'bg-[#0D0D0F]',
+    slideBg: 'bg-[#121216]',
+    text: 'text-white',
+    primary: '#6366f1',
+    accent: '#E8FF41',
+    secondary: '#BAFF4A',
+    card: 'bg-white/[0.04]',
+    border: 'border-white/[0.08]',
+    hexBg: '#121216',
+    hexText: '#FFFFFF'
 };
+
 
 export default function AISlideGenerator({ classes, schoolName = "School", teacherName = "Teacher" }: {
     classes: any[]; schoolName?: string; teacherName?: string;
@@ -97,9 +70,10 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
     const [isSharing, setIsSharing] = useState(false);
     const [researchEditMode, setResearchEditMode] = useState(false);
     const [editSynthesis, setEditSynthesis] = useState("");
-    const [currentTheme, setCurrentTheme] = useState<ThemeID>('gamma-aurora');
+    const [designMode, setDesignMode] = useState<'default' | 'custom'>('default');
+    const [customDesign, setCustomDesign] = useState("");
+    const theme = BASE_THEME;
 
-    const theme = THEMES[currentTheme];
 
     // Safe render helper - prevents React Error #31
     const safeStr = (val: any): string => {
@@ -128,13 +102,16 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         persona: string;
         sources: Source[];
         phase: Phase;
-        theme?: ThemeID;
+        phase: Phase;
+        designMode?: 'default' | 'custom';
+        customDesign?: string;
     }) => {
         try {
-            const payload = { ...data, sources: data.sources.filter(s => s.type === 'link'), theme: currentTheme };
+            const payload = { ...data, sources: data.sources.filter(s => s.type === 'link') };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
             addLog("Progress saved to storage", 'success');
         } catch (e: any) {
+
             addLog(`Storage error: ${e.message}`, 'error');
         }
     };
@@ -154,7 +131,8 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                 setSynthesis(d.synthesis);
                 setChatHistory(d.chatHistory?.length ? d.chatHistory : [{ role: 'ai', content: 'Session restored.' }]);
                 setPhase(d.phase || 'research');
-                if (d.theme) setCurrentTheme(d.theme);
+                if (d.designMode) setDesignMode(d.designMode);
+                if (d.customDesign) setCustomDesign(d.customDesign);
                 addLog("Previous session restored successfully", 'success');
             }
             if (d.slides?.length) setSlides(d.slides);
@@ -315,7 +293,14 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             const res = await fetch('/api/teacher/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ summary: synthesis, language, teacherName, schoolName, persona })
+                body: JSON.stringify({
+                    summary: synthesis,
+                    language,
+                    teacherName,
+                    schoolName,
+                    persona,
+                    designStyle: designMode === 'custom' && customDesign.trim() ? customDesign.trim() : 'Professional, grounded, and structurally rigorous'
+                })
             });
             const data = await res.json();
             if (!res.ok || data.error) throw new Error(data.error);
@@ -493,6 +478,15 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                 const centerNode = safeStr(slide.center_node || slide.title);
                 pptSlide.addShape(pres.ShapeType.ellipse, { x: 4.5, y: 2.2, w: 2, h: 2, fill: { color: pColor } });
                 pptSlide.addText(centerNode, { x: 4.5, y: 2.2, w: 2, h: 2, fontSize: 14, color: 'FFFFFF', align: 'center', valign: 'middle' });
+                const branches = Array.isArray(slide.branches) ? slide.branches : [];
+                branches.slice(0, 6).forEach((n: any, idx: number) => {
+                    const angle = (360 / Math.max(branches.length, 1)) * idx - 90;
+                    const rad = angle * (Math.PI / 180);
+                    const nx = 5.5 + Math.cos(rad) * 2;
+                    const ny = 3.2 + Math.sin(rad) * 1.5;
+                    pptSlide.addShape(pres.ShapeType.rect, { x: nx - 0.5, y: ny - 0.25, w: 1, h: 0.5, fill: { color: pColor, alpha: 80 } });
+                    pptSlide.addText(n.label, { x: nx - 0.5, y: ny - 0.25, w: 1, h: 0.5, fontSize: 8, color: 'FFFFFF', align: 'center', valign: 'middle' });
+                });
             } else if (layout === 'STUDIO_GRAPH') {
                 const vals = Array.isArray(slide.values) ? slide.values.map(Number) : [];
                 const lbls = Array.isArray(slide.labels) ? slide.labels.map(String) : [];
@@ -731,14 +725,27 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                     <button onClick={() => { setResearchEditMode(true); setEditSynthesis(synthesis); }} className={`h-7 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${researchEditMode ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}>Edit Source</button>
                                 </div>
                                 {!researchEditMode && <div className="flex gap-2">
-                                    {['Teaching Briefing', 'FAQ List', 'Chronology'].map(t => (
+                                    {['Teaching Briefing', 'FAQ List', 'Chronology', 'Master Study Guide'].map(t => (
                                         <button key={t} onClick={() => handleTransform(t)} disabled={!synthesis || loading} className="h-9 px-5 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/20 hover:text-indigo-500 transition-all disabled:opacity-20">{t}</button>
                                     ))}
                                 </div>}
+
                                 {researchEditMode
-                                    ? <Button onClick={() => { setSynthesis(editSynthesis); setResearchEditMode(false); persistSnapshot({ synthesis: editSynthesis, chatHistory, slides, notes, persona, sources, phase }); toast.success("Source updated!"); }} size="sm" className="ml-auto h-9 rounded-xl bg-emerald-600 font-black text-[10px] px-6 tracking-widest shadow-lg">SAVE CHANGES</Button>
-                                    : <Button onClick={handleBuildSlides} disabled={!synthesis || loading} size="sm" className="ml-auto h-9 rounded-xl bg-indigo-600 font-black text-[10px] px-6 tracking-widest shadow-lg shadow-indigo-600/20">CREATE PRESENTATION</Button>
+                                    ? <Button onClick={() => { setSynthesis(editSynthesis); setResearchEditMode(false); persistSnapshot({ synthesis: editSynthesis, chatHistory, slides, notes, persona, sources, phase, designMode, customDesign } as any); toast.success("Source updated!"); }} size="sm" className="ml-auto h-9 rounded-xl bg-emerald-600 font-black text-[10px] px-6 tracking-widest shadow-lg">SAVE CHANGES</Button>
+                                    : <div className="ml-auto flex items-center gap-3">
+                                        <Select value={designMode} onValueChange={(v: any) => setDesignMode(v)}>
+                                            <SelectTrigger className="h-9 w-40 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-transparent text-[10px] font-black tracking-widest uppercase text-slate-400">
+                                                <SelectValue placeholder="DESIGN" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="default">Default Pro</SelectItem>
+                                                <SelectItem value="custom">Custom Style</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Button onClick={handleBuildSlides} disabled={!synthesis || loading} size="sm" className="h-9 rounded-xl bg-indigo-600 font-black text-[10px] px-6 tracking-widest shadow-lg shadow-indigo-600/20">CREATE PRESENTATION</Button>
+                                    </div>
                                 }
+
                             </div>
 
                             {researchEditMode ? (
@@ -770,7 +777,19 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                             </div>
                                         ) : (
                                             <>
+                                                {designMode === 'custom' && !researchEditMode && (
+                                                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 mb-6">
+                                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 block">Custom Presentation Briefing</Label>
+                                                        <Textarea
+                                                            value={customDesign}
+                                                            onChange={e => setCustomDesign(e.target.value)}
+                                                            placeholder="Example: Make this presentation highly enthusiastic, use lots of data analogies, and adopt an 'astronomy' theme for the visual text..."
+                                                            className="w-full bg-black/20 border-white/10 text-xs leading-relaxed text-slate-200 resize-none h-24 rounded-xl focus:ring-indigo-500/50"
+                                                        />
+                                                    </motion.div>
+                                                )}
                                                 {chatHistory.map((m, i) => (
+
                                                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={i} className={`flex gap-5 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                                                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-[10px] font-black shadow-lg ${m.role === 'user' ? 'bg-slate-200 dark:bg-white/10' : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20'}`}>
                                                             {m.role === 'user' ? 'YOU' : <Sparkles className="w-4 h-4" />}
@@ -999,11 +1018,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                         </div>
 
                                         <div className={`h-12 flex items-center bg-black/20 rounded-2xl p-1 shrink-0 border border-white/5 shadow-inner`}>
-                                            {(Object.keys(THEMES) as ThemeID[]).map((tid) => (
-                                                <button key={tid} onClick={() => setCurrentTheme(tid)} className={`h-full px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${currentTheme === tid ? 'bg-indigo-600 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-300'}`}>
-                                                    {THEMES[tid].name}
-                                                </button>
-                                            ))}
+                                            <div className="px-5 text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400 opacity-60">Design: {designMode === 'custom' ? 'Custom Brief' : 'Default Pro'}</div>
                                         </div>
 
                                         <div className="ml-auto flex items-center gap-6 flex-wrap justify-end">
@@ -1011,7 +1026,9 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                 <Button onClick={downloadPDF} className={`h-11 rounded-xl text-[10px] font-black tracking-widest px-6 shadow-lg transition-all hover:scale-105 active:scale-95 bg-indigo-500 hover:bg-indigo-600 text-white border-none`}><Download className="w-3.5 h-3.5 mr-2 opacity-80" /> PDF</Button>
                                                 <Button onClick={downloadPPTX} className={`h-11 rounded-xl text-[10px] font-black tracking-widest px-6 shadow-lg transition-all hover:scale-105 active:scale-95 bg-emerald-500 hover:bg-emerald-600 text-white border-none`}><FileText className="w-3.5 h-3.5 mr-2 opacity-80" /> PPTX</Button>
                                             </div>
+                                            <Button onClick={handleBuildSlides} disabled={loading} className={`h-11 rounded-xl text-[10px] font-black tracking-widest px-6 shadow-lg transition-all hover:scale-105 active:scale-95 bg-amber-500 hover:bg-amber-600 text-white border-none`}><Zap className="w-3.5 h-3.5 mr-2 opacity-80" /> REGENERATE</Button>
                                             <div className={`h-10 w-px opacity-20 hidden md:block`} style={{ backgroundColor: theme.primary }} />
+
                                             <Select value={selectedClass} onValueChange={setSelectedClass}>
                                                 <SelectTrigger className={`w-52 h-12 rounded-2xl text-[10px] font-black tracking-widest border-2 shadow-sm bg-white/5 ${theme.text} ${theme.border}`}><SelectValue placeholder="CLASS TARGET" /></SelectTrigger>
                                                 <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name.toUpperCase()}</SelectItem>)}</SelectContent>

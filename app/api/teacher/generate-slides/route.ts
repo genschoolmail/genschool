@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
             mode = 'slides',
             customQuery = '',
             persona = "Academic Deep Dive",
-            template = 'briefing'
+            template = 'briefing',
+            designStyle = "Professional, grounded, and structurally rigorous"
         } = body;
 
         if (!summary) return NextResponse.json({ error: "No research summary provided" }, { status: 400 });
@@ -64,18 +65,39 @@ ANSWER:`;
                 prompt = `Create a list of 10 complex FAQ items (Question + Answer) for students based on summary. Language: ${language}. Summary: ${summary}`;
             } else if (template === 'Chronology') {
                 prompt = `Convert core process/events into a structured CHRONOLOGICAL TIMELINE with milestones. Language: ${language}. Summary: ${summary}`;
+            } else if (template === 'Master Study Guide') {
+                prompt = `Create a "Master Study Guide" optimized for PDF export based on this research summary.
+Language: ${language}.
+Format as strict Markdown with explicit H1, H2, and H3 headers.
+Must include EXACTLY:
+1. At the very top, these exact placeholders on their own lines: 
+[SCHOOL_LOGO]
+[SCHOOL_NAME]
+2. "## Quick Recall": A bulleted list of 10 rapid-fire key facts.
+3. "## Deep Dive": Detailed paragraphs elaborating on 3-4 core concepts.
+4. "## Self-Assessment": 5 Multiple Choice Questions (MCQs) with an answer key at the bottom.
+Summary: ${summary}`;
             } else {
                 prompt = `Summarize key insights. Language: ${language}. Summary: ${summary}`;
             }
         } else {
-            prompt = `You are a World-Class Curriculum Architect and Senior Graphic Designer. 
+            prompt = `You are the "Core Intelligence Engine", acting as a World-Class Curriculum Architect and Senior Presentation Designer. 
 Your goal is to build a high-fidelity, professional slides deck in ${language} for ${teacherName} at ${schoolName}.
 
-TOPIC COMPREHENSION & DEPTH:
-1. Thoroughly analyze the entire RESEARCH SUMMARY below.
-2. Produce content that goes beyond surface-level bullet points. 
-3. Use professional terminology and provide deep, accurate insights. 
-4. Ensure the logical flow follows a curriculum-grade narrative (Intro -> Core Principles -> Complex Mechanics -> Case Study/Data -> Conclusion).
+CUSTOM DESIGN BRIEF (CRITICAL):
+Follow this narrative, structural, and stylistic directive from the user: "${designStyle}"
+
+STRICT GROUNDING & CONTENT RULES:
+1. ONLY use information from the RESEARCH SUMMARY below. Absolutely no hallucinations or external facts.
+2. Every slide MUST include bracketed citations in the speaker_notes or content (e.g., [Source: Page X]).
+3. RULE OF 6x6: For any bulleted list, use a MAXIMUM of 6 bullets per slide, and a MAXIMUM of 6 words per bullet. Be punchy and concise.
+
+REQUIRED SLIDE DECK STRUCTURE (10-15 Slides):
+Slide 1: Title Slide (STUDIO_CENTER)
+Slide 2: Agenda (STUDIO_GRID or SPLIT)
+Middle Slides: Core Concepts, Deep Dives, Case Studies
+Penultimate Slide: Summary / Conclusion
+Final Slide: Knowledge Check / Quiz Reflection
 
 AVAILABLE LAYOUTS (MANDATORY MIX):
 - "STUDIO_CENTER": High-impact hero slide. Use for Intro/Module headers. Must include a meaningful "key_stat" (value + label).
@@ -87,8 +109,8 @@ AVAILABLE LAYOUTS (MANDATORY MIX):
 - "STUDIO_DIAGRAM": Mandatory for logic flows, structural relationships, or feedback loops. nodes[] + edges[].
 
 STYLING RULES:
-- emoji: Use sophisticated, relevant emojis (e.g., 🔬 🧬 🏛️ 📊).
-- speaker_notes: 2-3 sentences of deep educational context for each slide.
+- emoji: Use sophisticated, relevant emojis.
+- speaker_notes: CRITICAL. Every slide must have 3-4 sentences of deep educational context PLUS citations [Source: X].
 - No markdown, no prefixes. Only a valid JSON array.
 
 GENERATE 10-12 SLIDES. COVER EVERY ASPECT OF THE SUMMARY WITH PROFESSIONAL RIGOUR.
