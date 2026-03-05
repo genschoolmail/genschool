@@ -27,19 +27,19 @@ type Phase = 'library' | 'research' | 'slides';
 const STORAGE_KEY = 'ai_studio_v9';
 
 const BASE_THEME = {
-
     name: 'Quantum Core',
-    bg: 'bg-[#0D0D0F]',
-    slideBg: 'bg-[#121216]',
-    text: 'text-white',
-    primary: '#6366f1',
-    accent: '#E8FF41',
-    secondary: '#BAFF4A',
-    card: 'bg-white/[0.04]',
-    border: 'border-white/[0.08]',
-    hexBg: '#121216',
-    hexText: '#FFFFFF'
+    bg: 'bg-[#F8FAFC]',
+    slideBg: 'bg-white',
+    text: 'text-slate-900',
+    primary: '#4F46E5',
+    accent: '#0EA5E9',
+    secondary: '#6366F1',
+    card: 'bg-slate-50',
+    border: 'border-slate-200',
+    hexBg: '#FFFFFF',
+    hexText: '#0F172A'
 };
+
 
 
 export default function AISlideGenerator({ classes, schoolName = "School", teacherName = "Teacher" }: {
@@ -102,8 +102,8 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
         persona: string;
         sources: Source[];
         phase: Phase;
-        phase: Phase;
         designMode?: 'default' | 'custom';
+
         customDesign?: string;
     }) => {
         try {
@@ -367,20 +367,21 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             if (layout === 'STUDIO_MINDMAP') {
                 const center = safeStr(slide.center_node || slide.title);
                 const branches = Array.isArray(slide.branches) ? slide.branches : [];
-                doc.setDrawColor(pr, pg, pb).setLineWidth(0.5);
-                doc.setFillColor(pr, pg, pb).circle(W / 2, H / 2, 15, 'F');
-                doc.setTextColor(255).setFontSize(10).text(doc.splitTextToSize(center, 25), W / 2, H / 2 + 2, { align: 'center' });
+                doc.setDrawColor(pr, pg, pb).setLineWidth(1);
+                doc.setFillColor(pr, pg, pb).circle(W / 2, H / 2, 18, 'F');
+                doc.setTextColor(255).setFontSize(11).text(doc.splitTextToSize(center, 30), W / 2, H / 2 + 2, { align: 'center' });
 
-                branches.slice(0, 6).forEach((b: any, bi: number) => {
+                branches.slice(0, 8).forEach((b: any, bi: number) => {
                     const angle = (360 / Math.max(branches.length, 1)) * bi - 90;
                     const rad = angle * (Math.PI / 180);
-                    const bx = W / 2 + Math.cos(rad) * 60;
-                    const by = H / 2 + Math.sin(rad) * 45;
-                    doc.line(W / 2, H / 2, bx, by);
-                    doc.setFillColor(255, 255, 255, 0.1).rect(bx - 20, by - 5, 40, 10, 'F');
-                    doc.setTextColor(ar, ag, ab).setFontSize(8).text(safeStr(b.label), bx, by + 1, { align: 'center' });
+                    const bx = W / 2 + Math.cos(rad) * 70;
+                    const by = H / 2 + Math.sin(rad) * 50;
+                    doc.setDrawColor(pr, pg, pb).line(W / 2, H / 2, bx, by);
+                    doc.setFillColor(245, 247, 250).roundedRect(bx - 22, by - 6, 44, 12, 2, 2, 'F');
+                    doc.setTextColor(pr, pg, pb).setFontSize(9).text(safeStr(b.label), bx, by + 1.5, { align: 'center' });
                 });
-            } else if (layout === 'STUDIO_GRAPH') {
+            }
+            else if (layout === 'STUDIO_GRAPH') {
                 const labels = Array.isArray(slide.labels) ? slide.labels : [];
                 const values = Array.isArray(slide.values) ? slide.values.map(Number) : [];
                 const chartType = safeStr(slide.chart_type);
@@ -426,15 +427,16 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
             } else if (layout === 'STUDIO_DIAGRAM') {
                 const nodes = Array.isArray(slide.nodes) ? slide.nodes : [];
                 nodes.forEach((node: string, ni: number) => {
-                    const nx = 40 + (ni % 3) * 60;
-                    const ny = 60 + Math.floor(ni / 3) * 30;
-                    doc.setDrawColor(pr, pg, pb).setFillColor(pr, pg, pb, 0.1).roundedRect(nx - 25, ny - 10, 50, 20, 3, 3, 'FD');
-                    doc.setTextColor(tr, tg, tb).setFontSize(8).text(doc.splitTextToSize(safeStr(node), 40), nx, ny + 1, { align: 'center' });
+                    const nx = 50 + (ni % 3) * 75;
+                    const ny = 65 + Math.floor(ni / 3) * 35;
+                    doc.setDrawColor(pr, pg, pb).setFillColor(250, 250, 252).roundedRect(nx - 30, ny - 12, 60, 24, 3, 3, 'FD');
+                    doc.setTextColor(tr, tg, tb).setFontSize(9).text(doc.splitTextToSize(safeStr(node), 55), nx, ny + 2, { align: 'center' });
                     if (ni < nodes.length - 1 && (ni + 1) % 3 !== 0) {
-                        doc.setDrawColor(pr, pg, pb).setLineWidth(0.2).line(nx + 25, ny, nx + 35, ny);
+                        doc.setDrawColor(pr, pg, pb).setLineWidth(0.5).line(nx + 30, ny, nx + 45, ny);
                     }
                 });
-            } else {
+            }
+            else {
                 // STUDIO_CENTER
                 const keyStat = slide.key_stat || {};
                 doc.setTextColor(tr, tg, tb).setFontSize(48).text(safeStr(keyStat.value || ""), W / 2, H / 2, { align: 'center' });
@@ -507,7 +509,8 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                     const xPos = 0.5 + idx * 2.3;
                     pptSlide.addShape(pres.ShapeType.ellipse, { x: xPos, y: 2.5, w: 1, h: 1, fill: { color: pColor } });
                     pptSlide.addText(safeStr(s.label), { x: xPos, y: 2, w: 1.5, h: 0.5, fontSize: 12, color: tColor, align: 'center' });
-                    pptSlide.addText(safeStr(s.description), { x: xPos, y: 3.6, w: 1.5, h: 1, fontSize: 9, color: txtColor, opacity: 70, align: 'center' });
+                    pptSlide.addText(safeStr(s.description), { x: xPos, y: 3.6, w: 1.5, h: 1, fontSize: 9, color: txtColor, align: 'center' });
+
                 });
             } else if (layout === 'STUDIO_DIAGRAM') {
                 const nodes = Array.isArray(slide.nodes) ? slide.nodes : [];
@@ -527,11 +530,17 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                 const keyStat = slide.key_stat || {};
                 if (keyStat.value) {
                     pptSlide.addText(safeStr(keyStat.value), { x: 0, y: 2.2, w: '100%', h: 1.5, fontSize: 72, bold: true, color: txtColor, align: 'center' });
-                    pptSlide.addText(safeStr(keyStat.label), { x: 0, y: 3.5, w: '100%', h: 0.5, fontSize: 20, color: txtColor, opacity: 50, align: 'center' });
+                    pptSlide.addText(safeStr(keyStat.label), { x: 0, y: 3.5, w: '100%', h: 0.5, fontSize: 20, color: txtColor, align: 'center' });
+
                 } else {
                     const points = Array.isArray(slide.points) ? slide.points : [];
                     pptSlide.addText(points.map((p: string) => ({ text: `• ${safeStr(p)}`, options: { bullet: true } })), { x: 1, y: 1.8, w: 8, h: 3, fontSize: 22, color: txtColor });
                 }
+            }
+
+            if (slide.visual_prompt) {
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(slide.visual_prompt)}?width=1024&height=576&seed=${slides.indexOf(slide)}&nologo=true`;
+                pptSlide.addImage({ path: imgUrl, x: 0, y: 0, w: '100%', h: '100%', transparency: 85 });
             }
 
             // Footer
@@ -539,6 +548,7 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                 x: 0.5, y: 5.2, w: 9, h: 0.3, fontSize: 9, color: '888888', align: 'center'
             });
         });
+
 
         pres.writeFile({ fileName: `${schoolName.replace(/\s/g, '_')}_Deck.pptx` });
     };
@@ -850,7 +860,13 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-black/5 pointer-events-none" />
                                         <motion.div key={activeSlide} initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}
                                             className={`w-full max-w-5xl aspect-video ${theme.slideBg} rounded-xl border ${theme.border} shadow-2xl overflow-hidden relative transition-all duration-500`}>
+                                            {slides[activeSlide]?.visual_prompt && (
+                                                <div className="absolute inset-0 pointer-events-none opacity-10">
+                                                    <img src={`https://pollinations.ai/p/${encodeURIComponent(slides[activeSlide].visual_prompt)}?width=1280&height=720&nologo=true&seed=${activeSlide}`} alt="" className="w-full h-full object-cover grayscale brightness-200" />
+                                                </div>
+                                            )}
                                             {(() => {
+
                                                 const slide = slides[activeSlide] || {};
                                                 const layout: string = safeStr(slide.layout) || 'STUDIO_CENTER';
                                                 const emoji = safeStr(slide.emoji);
@@ -905,11 +921,20 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
                                                                 <div className="flex items-center gap-5"><span className="text-5xl">{emoji}</span><h2 className={`text-4xl font-black uppercase tracking-tight`} style={{ color: theme.accent }}>{title}</h2></div>
                                                                 <ul className="space-y-5">{points.map((p: any, pi: number) => <li key={pi} className="flex gap-5 items-start"><div className="w-2.5 h-2.5 rounded-full mt-3 shrink-0" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-xl font-medium leading-relaxed tracking-tight`}>{p}</p></li>)}</ul>
                                                             </div>
-                                                            <div className={`flex-1 ${theme.card} border-l ${theme.border} flex flex-col items-center justify-center gap-6 p-12 bg-black/5`}>
-                                                                <p className={`text-[11px] font-black uppercase tracking-[0.4em] opacity-40`} style={{ color: theme.primary }}>{safeStr(visual.label) || 'TECHNICAL ANALYSIS'}</p>
-                                                                <div className="w-full space-y-3">{elems.map((el, ei) => <div key={ei} className={`rounded-2xl px-6 py-4 text-xs font-bold text-center border transition-all duration-500 backdrop-blur-sm shadow-sm hover:translate-x-1`} style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30`, color: theme.text }}>{el}</div>)}</div>
+                                                            <div className={`flex-1 ${theme.card} border-l ${theme.border} flex flex-col items-center justify-center gap-6 p-12 bg-black/5 relative overflow-hidden`}>
+                                                                {slide.visual_prompt ? (
+                                                                    <div className="absolute inset-0 z-0">
+                                                                        <img src={`https://pollinations.ai/p/${encodeURIComponent(slide.visual_prompt)}?width=600&height=800&nologo=true&seed=${activeSlide}`} alt="" className="w-full h-full object-cover opacity-20 brightness-110" />
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                                                                    </div>
+                                                                ) : null}
+                                                                <div className="relative z-10 flex flex-col items-center gap-6">
+                                                                    <p className={`text-[11px] font-black uppercase tracking-[0.4em] opacity-40`} style={{ color: theme.primary }}>{safeStr(visual.label) || 'TECHNICAL ANALYSIS'}</p>
+                                                                    <div className="w-full space-y-3">{elems.map((el, ei) => <div key={ei} className={`rounded-2xl px-6 py-4 text-xs font-bold text-center border transition-all duration-500 backdrop-blur-md shadow-sm hover:translate-x-1`} style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30`, color: theme.text }}>{el}</div>)}</div>
+                                                                </div>
                                                             </div>
                                                         </div>
+
                                                     );
                                                 }
 
@@ -996,12 +1021,19 @@ export default function AISlideGenerator({ classes, schoolName = "School", teach
 
                                                 // STUDIO_CENTER (default)
                                                 return (
-                                                    <div className={`flex flex-col justify-center h-full p-16 gap-8 ${theme.slideBg}`}>
-                                                        <div className="flex items-center gap-5"><span className="text-5xl">{emoji}</span><h2 className={`text-5xl font-black uppercase tracking-tighter leading-[1.1] max-w-[90%]`} style={{ color: theme.accent }}>{title}</h2></div>
-                                                        {keyStat && <div className="flex items-baseline gap-4"><span className={`text-8xl font-black ${theme.text}`}>{safeStr(keyStat.value)}</span><span className={`text-lg font-bold opacity-40 uppercase tracking-[0.2em] ${theme.text}`}>{safeStr(keyStat.label)}</span></div>}
-                                                        <ul className="space-y-5">{points.map((p, pi) => <motion.li key={pi} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} className="flex gap-6 items-start"><div className="w-2.5 h-2.5 rounded-full mt-3 shrink-0 shadow-lg" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-xl font-medium tracking-tight leading-relaxed`}>{p}</p></motion.li>)}</ul>
+                                                    <div className={`flex flex-col justify-center h-full p-16 gap-8 ${theme.slideBg} relative overflow-hidden`}>
+                                                        {slide.visual_prompt && (
+                                                            <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none">
+                                                                <img src={`https://pollinations.ai/p/${encodeURIComponent(slide.visual_prompt)}?width=800&height=800&nologo=true&seed=${activeSlide}`} alt="" className="w-full h-full object-cover grayscale" />
+                                                                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white" />
+                                                            </div>
+                                                        )}
+                                                        <div className="relative z-10 flex items-center gap-5"><span className="text-5xl">{emoji}</span><h2 className={`text-5xl font-black uppercase tracking-tighter leading-[1.1] max-w-[90%]`} style={{ color: theme.accent }}>{title}</h2></div>
+                                                        {keyStat && <div className="relative z-10 flex items-baseline gap-4"><span className={`text-8xl font-black ${theme.text}`}>{safeStr(keyStat.value)}</span><span className={`text-lg font-bold opacity-40 uppercase tracking-[0.2em] ${theme.text}`}>{safeStr(keyStat.label)}</span></div>}
+                                                        <ul className="relative z-10 space-y-5">{points.map((p, pi) => <motion.li key={pi} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: pi * 0.1 }} className="flex gap-6 items-start"><div className="w-2.5 h-2.5 rounded-full mt-3 shrink-0 shadow-lg" style={{ backgroundColor: theme.primary }} /><p className={`${theme.text} opacity-80 text-xl font-medium tracking-tight leading-relaxed`}>{p}</p></motion.li>)}</ul>
                                                     </div>
                                                 );
+
                                             })()}
                                             <div className="absolute top-6 left-10 text-[9px] font-black text-indigo-500 uppercase tracking-[0.4em] opacity-30">{schoolName} // {persona}</div>
                                             <div className="absolute bottom-6 right-10 text-[9px] font-black text-white/15 tracking-[0.25em]">{activeSlide + 1} OF {slides.length}</div>

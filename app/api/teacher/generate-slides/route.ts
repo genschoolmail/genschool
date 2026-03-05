@@ -84,6 +84,12 @@ Summary: ${summary}`;
             prompt = `You are the "Core Intelligence Engine", acting as a World-Class Curriculum Architect and Senior Presentation Designer. 
 Your goal is to build a high-fidelity, professional slides deck in ${language} for ${teacherName} at ${schoolName}.
 
+STYLE DIRECTIVE: MIRROR GOOGLE NOTEBOOKLM PROFESSIONAL AESTHETIC.
+- Clean, Minimalist, High-Impact.
+- Use whitespace effectively.
+- Typography: Clear, hierarchical, academic.
+- Backgrounds: Professional light/soft palettes (unless the visual_prompt specifies otherwise).
+
 CUSTOM DESIGN BRIEF (CRITICAL):
 Follow this narrative, structural, and stylistic directive from the user: "${designStyle}"
 
@@ -91,15 +97,17 @@ STRICT GROUNDING & CONTENT RULES:
 1. ONLY use information from the RESEARCH SUMMARY below. Absolutely no hallucinations or external facts.
 2. Every slide MUST include bracketed citations in the speaker_notes or content (e.g., [Source: Page X]).
 3. RULE OF 6x6: For any bulleted list, use a MAXIMUM of 6 bullets per slide, and a MAXIMUM of 6 words per bullet. Be punchy and concise.
+4. INFOGRAPHICS REQUIRED: You MUST use "STUDIO_MINDMAP", "STUDIO_DIAGRAM", "STUDIO_GRAPH", and "STUDIO_TIMELINE" layouts to represent complex relationships, cycles, hierarchies, and metrics. Avoid plain text slides where a visual representation is possible.
 
 REQUIRED SLIDE DECK STRUCTURE (10-15 Slides):
 Slide 1: Title Slide (STUDIO_CENTER)
 Slide 2: Agenda (STUDIO_GRID or SPLIT)
-Middle Slides: Core Concepts, Deep Dives, Case Studies
-Penultimate Slide: Summary / Conclusion
-Final Slide: Knowledge Check / Quiz Reflection
+Middle Slides: Core Concepts (MINDMAPS), Deep Dives (DIAGRAMS), Case Studies (SPLIT)
+Penultimate Slide: Summary / Conclusion (CENTER)
+Final Slide: Knowledge Check / Quiz Reflection (GRID)
 
 AVAILABLE LAYOUTS (MANDATORY MIX):
+
 - "STUDIO_CENTER": High-impact hero slide. Use for Intro/Module headers. Must include a meaningful "key_stat" (value + label).
 - "STUDIO_SPLIT": Detailed comparisons or evidence. Left: points. Right: deep visual definition (type, label, elements).
 - "STUDIO_GRID": Categorizing 3 parallel concepts. Elements must be distinct but related.
@@ -110,6 +118,7 @@ AVAILABLE LAYOUTS (MANDATORY MIX):
 
 STYLING RULES:
 - emoji: Use sophisticated, relevant emojis.
+- visual_prompt: CRITICAL. Provide a 10-15 word descriptive prompt for an AI image generator (e.g., "A futuristic laboratory with holographic DNA strands, cinematic lighting, 8k"). This will be used to generate a background/focal image.
 - speaker_notes: CRITICAL. Every slide must have 3-4 sentences of deep educational context PLUS citations [Source: X].
 - No markdown, no prefixes. Only a valid JSON array.
 
@@ -121,10 +130,21 @@ JSON EXAMPLE (Strict adherence required):
     "layout": "STUDIO_CENTER",
     "emoji": "🌟",
     "title": "Module Title",
+    "visual_prompt": "Professional cinematic wide shot of a tech-focused university campus",
     "key_stat": {"value": "100%", "label": "Retention"},
-    "speaker_notes": "Expert narrative about this module."
+    "speaker_notes": "Expert narrative about this module [Source: 1]."
+  },
+  {
+    "layout": "STUDIO_MINDMAP",
+    "emoji": "🧠",
+    "title": "Core Architecture",
+    "center_node": "System Kernel",
+    "branches": [{"label": "Memory"}, {"label": "CPU"}, {"label": "I/O"}],
+    "visual_prompt": "Complex electrical circuit board with glowing blue pathways",
+    "speaker_notes": "Breakdown of the kernel structure [Source: 2]."
   }
 ]
+
 
 RESEARCH SUMMARY:
 ${summary}
