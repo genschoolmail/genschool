@@ -241,13 +241,14 @@ export default async function TeacherDashboard() {
                             href="/teacher/finance"
                             gradient="from-emerald-600 to-green-600"
                         />
-                        <QuickActionCard
+                        {/* <QuickActionCard
                             icon={<Sparkles className="w-7 h-7" />}
                             title="AI Slide Generator"
                             description="Generate slides & quizzes from notes"
                             href="/teacher/ai-slides"
                             gradient="from-indigo-500 to-purple-600"
-                        />
+                        /> */}
+
                     </div>
                 </div>
 

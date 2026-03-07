@@ -286,13 +286,14 @@ export default async function StudentDashboard() {
                             <Calendar className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 mx-auto text-green-600 mb-1 md:mb-2" />
                             <p className="text-xs md:text-sm font-medium text-slate-900 dark:text-white">Attendance</p>
                         </a>
-                        <a href="/student/notes" className="p-3 md:p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors text-center touch-target border-2 border-orange-200 dark:border-orange-700 hover:shadow-md">
+                        {/* <a href="/student/notes" className="p-3 md:p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors text-center touch-target border-2 border-orange-200 dark:border-orange-700 hover:shadow-md">
                             <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 mx-auto mb-2 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
                                 <Sparkles className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-white" />
                             </div>
                             <p className="text-xs md:text-sm font-bold text-orange-700 dark:text-orange-400">AI Notes</p>
                             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Teacher & Slides</p>
-                        </a>
+                        </a> */}
+
                     </div>
                 </div>
             </div>
