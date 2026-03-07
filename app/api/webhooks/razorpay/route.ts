@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
             const orderId = payment.order_id;
             const transactionId = payment.id;
             const feeId = payment.notes?.feeId;
+            const paymentType = payment.notes?.type;
 
-            // Handle Payment Success
-            if (feeId) {
+            if (paymentType === 'SUBSCRIPTION_RENEWAL') {
+                await handleSubscriptionRenewal(payment.notes, transactionId, payment);
+            } else if (feeId) {
+                // Handle standard Student Fee Payment Success
                 await handlePaymentSuccess(feeId, orderId, transactionId, payment);
             }
         }
@@ -117,5 +120,58 @@ async function handlePaymentSuccess(feeId: string, orderId: string, transactionI
                 remarks: `Razorpay Webhook | Txn: ${transactionId}`
             }
         });
+    });
+}
+
+async function handleSubscriptionRenewal(notes: any, transactionId: string, rawData: any) {
+    const { schoolId, planId, billingCycle } = notes;
+    if (!schoolId || !planId) return;
+
+    // Billing cycle logic for extending dates
+    let addMonths = billingCycle === 'YEARLY' ? 12 : 1;
+
+    await prisma.$transaction(async (tx) => {
+        // Find existing subscription
+        let existingSub = await tx.subscription.findUnique({
+            where: { schoolId }
+        });
+
+        const now = new Date();
+        let newEndDate = new Date();
+
+        if (existingSub && existingSub.endDate > now) {
+            // Add onto existing time
+            newEndDate = new Date(existingSub.endDate);
+            newEndDate.setMonth(newEndDate.getMonth() + addMonths);
+        } else {
+            // Start from today
+            newEndDate.setMonth(now.getMonth() + addMonths);
+        }
+
+        if (existingSub) {
+            await tx.subscription.update({
+                where: { id: existingSub.id },
+                data: {
+                    planId,
+                    status: 'ACTIVE',
+                    endDate: newEndDate,
+                    billingCycle: billingCycle || 'MONTHLY',
+                    lastPayment: now
+                }
+            });
+        } else {
+            await tx.subscription.create({
+                data: {
+                    schoolId,
+                    planId,
+                    status: 'ACTIVE',
+                    startDate: now,
+                    endDate: newEndDate,
+                    billingCycle: billingCycle || 'MONTHLY',
+                    lastPayment: now
+                }
+            });
+        }
+
     });
 }

@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation';
 import AdminMobileNav from './AdminMobileNav';
 import { Providers } from '@/components/Providers';
 import SignOutButton from '@/components/SignOutButton';
+import SubscriptionBanner from '@/components/admin/SubscriptionBanner';
+import { getSchoolSubscriptionStatus } from '@/lib/actions/subscription-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,8 @@ export default async function AdminLayout({
   const { getSubscription } = await import('@/lib/subscription');
   const subscription = await getSubscription((user as any).schoolId);
   const features = subscription?.plan?.features ? JSON.parse(subscription.plan.features) : {};
+
+  const subStatus = await getSchoolSubscriptionStatus();
 
   return (
     <Providers>
@@ -119,6 +123,17 @@ export default async function AdminLayout({
           <main className="flex-1 overflow-y-auto relative scrollbar-hide bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Top Gradient Decoration */}
             <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-indigo-50/40 via-purple-50/20 to-transparent dark:from-indigo-950/30 dark:via-purple-950/10 pointer-events-none z-0 print:hidden" />
+
+            {/* Subscription Banner */}
+            {subStatus && (subStatus.isExpired || subStatus.isExpiringSoon) && (
+              <SubscriptionBanner
+                daysLeft={subStatus.daysLeft}
+                isExpired={subStatus.isExpired}
+                isExpiringSoon={subStatus.isExpiringSoon}
+                planName={subStatus.planName}
+                endDate={subStatus.endDate}
+              />
+            )}
 
             {/* Main Content Container */}
             <div className="relative z-10 p-4 md:p-6 lg:p-8 print:p-0">

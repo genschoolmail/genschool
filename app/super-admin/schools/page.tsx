@@ -118,11 +118,18 @@ export default async function SuperAdminSchoolsPage() {
                                             </div>
                                         </td>
                                         <td className="p-6 hidden xl:table-cell">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                                                <span className="font-black text-slate-700 dark:text-slate-300 text-xs tracking-widest uppercase">
-                                                    {school.subscription?.plan?.name || 'TRIAL_CORE'}
-                                                </span>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${school.subscription && new Date(school.subscription.endDate) > new Date() ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />
+                                                    <span className="font-black text-slate-700 dark:text-slate-300 text-xs tracking-widest uppercase">
+                                                        {school.subscription?.plan?.name || 'NO PLAN'}
+                                                    </span>
+                                                </div>
+                                                {school.subscription && (
+                                                    <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${new Date(school.subscription.endDate) < new Date() ? 'text-red-500' : 'text-slate-400'}`}>
+                                                        Expires: {new Date(school.subscription.endDate).toLocaleDateString()}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="p-6 hidden xl:table-cell">

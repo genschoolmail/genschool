@@ -61,7 +61,11 @@ export default async function SetupPage() {
                         <p className="text-sm text-slate-500">Class-wise fee configurations</p>
                     </div>
                 </div>
-                <FeeStructuresList feeStructures={feeStructures} classes={classes} feeHeads={feeHeads} />
+                <FeeStructuresList
+                    feeStructures={feeStructures.map((s: any) => ({ ...s, feeType: s.feeHead || null }))}
+                    classes={classes}
+                    feeTypes={feeHeads}
+                />
             </div>
 
             {/* Fee Settings */}

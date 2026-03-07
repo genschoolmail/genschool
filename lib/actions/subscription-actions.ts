@@ -1,40 +1,66 @@
 'use server';
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from 'next/cache';
+import { prisma } from '@/lib/prisma';
+import { ensureTenantId } from '@/lib/tenant';
 
-export async function updateSubscription(id: string, data: any) {
-    // Implement update logic
-    return { success: true };
+export interface SubscriptionStatus {
+    status: 'ACTIVE' | 'TRIAL' | 'EXPIRED' | 'SUSPENDED' | 'EXPIRING_SOON';
+    planName: string;
+    endDate: Date;
+    daysLeft: number;
+    isExpiringSoon: boolean;
+    isExpired: boolean;
+    billingCycle: string;
+    autoRenew: boolean;
+    price: number;
+    planId: string;
+    subscriptionId: string;
 }
 
-export async function updatePlan(id: string, data: any) {
-    // Implement update logic
-    return { success: true };
-}
+export async function getSchoolSubscriptionStatus(): Promise<SubscriptionStatus | null> {
+    const schoolId = await ensureTenantId();
 
-export async function deletePlan(id: string) {
-    // Implement delete logic
-    return { success: true };
-}
+    const subscription = await prisma.subscription.findFirst({
+        where: { schoolId },
+        include: { plan: true },
+        orderBy: { createdAt: 'desc' }
+    });
 
-export async function createPlan(data: any) {
-    // Implement create logic
-    return { success: true };
-}
+    if (!subscription) return null;
 
-export async function upgradeSchoolPlan(schoolId: string, planId: string) {
-    // Implement upgrade logic
-    return { success: true };
-}
+    const now = new Date();
+    const endDate = new Date(subscription.endDate);
+    const diffTime = endDate.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const isExpired = daysLeft <= 0;
+    const isExpiringSoon = !isExpired && daysLeft <= 14; // warn 14 days before
 
-export async function getAllSchoolAdmins() {
-    try {
-        return await prisma.user.findMany({
-            where: { role: 'ADMIN' },
-            include: { school: true }
-        });
-    } catch (e) {
-        return [];
+    let status = subscription.status as SubscriptionStatus['status'];
+    if (isExpired && status !== 'SUSPENDED') {
+        status = 'EXPIRED';
+    } else if (isExpiringSoon && status === 'ACTIVE') {
+        status = 'EXPIRING_SOON';
     }
+
+    return {
+        status,
+        planName: subscription.plan.name,
+        endDate,
+        daysLeft: Math.max(0, daysLeft),
+        isExpiringSoon,
+        isExpired,
+        billingCycle: subscription.billingCycle,
+        autoRenew: subscription.autoRenew,
+        price: subscription.priceOverride ?? subscription.plan.price,
+        planId: subscription.planId,
+        subscriptionId: subscription.id
+    };
+}
+
+export async function getAllPlans() {
+    const plans = await prisma.plan.findMany({
+        where: { isActive: true },
+        orderBy: { price: 'asc' }
+    });
+    return plans;
 }

@@ -8,6 +8,13 @@ import {
 export default function AdminSettingsDashboard() {
     const modules = [
         {
+            title: "Subscription & Billing",
+            description: "View plan details, expiry, and renewal options",
+            icon: <CreditCard className="w-8 h-8 text-amber-600 dark:text-amber-400" />,
+            href: "/admin/settings/subscription",
+            color: "bg-amber-50 dark:bg-amber-900/20"
+        },
+        {
             title: "Profile Settings",
             description: "Manage your account, password, and contact info",
             icon: <UserCog className="w-8 h-8 text-blue-600 dark:text-blue-400" />,
