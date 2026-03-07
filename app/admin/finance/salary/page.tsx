@@ -29,6 +29,7 @@ export default async function SalaryManagementPage() {
                             <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Allowances</th>
                             <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Deductions</th>
                             <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Net Salary</th>
+                            <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Method</th>
                             <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Status</th>
                             <th className="p-4 font-semibold text-slate-700 dark:text-slate-300">Actions</th>
                         </tr>
@@ -67,6 +68,9 @@ export default async function SalaryManagementPage() {
                                     <td className="p-4 text-red-600">-₹{salary.deductions.toLocaleString()}</td>
                                     <td className="p-4">
                                         <span className="font-bold text-slate-800 dark:text-white">₹{salary.netSalary.toLocaleString()}</span>
+                                    </td>
+                                    <td className="p-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                        {(salary as any).paymentMethod || 'OFFLINE'}
                                     </td>
                                     <td className="p-4">
                                         {salary.status === 'PAID' ? (
@@ -158,6 +162,10 @@ export default async function SalaryManagementPage() {
                                 <div className="flex justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
                                     <span className="font-semibold text-slate-700 dark:text-slate-300">Net Salary</span>
                                     <span className="font-bold text-indigo-600">₹{salary.netSalary.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">Method</span>
+                                    <span className="font-semibold text-slate-600 dark:text-slate-400 text-xs">{(salary as any).paymentMethod || 'OFFLINE'}</span>
                                 </div>
                             </div>
 

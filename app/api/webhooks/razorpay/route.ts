@@ -13,15 +13,17 @@ export async function POST(req: NextRequest) {
         const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
         // 1. Verify Signature
-        if (webhookSecret && signature) {
-            const expectedSignature = crypto
-                .createHmac('sha256', webhookSecret)
-                .update(body)
-                .digest('hex');
+        if (!webhookSecret || !signature) {
+            return NextResponse.json({ error: 'Missing webhook signature or secret' }, { status: 400 });
+        }
 
-            if (expectedSignature !== signature) {
-                return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-            }
+        const expectedSignature = crypto
+            .createHmac('sha256', webhookSecret)
+            .update(body)
+            .digest('hex');
+
+        if (expectedSignature !== signature) {
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
         }
 
         const event = JSON.parse(body);
@@ -33,24 +35,30 @@ export async function POST(req: NextRequest) {
             const payment = payload.payment.entity;
             const orderId = payment.order_id;
             const transactionId = payment.id;
+            const feeId = payment.notes?.feeId;
 
             // Handle Payment Success
-            await handlePaymentSuccess(orderId, transactionId, payment);
+            if (feeId) {
+                await handlePaymentSuccess(feeId, orderId, transactionId, payment);
+            }
         }
 
         if (eventName === 'transfer.processed') {
             const transfer = payload.transfer.entity;
             const transferId = transfer.id;
             const paymentId = transfer.source;
+            const feeId = transfer.notes?.feeId;
 
-            // Update Transfer Status in DB
-            await (prisma.feePayment as any).updateMany({
-                where: { transactionId: paymentId },
-                data: {
-                    transferId: transferId,
-                    splitStatus: 'SUCCESS'
-                }
-            });
+            if (feeId) {
+                // Update Transfer Status in DB
+                await prisma.feePayment.update({
+                    where: { id: feeId },
+                    data: {
+                        transferId: transferId,
+                        splitStatus: 'SUCCESS'
+                    }
+                });
+            }
         }
 
         return NextResponse.json({ received: true });
@@ -61,24 +69,24 @@ export async function POST(req: NextRequest) {
     }
 }
 
-async function handlePaymentSuccess(orderId: string, transactionId: string, rawData: any) {
+async function handlePaymentSuccess(feeId: string, orderId: string, transactionId: string, rawData: any) {
     // 1. Find the pending fee payment record
-    const feePayment = await prisma.feePayment.findFirst({
-        where: { transactionId: orderId },
+    const feePayment = await prisma.feePayment.findUnique({
+        where: { id: feeId },
         include: { studentFee: true }
     });
 
-    if (!feePayment || feePayment.status === 'COMPLETED') return;
+    if (!feePayment || feePayment.status === 'PAID') return;
 
-    // 2. Atomic Transaction: Update Fee, Mark Payment COMPLETED, Update Student Fee status
+    // 2. Atomic Transaction: Update Fee, Mark Payment PAID, Update Student Fee status
     await prisma.$transaction(async (tx) => {
         // a. Update Payment Record
         await tx.feePayment.update({
             where: { id: feePayment.id },
             data: {
-                status: 'COMPLETED',
-                bankRefNo: transactionId,
-                gatewayResponse: JSON.stringify(rawData),
+                status: 'PAID',
+                reference: transactionId,
+                paymentMethod: 'ONLINE',
                 date: new Date()
             }
         });

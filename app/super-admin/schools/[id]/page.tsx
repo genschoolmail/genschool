@@ -4,6 +4,7 @@ import { ArrowLeft, Users, GraduationCap, Calendar, Trash2, Info, MapPin, Globe,
 import Link from 'next/link';
 import PasswordViewer from '@/components/common/PasswordViewer';
 import SmtpSettingsForm from './SmtpSettingsForm';
+import BankRegistrationForm from './BankRegistrationForm';
 
 export default async function SchoolDetailsPage({ params }: { params: { id: string } }) {
     const school = await getSchoolDetails(params.id);
@@ -370,6 +371,9 @@ export default async function SchoolDetailsPage({ params }: { params: { id: stri
 
             {/* Custom SMTP Configuration Form */}
             <SmtpSettingsForm schoolId={params.id} />
+
+            {/* Bank Registration Form */}
+            <BankRegistrationForm schoolId={params.id} school={school} />
 
             {/* Plan Upgrade Section */}
             <PlanUpgradeForm schoolId={params.id} currentSubscription={school.subscription} />

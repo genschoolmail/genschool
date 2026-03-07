@@ -126,6 +126,7 @@ export async function createSalary(formData: FormData) {
                 schoolId,
                 teacherId: formData.get('teacherId') as string,
                 month: formData.get('month') as string,
+                paymentMethod: formData.get('paymentMethod') as string || 'OFFLINE',
                 basicSalary: parseFloat(formData.get('basicSalary') as string),
                 allowances: parseFloat(formData.get('allowances') as string) || 0,
                 deductions: parseFloat(formData.get('deductions') as string) || 0,

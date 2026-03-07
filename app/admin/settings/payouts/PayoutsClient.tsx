@@ -249,11 +249,12 @@ export default function PayoutsClient({ initialTransactions, gateways, schoolInf
                             {bankDetails ? (
                                 <div className="space-y-3">
                                     <div className="p-4 bg-green-50/50 dark:bg-green-900/10 rounded-xl border border-green-100 dark:border-green-900/30">
-                                        <p className="text-sm text-slate-500 mb-1">Bank Name</p>
-                                        <p className="font-bold text-slate-800 dark:text-white">{bankDetails.bankName}</p>
+                                        <p className="text-sm text-slate-500 mb-1">Account Name & Num</p>
+                                        <p className="font-bold text-slate-800 dark:text-white">{bankDetails.accountName}</p>
+                                        <p className="text-sm font-mono text-slate-600 dark:text-slate-400">{bankDetails.accountNumber}</p>
                                         <div className="flex items-center gap-2 mt-2">
                                             <CheckCircle className="w-4 h-4 text-green-600" />
-                                            <span className="text-xs font-semibold text-green-700">KYC Verified</span>
+                                            <span className="text-xs font-semibold text-green-700">Linked to Razorpay Sub-Merchant</span>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">

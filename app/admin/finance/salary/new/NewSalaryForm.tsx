@@ -183,6 +183,21 @@ export function NewSalaryForm({
                         />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormSelect
+                            label="Payment Method *"
+                            name="paymentMethod"
+                            required
+                            icon={<DollarSign className="w-4 h-4" />}
+                        >
+                            <option value="BANK_TRANSFER">Bank Transfer (Offline)</option>
+                            <option value="CASH">Cash (Offline)</option>
+                            <option value="CHEQUE">Cheque (Offline)</option>
+                            <option value="UPI">UPI / Online</option>
+                            <option value="CARD">Card / Online</option>
+                        </FormSelect>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             Remarks

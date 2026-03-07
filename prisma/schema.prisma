@@ -810,24 +810,25 @@ model Visitor {
 }
 
 model Salary {
-  id          String    @id @default(cuid())
-  schoolId    String    @default("default-school")
-  teacherId   String?
-  month       DateTime
-  basicSalary Float
-  allowances  Float     @default(0)
-  deductions  Float     @default(0)
-  netSalary   Float
-  status      String
-  paidDate    DateTime?
-  remarks     String?
-  driverId    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  expense     Expense?
-  teacher     Teacher?  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  driver      Driver?   @relation(fields: [driverId], references: [id])
-  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id            String    @id @default(cuid())
+  schoolId      String    @default("default-school")
+  teacherId     String?
+  month         DateTime
+  basicSalary   Float
+  allowances    Float     @default(0)
+  deductions    Float     @default(0)
+  netSalary     Float
+  status        String
+  paidDate      DateTime?
+  paymentMethod String    @default("OFFLINE")
+  remarks       String?
+  driverId      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  expense       Expense?
+  teacher       Teacher?  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  driver        Driver?   @relation(fields: [driverId], references: [id])
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@index([teacherId])
   @@index([driverId])
