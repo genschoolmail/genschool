@@ -102,7 +102,9 @@ export default async function AccountantDashboard() {
                                 dashboard.pendingSalaries.slice(0, 5).map(salary => (
                                     <div key={salary.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                                         <div>
-                                            <p className="font-medium text-slate-800 dark:text-white text-sm">{salary.teacher?.user?.name || salary.driver?.user?.name || 'Unknown Staff'}</p>
+                                            <p className="font-medium text-slate-800 dark:text-white text-sm">
+                                                {salary.teacher?.user?.name || salary.driver?.user?.name || 'Staff Payment'}
+                                            </p>
                                             <p className="text-xs text-slate-500">
                                                 {new Date(salary.month).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                                             </p>
