@@ -2,7 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { CreditCard, Calendar, IndianRupee, FileText } from 'lucide-react';
+import { CreditCard, Calendar, IndianRupee, FileText, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import PaymentGateway from './PaymentGateway';
 
@@ -136,14 +136,14 @@ export default async function FeePaymentPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Security Notice */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+            <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                    <CreditCard className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <ShieldCheck className="w-5 h-5 text-indigo-600 mt-0.5" />
                     <div>
-                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Mock Payment Gateway</h3>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                            This is a demonstration payment system. No real transactions will be processed.
-                            In production, integrate with actual payment gateway like Razorpay or PayU.
+                        <h3 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-1">Encrypted Payment</h3>
+                        <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                            Your transaction is secured with industry-standard TLS encryption.
+                            Fee payments are processed directly via verified payment gateways.
                         </p>
                     </div>
                 </div>

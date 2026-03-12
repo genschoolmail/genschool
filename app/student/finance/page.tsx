@@ -37,12 +37,13 @@ export default async function StudentFinancePage() {
     // This avoids issues where fee.paidAmount might not be in sync or includes pending attempts
     const totalPaid = student.studentFees.reduce((sum: number, fee: any) => {
         const feePayments = fee.payments || [];
-        const validPayments = feePayments.filter((p: any) => p.status === 'COMPLETED' || p.status === 'Paid');
+        // Filter paid fees (Status: PAID, COMPLETED, or SUCCESS for historical reasons)
+        const validPayments = feePayments.filter((p: any) => p.status === 'COMPLETED' || p.status === 'Paid' || p.status === 'PAID' || p.status === 'SUCCESS');
         const paidForFee = validPayments.reduce((pSum: number, p: any) => pSum + p.amount, 0);
         return sum + paidForFee;
     }, 0);
     const totalDiscount = student.studentFees.reduce((sum: number, fee: any) => sum + fee.discount, 0);
-    const totalPending = totalFees - totalPaid - totalDiscount;
+    const totalPending = Math.max(0, totalFees - totalPaid - totalDiscount); // Ensure pending amount is not negative
 
     // Prepare data for client component
     const allPayments = student.studentFees

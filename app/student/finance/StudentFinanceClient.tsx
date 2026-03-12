@@ -52,8 +52,14 @@ export default function StudentFinanceClient({ student, stats, payments, student
 
             const result = await initiateStudentPayment(feeId, amount);
 
-            if (result.success && result.url) {
-                window.location.href = result.url;
+            if (result.success) {
+                if (result.checkoutData) {
+                    // Redirect to payment page which has the modal
+                    router.push(`/student/finance/payments/${feeId}`);
+                } else {
+                    alert('Payment initiated but no checkout data received');
+                    setProcessingId(null);
+                }
             } else {
                 alert(result.error || 'Payment initiation failed');
                 setProcessingId(null);

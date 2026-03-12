@@ -133,7 +133,7 @@ export async function collectFees(params: CollectFeesArgs) {
                         amount: amountAllocated,
                         method,
                         paymentMethod: method, // explicit mirroring to support multiple access patterns
-                        status: 'SUCCESS',
+                        status: 'PAID',
                         date,
                         receiptNo: individualReceiptNo,
                         consolidatedReceiptNo,

@@ -16,11 +16,11 @@ export async function getSchoolInfo() {
         }
 
         return {
-            name: school.name,
+            schoolName: school.name,
             address: school.address || '',
-            phone: (school as any).contactPhone || '',
+            contactNumber: (school as any).contactPhone || '',
             email: (school as any).contactEmail || '',
-            logo: school.logo || ''
+            logoUrl: school.logo || ''
         };
     } catch (error) {
         return null;
