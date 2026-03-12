@@ -42,7 +42,7 @@ export default function PaymentGateway({ feeId, studentId, amount, walletBalance
                 throw new Error(result.error || 'Payment initiation failed');
             }
 
-            // 1. Handle Redirect (Mock or Link Gateway)
+            // 1. Handle External Gateway Redirects (if any)
             if (result.url) {
                 router.push(result.url);
                 return;
@@ -55,7 +55,7 @@ export default function PaymentGateway({ feeId, studentId, amount, walletBalance
                     amount: result.checkoutData.amount,
                     currency: result.checkoutData.currency,
                     name: "Gen School Mail",
-                    description: "Fee Payment",
+                    description: "School Fee Payment",
                     order_id: result.checkoutData.orderId,
                     handler: async function (response: any) {
                         setProcessing(true);

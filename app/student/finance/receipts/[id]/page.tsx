@@ -5,16 +5,11 @@ import ReceiptPrintStyles from './ReceiptPrintStyles';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import ReceiptTemplate from '@/components/finance/ReceiptTemplate';
+import { getSchoolInfo } from '@/lib/schoolInfo';
 
 // Month names for display
 const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
-
-// Fetch school info for receipt header
-async function getSchoolInfo() {
-    const settings = await prisma.schoolSettings.findFirst();
-    return settings;
-}
 
 async function getAdvancePayment(receiptNo: string) {
     try {

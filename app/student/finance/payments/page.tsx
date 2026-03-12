@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { CreditCard, History, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import PaymentStatusChecker from './PaymentStatusChecker';
 
 export default async function StudentPaymentsPage() {
     const session = await auth();
@@ -29,11 +30,19 @@ export default async function StudentPaymentsPage() {
     }
 
     const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'SUCCESS': return <CheckCircle2 className="w-5 h-5 text-green-600" />;
-            case 'PENDING': return <Clock className="w-5 h-5 text-yellow-600" />;
-            case 'FAILED': return <XCircle className="w-5 h-5 text-red-600" />;
-            default: return <Clock className="w-5 h-5 text-gray-600" />;
+        const s = status.toUpperCase();
+        switch (s) {
+            case 'SUCCESS':
+            case 'PAID':
+            case 'COMPLETED':
+                return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+            case 'PENDING':
+            case 'PROCESSING':
+                return <Clock className="w-5 h-5 text-yellow-600" />;
+            case 'FAILED':
+                return <XCircle className="w-5 h-5 text-red-600" />;
+            default:
+                return <Clock className="w-5 h-5 text-gray-600" />;
         }
     };
 
@@ -102,7 +111,7 @@ export default async function StudentPaymentsPage() {
                                             href={`/student/finance/payments/${fee.id}`}
                                             className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-center transition-colors"
                                         >
-                                            Pay Now (Mock)
+                                            Pay Now
                                         </Link>
                                     </div>
                                 );
@@ -158,6 +167,7 @@ export default async function StudentPaymentsPage() {
                                             <div className="flex items-center gap-2">
                                                 {getStatusIcon(payment.status)}
                                                 <span className="text-sm font-medium">{payment.status}</span>
+                                                <PaymentStatusChecker paymentId={payment.id} status={payment.status} />
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">

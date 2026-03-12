@@ -165,7 +165,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
             {/* Print/Download Actions - Hidden in Print */}
             <div className="mb-4 flex justify-end gap-2 print:hidden relative z-10">
-                {primaryPayment.status === 'SUCCESS' && (
+                {(primaryPayment.status === 'SUCCESS' || primaryPayment.status === 'PAID') && (
                     <ManagePaymentButton
                         paymentId={primaryPayment.id}
                         studentName={student?.user.name || 'Student'}
