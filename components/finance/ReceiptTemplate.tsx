@@ -253,8 +253,8 @@ export default function ReceiptTemplate({
                 </div>
             </div>
 
-            {/* Print Styles */}
-            <style jsx global>{`
+            {/* Print Styles - no styled-jsx, works in Server Components */}
+            <style dangerouslySetInnerHTML={{ __html: `
                 @media print {
                     .receipt-container {
                         box-shadow: none !important;
@@ -267,7 +267,7 @@ export default function ReceiptTemplate({
                         print-color-adjust: exact;
                     }
                 }
-            `}</style>
+            ` }} />
         </div>
     );
 }
