@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getTenantId } from '@/lib/tenant';
+import { auth } from '@/auth';
+import { createSystemNotification } from '@/lib/notification-utils';
 
 export async function getFeeStructures() {
     try {
@@ -34,29 +36,88 @@ export async function deleteFeeStructure(id: string) {
     }
 }
 
-export async function assignFeeToStudent(studentId: string, feeStructureId: string) {
+export async function assignFeeToStudent({
+    studentId,
+    feeStructureIds,
+    dueDate,
+    feeMonth,
+    feeYear,
+    academicYearId
+}: {
+    studentId: string;
+    feeStructureIds: string[];
+    dueDate: Date;
+    feeMonth: number;
+    feeYear: number;
+    academicYearId: string;
+}) {
     try {
         const schoolId = await getTenantId();
+        let assigned = 0;
+        let skipped = 0;
 
-        await prisma.feePayment.create({
-            data: {
-                schoolId,
-                studentId,
-                feeStructureId,
-                amount: 0, // Will be updated from fee structure
-                status: 'PENDING',
-                dueDate: new Date()
+        for (const fsId of feeStructureIds) {
+            const structure = await prisma.feeStructure.findUnique({
+                where: { id: fsId }
+            });
+
+            if (!structure) continue;
+
+            // Check if already assigned for this month/year
+            const existing = await prisma.studentFee.findFirst({
+                where: {
+                    schoolId,
+                    studentId,
+                    feeStructureId: fsId,
+                    feeMonth,
+                    feeYear
+                }
+            });
+
+            if (existing) {
+                skipped++;
+                continue;
             }
-        }).catch(() => null);
+
+            await prisma.studentFee.create({
+                data: {
+                    schoolId,
+                    studentId,
+                    feeStructureId: fsId,
+                    amount: structure.amount,
+                    dueDate,
+                    feeMonth,
+                    feeYear,
+                    academicYearId,
+                    status: 'PENDING'
+                }
+            });
+            assigned++;
+        }
 
         revalidatePath('/admin/finance/fees/assign');
-        return { success: true };
+        return { success: true, count: assigned, skipped };
     } catch (error: any) {
+        console.error('Assign fee error:', error);
         return { success: false, error: error.message };
     }
 }
 
-export async function assignFeesToClass(classId: string, feeStructureId: string) {
+export async function assignFeesToClass({
+    classId,
+    feeStructureIds,
+    dueDate,
+    feeMonth,
+    feeYear,
+    academicYearId
+}: {
+    classId: string;
+    feeStructureIds: string[];
+    dueDate: Date;
+    feeMonth: number;
+    feeYear: number;
+    academicYearId: string;
+}) {
     try {
         const schoolId = await getTenantId();
 
@@ -65,14 +126,40 @@ export async function assignFeesToClass(classId: string, feeStructureId: string)
             where: { schoolId, classId }
         });
 
+        let totalAssigned = 0;
+        let totalSkipped = 0;
+
         // Assign fee to each student
         for (const student of students) {
-            await assignFeeToStudent(student.id, feeStructureId);
+            const res = await assignFeeToStudent({
+                studentId: student.id,
+                feeStructureIds,
+                dueDate,
+                feeMonth,
+                feeYear,
+                academicYearId
+            });
+            if (res.success) {
+                totalAssigned += res.count || 0;
+                totalSkipped += res.skipped || 0;
+            }
         }
 
         revalidatePath('/admin/finance/fees/assign');
-        return { success: true, count: students.length };
+
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Fees Assigned to Class',
+                `Fees have been assigned to students in the selected class.`,
+                'SUCCESS'
+            );
+        }
+
+        return { success: true, count: totalAssigned, skipped: totalSkipped };
     } catch (error: any) {
+        console.error('Assign fees to class error:', error);
         return { success: false, error: error.message };
     }
 }
@@ -86,7 +173,7 @@ export async function getStudentsForAssignment() {
                 user: true,
                 class: true
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { id: 'desc' }
         }).catch(() => []);
     } catch (error) {
         return [];

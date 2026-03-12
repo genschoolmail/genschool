@@ -1,8 +1,9 @@
-import React from 'react';
 import { getClass, updateClass } from '@/lib/actions/academics';
-import { Layers, Save, ArrowLeft } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
+import { Layers, Save } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import React from 'react';
 
 export default async function EditClassPage({ params }: { params: { id: string } }) {
     const classData = await getClass(params.id);
@@ -11,15 +12,15 @@ export default async function EditClassPage({ params }: { params: { id: string }
         notFound();
     }
 
+    const handleUpdate = async (formData: FormData) => {
+        'use server';
+        await updateClass(params.id, formData);
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             <div className="flex items-center gap-4">
-                <Link
-                    href="/admin/academics"
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                >
-                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-                </Link>
+                <BackButton />
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Layers className="w-8 h-8 text-indigo-600" />
                     Edit Class
@@ -27,7 +28,7 @@ export default async function EditClassPage({ params }: { params: { id: string }
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <form action={updateClass.bind(null, classData.id)} className="space-y-6">
+                <form action={handleUpdate} className="space-y-6">
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Class Name</label>
@@ -57,7 +58,7 @@ export default async function EditClassPage({ params }: { params: { id: string }
                             <input
                                 name="capacity"
                                 type="number"
-                                defaultValue={classData.capacity}
+                                defaultValue={classData.capacity || 0}
                                 required
                                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
                             />
@@ -66,7 +67,7 @@ export default async function EditClassPage({ params }: { params: { id: string }
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Academic Year</label>
                             <input
                                 name="academicYear"
-                                defaultValue={classData.academicYear}
+                                defaultValue={classData.academicYear || ''}
                                 required
                                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
                             />

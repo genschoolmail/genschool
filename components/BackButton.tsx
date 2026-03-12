@@ -1,20 +1,31 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
 interface BackButtonProps {
-    href: string;
+    href?: string;
     label?: string;
     className?: string;
 }
 
 export function BackButton({ href, label, className = '' }: BackButtonProps) {
+    const router = useRouter();
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (!href) {
+            e.preventDefault();
+            router.back();
+        }
+    };
+
     return (
-        <Link
-            href={href}
+        <button
+            onClick={handleClick}
             className={`flex items-center gap-2 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors ${className}`}
         >
             <ArrowLeft className="w-5 h-5" />
             {label && <span className="font-medium">{label}</span>}
-        </Link>
+        </button>
     );
 }

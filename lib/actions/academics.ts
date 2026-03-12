@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getTenantId } from '@/lib/tenant';
+import { auth } from '@/auth';
+import { createSystemNotification } from '@/lib/notification-utils';
 
 export async function createClass(formData: FormData) {
     try {
@@ -20,6 +22,16 @@ export async function createClass(formData: FormData) {
             data: classData
         });
 
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Class Created',
+                `A new class ${classData.name}-${classData.section} has been created.`,
+                'SUCCESS'
+            );
+        }
+
         revalidatePath('/admin/academics');
         return { success: true };
     } catch (error: any) {
@@ -34,6 +46,7 @@ export async function updateClass(id: string, formData: FormData) {
             name: formData.get('name') as string,
             section: formData.get('section') as string,
             capacity: formData.get('capacity') ? parseInt(formData.get('capacity') as string) : undefined,
+            academicYear: formData.get('academicYear') as string || undefined,
             roomNo: formData.get('roomNo') as string || undefined
         };
 
@@ -41,6 +54,16 @@ export async function updateClass(id: string, formData: FormData) {
             where: { id },
             data: classData
         });
+
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Class Updated',
+                `Class ${classData.name}-${classData.section} has been updated.`,
+                'INFO'
+            );
+        }
 
         revalidatePath('/admin/academics');
         return { success: true };
@@ -54,9 +77,19 @@ export async function deleteClass(formData: FormData) {
     try {
         const id = formData.get('id') as string;
 
-        await prisma.class.delete({
+        const deletedClass = await prisma.class.delete({
             where: { id }
         });
+
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Class Deleted',
+                `Class ${deletedClass.name}-${deletedClass.section} has been deleted.`,
+                'WARNING'
+            );
+        }
 
         revalidatePath('/admin/academics');
         return { success: true };

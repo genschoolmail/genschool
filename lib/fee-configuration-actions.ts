@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { getTenantId } from '@/lib/tenant';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
+import { createSystemNotification } from '@/lib/notification-utils';
 
 // Fee Structures Management (using existing FeeStructure model)
 export async function getAllFeeStructures() {
@@ -25,18 +27,26 @@ export async function createFeeStructureConfig(formData: FormData) {
     try {
         const schoolId = await getTenantId();
 
-        await prisma.feeStructure.create({
+        const structure = await prisma.feeStructure.create({
             data: {
                 schoolId,
                 name: formData.get('name') as string,
                 amount: parseFloat(formData.get('amount') as string),
                 frequency: formData.get('frequency') as string,
-                dueDay: parseInt(formData.get('dueDay') as string) || 1,
                 classId: formData.get('classId') as string || null,
-                feeHeadId: formData.get('feeHeadId') as string,
-                isActive: true
+                feeHeadId: formData.get('feeHeadId') as string
             }
         });
+
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Fee Structure Created',
+                `Fee structure ${structure.name} has been created.`,
+                'SUCCESS'
+            );
+        }
 
         revalidatePath('/admin/finance/setup');
         return { success: true };
@@ -197,6 +207,16 @@ export async function updateFeeSettings(formData: FormData) {
     try {
         // For now, just return success
         // In a real app, you'd store these in a settings table
+        const session = await auth();
+        if (session?.user?.id) {
+            await createSystemNotification(
+                session.user.id,
+                'Fee Settings Updated',
+                `Finance configuration settings have been updated.`,
+                'INFO'
+            );
+        }
+
         revalidatePath('/admin/finance/setup');
         return { success: true };
     } catch (error: any) {
