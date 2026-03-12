@@ -35,9 +35,7 @@ export class RazorpayGateway implements PaymentGateway {
                         schoolId: params.schoolId,
                         studentId: params.studentId,
                         feeId: params.studentFeeId
-                    },
-                    linked_account_notes: ["schoolId"],
-                    on_payment_success: true
+                    }
                 });
             }
 
