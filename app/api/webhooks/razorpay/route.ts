@@ -40,9 +40,34 @@ export async function POST(req: NextRequest) {
 
             if (paymentType === 'SUBSCRIPTION_RENEWAL') {
                 await handleSubscriptionRenewal(payment.notes, transactionId, payment);
-            } else if (feeId) {
-                // Handle standard Student Fee Payment Success
-                await handlePaymentSuccess(feeId, orderId, transactionId, payment);
+            } else {
+                // Find payment by Razorpay order_id (stored in `reference` field)
+                const feePaymentRecord = await prisma.feePayment.findFirst({
+                    where: { reference: orderId }
+                });
+                if (feePaymentRecord) {
+                    await handlePaymentSuccess(feePaymentRecord.id, orderId, transactionId, payment);
+                } else if (feeId) {
+                    await handlePaymentSuccess(feeId, orderId, transactionId, payment);
+                }
+            }
+        }
+
+        if (eventName === 'payment.failed') {
+            const payment = payload.payment.entity;
+            const orderId = payment.order_id;
+            // Find FeePayment by order reference
+            const feePaymentRecord = await prisma.feePayment.findFirst({
+                where: { reference: orderId }
+            });
+            if (feePaymentRecord && feePaymentRecord.status === 'PENDING') {
+                await prisma.feePayment.update({
+                    where: { id: feePaymentRecord.id },
+                    data: {
+                        status: 'FAILED',
+                        remarks: payment.error_description || 'Payment failed at gateway'
+                    }
+                });
             }
         }
 
@@ -72,14 +97,25 @@ export async function POST(req: NextRequest) {
     }
 }
 
-async function handlePaymentSuccess(feeId: string, orderId: string, transactionId: string, rawData: any) {
+async function handlePaymentSuccess(feePaymentId: string, orderId: string, transactionId: string, rawData: any) {
     // 1. Find the pending fee payment record
     const feePayment = await prisma.feePayment.findUnique({
-        where: { id: feeId },
-        include: { studentFee: true }
+        where: { id: feePaymentId },
+        include: {
+            studentFee: {
+                include: {
+                    student: { include: { user: { select: { name: true } } } },
+                    feeStructure: { select: { name: true } }
+                }
+            }
+        }
     });
 
+    // Idempotency: skip if already PAID
     if (!feePayment || feePayment.status === 'PAID') return;
+
+    const studentName = feePayment.studentFee?.student?.user?.name || 'Student';
+    const feeName = feePayment.studentFee?.feeStructure?.name || 'Fee';
 
     // 2. Atomic Transaction: Update Fee, Mark Payment PAID, Update Student Fee status
     await prisma.$transaction(async (tx) => {
@@ -107,19 +143,34 @@ async function handlePaymentSuccess(feeId: string, orderId: string, transactionI
             }
         });
 
-        // c. Create Income Record
+        // c. Create Income Record (scoped to school)
         await tx.income.create({
             data: {
                 schoolId: feePayment.schoolId,
                 source: 'FEE',
-                description: `Webhook: Fee Payment (Split)`,
+                description: `Online Fee: ${feeName} — ${studentName}`,
                 amount: feePayment.amount,
                 date: new Date(),
                 reference: feePayment.receiptNo || transactionId,
                 feePaymentId: feePayment.id,
-                remarks: `Razorpay Webhook | Txn: ${transactionId}`
+                remarks: `Razorpay | Txn: ${transactionId}`
             }
         });
+
+        // d. Admin Notification (school-scoped)
+        try {
+            await (tx as any).notification.create({
+                data: {
+                    schoolId: feePayment.schoolId,
+                    title: '💳 Online Fee Payment Received',
+                    message: `${studentName} paid ₹${feePayment.amount.toLocaleString('en-IN')} for ${feeName} via Razorpay.`,
+                    type: 'PAYMENT',
+                    isRead: false,
+                }
+            });
+        } catch (_) {
+            // Notifications are non-critical, ignore errors
+        }
     });
 }
 

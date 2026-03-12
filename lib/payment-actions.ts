@@ -24,46 +24,58 @@ export async function initiateStudentPayment(feeId: string, amount: number) {
             return { success: false, error: 'Student not found' };
         }
 
-        // 2. Get Fee details
+        // 2. Get Fee details + school (for subMerchantId)
         const fee = await prisma.studentFee.findUnique({
             where: { id: feeId },
             include: { feeStructure: { include: { feeHead: true } } }
         });
 
         if (!fee || fee.studentId !== student.id) {
-            return { success: false, error: 'Fee record not found' };
+            return { success: false, error: 'Fee record not found or access denied' };
         }
 
-        // 3. Initiate with Razorpay
+        // 3. Fetch school for routing info
+        const school = await prisma.school.findUnique({
+            where: { id: schoolId },
+            select: { name: true, subMerchantId: true, commissionPercentage: true }
+        });
+
+        // 4. Generate school-prefixed receipt number for isolation
+        const schoolCode = (school?.name || 'SCH').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
+        const receiptNo = `${schoolCode}-ON-${Date.now()}`;
+
+        // 5. Initiate with Razorpay (with school routing if available)
         const gateway = new RazorpayGateway(
             process.env.RAZORPAY_KEY_ID!,
             process.env.RAZORPAY_KEY_SECRET!,
             process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         );
-        
-        // Construct return URL - pointing to a verification page
+
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const returnUrl = `${baseUrl}/student/finance/verify`;
 
         const result = await gateway.initiatePayment({
             amount,
             currency: 'INR',
-            receiptNo: `RC-${Date.now()}`,
+            receiptNo,
             studentId: student.id,
-            schoolId: schoolId,
+            schoolId,
             studentFeeId: feeId,
-            description: `Payment for ${fee.feeStructure.name}`,
+            description: `Fee: ${fee.feeStructure.name}`,
             returnUrl,
             customerName: student.user.name || 'Student',
             customerEmail: student.user.email || '',
             customerPhone: (student as any).phone || '',
+            // School routing for fund isolation
+            subMerchantId: school?.subMerchantId || undefined,
+            commissionPercentage: school?.commissionPercentage || 2.5,
         });
 
         if (!result.success) {
             return { success: false, error: result.error || 'Gateway initiation failed' };
         }
 
-        // 4. Create a PENDING FeePayment record to track the attempt
+        // 6. Create a PENDING FeePayment record
         const payment = await prisma.feePayment.create({
             data: {
                 schoolId,
@@ -71,7 +83,8 @@ export async function initiateStudentPayment(feeId: string, amount: number) {
                 amount,
                 method: 'ONLINE',
                 status: 'PENDING',
-                reference: result.orderId, // Store Razorpay Order ID as reference
+                receiptNo,
+                reference: result.orderId,
                 paymentMethod: 'RAZORPAY',
                 date: new Date(),
                 platformFee: result.platformFee || 0,
@@ -83,10 +96,10 @@ export async function initiateStudentPayment(feeId: string, amount: number) {
             success: true,
             checkoutData: {
                 key: process.env.RAZORPAY_KEY_ID,
-                amount: Math.round(amount * 100), // Razorpay expects paise
+                amount: Math.round(amount * 100),
                 currency: 'INR',
                 orderId: result.orderId,
-                paymentId: payment.id // For callback verification
+                paymentId: payment.id,
             }
         };
 

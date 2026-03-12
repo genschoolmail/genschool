@@ -1,7 +1,7 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { CreditCard, History, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { CreditCard, History, CheckCircle2, Clock, XCircle, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import PaymentStatusChecker from './PaymentStatusChecker';
 
@@ -75,43 +75,43 @@ export default async function StudentPaymentsPage() {
                         <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Pending Payments</h2>
                     </div>
                 </div>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                     {pendingFees.length === 0 ? (
-                        <div className="text-center py-8">
-                            <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                            <p className="text-slate-500 font-medium">All fees paid! 🎉</p>
+                        <div className="text-center py-10">
+                            <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-3" />
+                            <p className="text-slate-600 dark:text-slate-300 font-semibold text-lg">All fees paid! 🎉</p>
+                            <p className="text-slate-400 text-sm mt-1">You have no pending dues.</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {pendingFees.map(fee => {
                                 const payableAmount = fee.amount - fee.discount - fee.paidAmount;
                                 const isOverdue = new Date() > fee.dueDate;
 
                                 return (
-                                    <div key={fee.id} className={`p-4 border-2 rounded-xl ${isOverdue ? 'border-red-200 bg-red-50 dark:bg-red-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div>
-                                                <h3 className="font-semibold text-slate-800 dark:text-white">{fee.feeStructure.name}</h3>
-                                                <p className="text-sm text-slate-500">
+                                    <div key={fee.id} className={`rounded-xl border-2 overflow-hidden ${isOverdue ? 'border-red-200 dark:border-red-700' : 'border-slate-200 dark:border-slate-600'}`}>
+                                        {/* Card Header */}
+                                        <div className={`px-4 py-3 flex items-center justify-between ${isOverdue ? 'bg-red-50 dark:bg-red-900/20' : 'bg-slate-50 dark:bg-slate-700/40'}`}>
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-slate-800 dark:text-white truncate">{fee.feeStructure.name}</h3>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                                    <Calendar className="w-3 h-3" />
                                                     Due: {fee.dueDate.toLocaleDateString('en-IN')}
-                                                    {isOverdue && <span className="text-red-600 font-semibold ml-2">(Overdue)</span>}
+                                                    {isOverdue && <span className="text-red-600 font-semibold">(Overdue)</span>}
                                                 </p>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-2xl font-bold text-indigo-600">₹{payableAmount.toLocaleString()}</p>
-                                                {fee.discount > 0 && (
-                                                    <p className="text-sm text-green-600">Discount: -₹{fee.discount.toLocaleString()}</p>
-                                                )}
-                                                {fee.paidAmount > 0 && (
-                                                    <p className="text-sm text-blue-600">Paid: ₹{fee.paidAmount.toLocaleString()}</p>
-                                                )}
+                                            <div className="text-right flex-shrink-0 ml-3">
+                                                <p className="text-xl font-black text-indigo-600">₹{payableAmount.toLocaleString('en-IN')}</p>
+                                                {fee.discount > 0 && <p className="text-xs text-emerald-600 font-medium">-₹{fee.discount.toLocaleString()} disc.</p>}
                                             </div>
                                         </div>
+                                        {/* Pay Button */}
                                         <Link
                                             href={`/student/finance/payments/${fee.id}`}
-                                            className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-center transition-colors"
+                                            className={`flex items-center justify-center gap-2 w-full py-3 font-bold text-white text-sm transition-colors ${isOverdue ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                                         >
-                                            Pay Now
+                                            <CreditCard className="w-4 h-4" />
+                                            Pay ₹{payableAmount.toLocaleString('en-IN')} via Razorpay
                                         </Link>
                                     </div>
                                 );
