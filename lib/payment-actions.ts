@@ -186,7 +186,8 @@ export async function verifyTransaction(paymentId: string, transactionId: string
                     source: 'FEE_PAYMENT',
                     amount: payment.amount,
                     description: `Online fee payment - ${paymentId}`,
-                    date: new Date()
+                    date: new Date(),
+                    feePaymentId: paymentId
                 }
             });
         });

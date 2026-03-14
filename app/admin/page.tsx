@@ -17,12 +17,12 @@ export default async function AdminDashboard() {
             throw new Error('Tenant ID not found');
         }
 
-        const announcements = await getActiveAnnouncements();
+        const announcements = await getActiveAnnouncements('ADMIN');
 
         // Fetch school data with settings
         const school = await prisma.school.findUnique({
             where: { id: schoolId }
-        });
+        }) as any;
 
         const settings = school?.settings || {};
         const gallery = settings.galleryJson ? JSON.parse(settings.galleryJson as string) : [];
@@ -32,14 +32,15 @@ export default async function AdminDashboard() {
         const teacherCount = await prisma.teacher.count({ where: { schoolId } });
         const transportCount = await prisma.transportRoute.count({ where: { schoolId } });
 
-        const payments = await prisma.feePayment.aggregate({
+        // Sum Income from FEE_PAYMENT source (Unified Source of Truth)
+        const feeIncome = await prisma.income.aggregate({
             where: {
                 schoolId,
-                status: { in: ['SUCCESS', 'PAID', 'COMPLETED'] }
+                source: { in: ['FEE_PAYMENT', 'FEE'] }
             },
             _sum: { amount: true }
         });
-        const totalFees = payments._sum.amount || 0;
+        const totalFees = feeIncome._sum.amount || 0;
 
         const recentStudents = await prisma.student.findMany({
             where: { schoolId },

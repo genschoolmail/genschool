@@ -126,7 +126,7 @@ export async function collectFees(params: CollectFeesArgs) {
 
                 // Create FeePayment record
                 const individualReceiptNo = `R-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
-                await tx.feePayment.create({
+                const payment = await tx.feePayment.create({
                     data: {
                         schoolId,
                         studentFeeId: sf.id,
@@ -141,6 +141,19 @@ export async function collectFees(params: CollectFeesArgs) {
                         remarks,
                         collectedBy,
                         splitStatus: 'SUCCESS', // Offline payment does not undergo route split
+                    }
+                });
+
+                // Update: Create Income record for unified tracking
+                await tx.income.create({
+                    data: {
+                        schoolId,
+                        source: 'FEE_PAYMENT',
+                        amount: amountAllocated,
+                        description: `Offline fee payment - ${student.user.name || 'Student'}`,
+                        date,
+                        reference: individualReceiptNo,
+                        feePaymentId: payment.id
                     }
                 });
             }

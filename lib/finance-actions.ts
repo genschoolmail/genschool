@@ -7,14 +7,15 @@ export async function getFinancialSummary() {
     try {
         const schoolId = await getTenantId();
 
-        // Get fee collection
-        const feeCollected = await prisma.feePayment.aggregate({
-            where: {
-                schoolId,
-                status: { in: ['SUCCESS', 'PAID', 'COMPLETED'] }
-            },
+        // Get all income from Income table (Source of Truth for Ledger & Dashboard)
+        const incomeStats = await prisma.income.groupBy({
+            where: { schoolId },
+            by: ['source'],
             _sum: { amount: true }
-        }).catch(() => ({ _sum: { amount: 0 } }));
+        });
+
+        const feeCollectedAmount = incomeStats.find(i => i.source === 'FEE_PAYMENT' || i.source === 'FEE')?._sum.amount || 0;
+        const otherIncomeAmount = incomeStats.filter(i => i.source !== 'FEE_PAYMENT' && i.source !== 'FEE').reduce((sum, i) => sum + (i._sum.amount || 0), 0);
 
         // Get salaries paid
         const salariesPaid = await prisma.salary.aggregate({
@@ -25,20 +26,25 @@ export async function getFinancialSummary() {
             _sum: { netSalary: true }
         }).catch(() => ({ _sum: { netSalary: 0 } }));
 
-        // Placeholder values for other fields
-        const otherIncome = 0;
-        const otherExpenses = 0;
+        // Get other expenses from Expense table
+        const otherExpensesData = await prisma.expense.aggregate({
+            where: {
+                schoolId,
+                status: 'APPROVED'
+            },
+            _sum: { amount: true }
+        }).catch(() => ({ _sum: { amount: 0 } }));
 
-        const feeCollectedAmount = feeCollected._sum.amount || 0;
         const salariesPaidAmount = (salariesPaid._sum?.netSalary) || 0;
+        const otherExpensesAmount = (otherExpensesData._sum?.amount) || 0;
 
         return {
             feeCollected: feeCollectedAmount,
-            otherIncome: otherIncome,
-            totalIncome: feeCollectedAmount + otherIncome,
+            otherIncome: otherIncomeAmount,
+            totalIncome: feeCollectedAmount + otherIncomeAmount,
             salariesPaid: salariesPaidAmount,
-            otherExpenses: otherExpenses,
-            totalExpenses: salariesPaidAmount + otherExpenses
+            otherExpenses: otherExpensesAmount,
+            totalExpenses: salariesPaidAmount + otherExpensesAmount
         };
     } catch (error) {
         console.error('Get financial summary error:', error);
@@ -236,5 +242,67 @@ export async function createIncome(formData: FormData) {
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Syncs paid FeePayment records to the Income table if they are missing.
+ * Prevents duplicates by using unique feePaymentId.
+ */
+export async function backfillIncomeFromPayments() {
+    try {
+        const schoolId = await getTenantId();
+        
+        // 1. Find all paid fee payments
+        const paidPayments = await prisma.feePayment.findMany({
+            where: {
+                schoolId,
+                status: 'PAID',
+                income: { is: null } // Only those NOT already in income
+            },
+            include: {
+                studentFee: {
+                    include: {
+                        student: {
+                            include: { user: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (paidPayments.length === 0) return { success: true, count: 0 };
+
+        let createdCount = 0;
+
+        // 2. Create income records for each
+        for (const payment of paidPayments) {
+            try {
+                const studentName = payment.studentFee?.student?.user?.name || 'Student';
+                const description = payment.method === 'ONLINE' 
+                    ? `Online fee payment - ${payment.reference || payment.id}`
+                    : `Offline fee payment (${payment.method}) - ${studentName}`;
+
+                await prisma.income.create({
+                    data: {
+                        schoolId,
+                        source: 'FEE_PAYMENT',
+                        amount: payment.amount,
+                        description: description,
+                        date: payment.date || new Date(),
+                        reference: payment.reference || payment.receiptNo,
+                        feePaymentId: payment.id,
+                    }
+                });
+                createdCount++;
+            } catch (err) {
+                console.error(`Failed to backfill payment ${payment.id}:`, err);
+            }
+        }
+
+        return { success: true, count: createdCount };
+    } catch (error) {
+        console.error('backfillIncomeFromPayments error:', error);
+        return { success: false, error: 'Failed to backfill income data' };
     }
 }

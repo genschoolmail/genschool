@@ -30,18 +30,6 @@ export default async function IncomePage() {
                         Add Income
                     </Link>
                 </div>
-                <form action={async () => {
-                    'use server';
-                    // We need to import dynamically or use the imported one.
-                    // But importing 'backfillIncomeFromPayments' which is in same file as 'getIncome'?
-                    // Yes, it was exported.
-                    const { backfillIncomeFromPayments } = await import('@/lib/finance-actions');
-                    await backfillIncomeFromPayments();
-                }}>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm">
-                        Fix Missing Data
-                    </button>
-                </form>
             </div>
 
             {/* Income List */}
