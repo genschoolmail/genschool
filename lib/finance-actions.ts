@@ -11,7 +11,7 @@ export async function getFinancialSummary() {
         const feeCollected = await prisma.feePayment.aggregate({
             where: {
                 schoolId,
-                status: 'PAID'
+                status: { in: ['SUCCESS', 'PAID', 'COMPLETED'] }
             },
             _sum: { amount: true }
         }).catch(() => ({ _sum: { amount: 0 } }));
@@ -63,7 +63,8 @@ export async function createFeeStructure(formData: FormData) {
                 name: formData.get('name') as string,
                 amount: parseFloat(formData.get('amount') as string),
                 frequency: formData.get('frequency') as string,
-                classId: formData.get('classId') as string || null
+                classId: formData.get('classId') as string || null,
+                feeHeadId: formData.get('feeHeadId') as string || 'default'
             }
         }).catch(() => null);
 
@@ -85,10 +86,14 @@ export async function getStudentFees(studentId?: string) {
         return await prisma.feePayment.findMany({
             where,
             include: {
-                student: {
+                studentFee: {
                     include: {
-                        user: true,
-                        class: true
+                        student: {
+                            include: {
+                                user: true,
+                                class: true
+                            }
+                        }
                     }
                 }
             },
@@ -145,7 +150,7 @@ export async function markSalaryPaid(salaryId: string) {
     try {
         await prisma.salary.update({
             where: { id: salaryId },
-            data: { status: 'PAID', paidAt: new Date() }
+            data: { status: 'PAID', paidDate: new Date() }
         }).catch(() => null);
 
         return { success: true };
