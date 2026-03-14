@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import { t, Language } from "@/lib/driver-translations";
 import { Bell, Menu, User } from "lucide-react";
 import Link from "next/link";
-import NoticeBell from "@/components/NoticeBell";
+import NotificationBell from "@/components/NotificationBell";
 
 interface DriverPageHeaderProps {
+    userId: string;
     userName: string;
     userImage?: string | null;
     notices?: any[];
 }
 
-export default function DriverPageHeader({ userName, userImage, notices = [] }: DriverPageHeaderProps) {
+export default function DriverPageHeader({ userId, userName, userImage, notices = [] }: DriverPageHeaderProps) {
     const [lang, setLang] = useState<Language>('en');
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -58,7 +59,7 @@ export default function DriverPageHeader({ userName, userImage, notices = [] }: 
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <NoticeBell role="driver" notices={notices} />
+                    <NotificationBell userId={userId} />
                 </div>
             </div>
 

@@ -4,8 +4,8 @@ import { auth, signOut } from '@/auth';
 import TeacherMobileNav from './TeacherMobileNav';
 import { getAnnouncements } from '@/lib/actions/announcement-actions';
 import { getActiveAnnouncements } from '@/lib/actions/global-notifications';
-import NoticeBell from '@/components/NoticeBell';
-import { Bell, LayoutDashboard, Users, Calendar, LogOut, ClipboardList, PenTool, FileText, UserCircle } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
+import { LayoutDashboard, Users, Calendar, LogOut, ClipboardList, PenTool, FileText, UserCircle, Bell } from 'lucide-react';
 import SignOutButton from '@/components/SignOutButton';
 
 export default async function TeacherLayout({
@@ -78,7 +78,7 @@ export default async function TeacherLayout({
                         <h2 className="text-lg md:text-xl font-semibold text-slate-800 dark:text-white">Teacher Portal</h2>
                     </div>
                     <div className="flex items-center space-x-2 md:space-x-4">
-                        <NoticeBell role="teacher" notices={notices} />
+                        {user?.id && <NotificationBell userId={user.id} />}
                         <div className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-slate-200 dark:border-slate-700">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.name || 'Teacher'}</p>

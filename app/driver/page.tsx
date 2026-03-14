@@ -51,6 +51,7 @@ export default async function DriverPage() {
         <PermissionGate driverId={driver.id}>
             <div className="p-4 max-w-md mx-auto">
                 <DriverPageHeader
+                    userId={session.user.id}
                     userName={session.user.name || 'Driver'}
                     userImage={session.user.image}
                     notices={allNotices}
