@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import AdminMobileNav from './AdminMobileNav';
 import { Providers } from '@/components/Providers';
+import NotificationBell from '@/components/NotificationBell';
 import SignOutButton from '@/components/SignOutButton';
 import SubscriptionBanner from '@/components/admin/SubscriptionBanner';
 import { getSchoolSubscriptionStatus } from '@/lib/actions/subscription-actions';
@@ -108,6 +109,7 @@ export default async function AdminLayout({
               </div>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
+              <NotificationBell userId={user.id} />
               <div className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-slate-200 dark:border-slate-700">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.name || 'Admin'}</p>

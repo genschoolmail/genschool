@@ -6,7 +6,7 @@ import StudentMobileNav from './StudentMobileNav';
 import { prisma } from '@/lib/prisma';
 import { getAnnouncements } from '@/lib/actions/announcement-actions';
 import { getActiveAnnouncements } from '@/lib/actions/global-notifications';
-import NoticeBell from '@/components/NoticeBell';
+import NotificationBell from '@/components/NotificationBell';
 import SignOutButton from '@/components/SignOutButton';
 
 export default async function StudentLayout({
@@ -100,7 +100,7 @@ export default async function StudentLayout({
                         <h2 className="text-lg md:text-xl font-semibold text-slate-800 dark:text-white">Student Portal</h2>
                     </div>
                     <div className="flex items-center space-x-2 md:space-x-4">
-                        <NoticeBell role="student" notices={notices} />
+                        {user?.id && <NotificationBell userId={user.id} />}
                         <div className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-slate-200 dark:border-slate-700">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.name || 'Student'}</p>
