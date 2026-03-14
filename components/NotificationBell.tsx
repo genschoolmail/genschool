@@ -112,67 +112,85 @@ export default function NotificationBell({ userId }: { userId: string }) {
 
     if (!mounted) return null;
 
-    const dropdownContent = (
+    const sliderContent = (
         <div className="fixed inset-0 z-[9999] pointer-events-none">
-            {/* Backdrop for mobile and desktop */}
+            {/* Backdrop with Blur */}
             <div 
-                className={`absolute inset-0 bg-black/20 dark:bg-black/40 pointer-events-auto transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+                className={`
+                    absolute inset-0 bg-slate-900/40 backdrop-blur-sm pointer-events-auto transition-opacity duration-500
+                    ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+                `} 
                 onClick={() => setIsOpen(false)}
             />
             
-            {/* Dropdown Panel */}
+            {/* Slider Panel (Right Side) */}
             <div 
                 className={`
-                    fixed inset-x-4 top-20 bottom-20 sm:bottom-auto
-                    sm:absolute sm:right-6 sm:top-16 sm:inset-x-auto
-                    w-auto sm:w-[400px] 
-                    bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 
-                    overflow-hidden flex flex-col transition-all duration-300 transform pointer-events-auto
-                    ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-4 pointer-events-none'}
+                    fixed top-0 right-0 h-full
+                    w-full sm:w-[450px] 
+                    bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl
+                    shadow-[-20px_0_50px_-12px_rgba(0,0,0,0.25)] 
+                    border-l border-slate-200/50 dark:border-slate-700/50
+                    overflow-hidden flex flex-col transition-all duration-500 ease-out transform pointer-events-auto
+                    ${isOpen ? 'translate-x-0' : 'translate-x-full'}
                 `}
             >
-                {/* Header */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between sticky top-0 z-10">
-                    <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-slate-800 dark:text-white text-lg">
-                            Notifications
-                        </h3>
-                        {unreadCount > 0 && (
-                            <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                {unreadCount} New
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {unreadCount > 0 && (
-                            <button
-                                onClick={handleMarkAllAsRead}
-                                className="text-xs text-blue-600 hover:text-blue-700 font-bold"
-                            >
-                                Mark all as read
-                            </button>
-                        )}
+                {/* Header with Background Gradient */}
+                <div className="relative p-6 bg-gradient-to-r from-indigo-500 to-purple-600 sticky top-0 z-20">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Bell className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white text-xl tracking-tight">
+                                    Notification Center
+                                </h3>
+                                <p className="text-indigo-100 text-xs font-medium">
+                                    {unreadCount > 0 ? `You have ${unreadCount} unread messages` : 'Up to date! 🎉'}
+                                </p>
+                            </div>
+                        </div>
                         <button 
                             onClick={() => setIsOpen(false)}
-                            className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all duration-300 hover:rotate-90"
                         >
-                            <X className="w-5 h-5 text-slate-500" />
+                            <X className="w-6 h-6" />
                         </button>
                     </div>
+
+                    {/* Quick Actions */}
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={handleMarkAllAsRead}
+                            className="mt-6 w-full py-2.5 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-xl border border-white/20 backdrop-blur-md transition-all flex items-center justify-center gap-2"
+                        >
+                            <Check className="w-4 h-4" />
+                            Mark all as read
+                        </button>
+                    )}
                 </div>
 
                 {/* Notifications List */}
-                <div className="overflow-y-auto flex-1 overscroll-contain bg-white dark:bg-slate-800">
+                <div className="overflow-y-auto flex-1 overscroll-contain bg-transparent custom-scrollbar">
                     {notifications.length === 0 ? (
-                        <div className="p-12 text-center text-slate-500">
-                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Bell className="h-10 w-10 opacity-20" />
+                        <div className="h-full flex flex-col items-center justify-center p-12 text-center text-slate-500">
+                            <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full" />
+                                <div className="relative w-24 h-24 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700">
+                                    <Bell className="h-12 w-12 opacity-20" />
+                                </div>
                             </div>
-                            <p className="font-bold text-slate-800 dark:text-white">No notifications yet</p>
-                            <p className="text-sm opacity-60 mt-1">We'll notify you when something important happens.</p>
+                            <h4 className="font-bold text-slate-800 dark:text-white text-lg">Your Inbox is Empty</h4>
+                            <p className="text-sm opacity-60 mt-2 max-w-[250px]">
+                                When you receive updates about fee, classes, or events, they'll appear here.
+                            </p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-slate-100 dark:divide-slate-700 p-2">
+                        <div className="p-4 space-y-3">
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-2 mb-4">
+                                Recent Activity
+                            </p>
                             {notifications.map((n: any) => (
                                 <div
                                     key={n.id}
@@ -180,35 +198,38 @@ export default function NotificationBell({ userId }: { userId: string }) {
                                         handleMarkAsRead(n.id);
                                         if (n.link) window.location.href = n.link;
                                     }}
-                                    className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 cursor-pointer group rounded-xl my-1 border-l-4 ${!n.isRead 
-                                        ? 'bg-indigo-50/40 dark:bg-indigo-900/10 border-indigo-500 shadow-sm' 
-                                        : 'border-transparent opacity-75 grayscale-[0.5]'
-                                    }`}
+                                    className={`
+                                        group relative p-4 rounded-2xl transition-all duration-300 cursor-pointer border
+                                        ${!n.isRead 
+                                            ? 'bg-white dark:bg-slate-800 border-indigo-100 dark:border-indigo-900 shadow-xl shadow-indigo-500/5' 
+                                            : 'bg-slate-50/50 dark:bg-slate-800/30 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
+                                        }
+                                    `}
                                 >
+                                    {/* Unread Indicator Dot */}
+                                    {!n.isRead && (
+                                        <div className="absolute top-4 right-4 h-2.5 w-2.5 bg-indigo-600 rounded-full ring-4 ring-indigo-50 dark:ring-indigo-900/30" />
+                                    )}
+
                                     <div className="flex items-start gap-4">
-                                        <div className="text-2xl mt-1 group-hover:scale-110 transition-transform duration-300">
+                                        <div className="text-3xl p-3 bg-slate-100 dark:bg-slate-700/50 rounded-2xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                                             {getNotificationIcon(n.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start gap-2">
-                                                <p className={`text-sm font-bold truncate ${!n.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                    {n.title}
-                                                </p>
-                                                {!n.isRead && (
-                                                    <span className="flex-shrink-0 w-2.5 h-2.5 bg-blue-600 rounded-full ring-4 ring-blue-100 dark:ring-blue-900/30"></span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mt-1 line-clamp-3">
+                                            <p className={`text-sm font-bold leading-tight ${!n.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                {n.title}
+                                            </p>
+                                            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mt-1.5 line-clamp-2 font-medium">
                                                 {n.message}
                                             </p>
-                                            <div className="mt-3 flex items-center justify-between">
-                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5 font-bold">
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1.5 font-bold bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-full">
                                                     <Clock className="w-3.5 h-3.5" />
                                                     {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                                                 </p>
                                                 {n.link && (
-                                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-                                                        View Details →
+                                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
+                                                        OPEN <Check className="w-3 h-3" />
                                                     </span>
                                                 )}
                                             </div>
@@ -218,6 +239,13 @@ export default function NotificationBell({ userId }: { userId: string }) {
                             ))}
                         </div>
                     )}
+                </div>
+                
+                {/* Footer Branding */}
+                <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-center items-center">
+                    <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">
+                        Gen School Mail • v2.0
+                    </p>
                 </div>
             </div>
         </div>
@@ -241,8 +269,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
                 )}
             </button>
 
-            {/* Portal for the dropdown */}
-            {isOpen && mounted && createPortal(dropdownContent, document.body)}
+            {/* Portal for the slider */}
+            {isOpen && mounted && createPortal(sliderContent, document.body)}
         </div>
     );
 }
