@@ -61,6 +61,12 @@ export async function assignFeeToStudent({
                 where: { id: fsId }
             });
 
+            // Need student's userId to send notification
+            const student = await prisma.student.findUnique({
+                where: { id: studentId },
+                select: { userId: true }
+            });
+
             if (!structure) continue;
 
             // Check if already assigned for this month/year
@@ -93,6 +99,18 @@ export async function assignFeeToStudent({
                 }
             });
             assigned++;
+
+            // Notify Student
+            if (student?.userId) {
+                const monthName = new Date(feeYear, feeMonth - 1).toLocaleString('default', { month: 'long' });
+                await createSystemNotification(
+                    student.userId,
+                    'New Fee Assigned',
+                    `A new fee of ₹${structure.amount} (${structure.name}) has been assigned for ${monthName} ${feeYear}. Due date: ${dueDate.toLocaleDateString()}.`,
+                    'WARNING',
+                    '/student/finance/payments'
+                );
+            }
         }
 
         revalidatePath('/admin/finance/fees/assign');

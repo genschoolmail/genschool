@@ -30,14 +30,9 @@ async function resetFinanceData() {
         const feePaymentsDeleted = await prisma.feePayment.deleteMany({});
         console.log(`✅ Deleted ${feePaymentsDeleted.count} FeePayment records`);
 
-        // 6. Reset all StudentFees to UNPAID and paidAmount to 0
-        const studentFeesReset = await prisma.studentFee.updateMany({
-            data: {
-                status: 'UNPAID',
-                paidAmount: 0
-            }
-        });
-        console.log(`✅ Reset ${studentFeesReset.count} StudentFee records back to UNPAID`);
+        // 6. Delete all assigned StudentFees
+        const studentFeesDeleted = await prisma.studentFee.deleteMany({});
+        console.log(`✅ Deleted ${studentFeesDeleted.count} assigned StudentFee records`);
 
         console.log('🎉 Finance database reset completed successfully!');
     } catch (error) {

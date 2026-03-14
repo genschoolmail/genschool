@@ -125,7 +125,7 @@ export default function FeeAssignmentClient({ students, classes, feeStructures }
         });
 
         if (res.success) {
-            toast.success("Fees assigned successfully!");
+            toast.success(`Assigned ${res.count} fees (${res.skipped} skipped/duplicate)`);
             setSelectedStudent("");
             setSelectedStructures([]);
         } else {
