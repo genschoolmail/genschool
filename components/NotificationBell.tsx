@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Bell, X, Check } from 'lucide-react';
+import { Bell, X, Check, Clock } from 'lucide-react';
 import { requestNotificationPermission, onMessageListener } from '@/lib/firebase';
 import { saveFCMToken, getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/notification-actions';
 import { formatDistanceToNow } from 'date-fns';
@@ -25,10 +25,12 @@ export default function NotificationBell({ userId }: { userId: string }) {
         // Request notification permission on component mount
         async function setupNotifications() {
             try {
-                const token = await requestNotificationPermission();
-                if (token) {
-                    // Save token to database
-                    await saveFCMToken(userId, token, navigator.userAgent);
+                if (typeof requestNotificationPermission === 'function') {
+                    const token = await requestNotificationPermission();
+                    if (token) {
+                        // Save token to database
+                        await saveFCMToken(userId, token, navigator.userAgent);
+                    }
                 }
             } catch (error) {
                 console.error('Error setting up notifications:', error);
@@ -38,17 +40,24 @@ export default function NotificationBell({ userId }: { userId: string }) {
         setupNotifications();
 
         // Listen for foreground messages
-        const unsubscribe = onMessageListener((payload: any) => {
-            console.log('Received foreground message:', payload);
-            // Refresh notifications
-            loadNotifications();
-        });
+        let unsubscribe: any = null;
+        try {
+            if (typeof onMessageListener === 'function') {
+                unsubscribe = onMessageListener((payload: any) => {
+                    console.log('Received foreground message:', payload);
+                    // Refresh notifications
+                    loadNotifications();
+                });
+            }
+        } catch (error) {
+            console.error('Error registering message listener:', error);
+        }
 
         // Load initial notifications
         loadNotifications();
 
         return () => {
-            if (typeof unsubscribe === 'function') {
+            if (unsubscribe && typeof unsubscribe === 'function') {
                 unsubscribe();
             }
         };
@@ -145,24 +154,31 @@ export default function NotificationBell({ userId }: { userId: string }) {
                                     {notifications.map((n: any) => (
                                         <div
                                             key={n.id}
-                                            className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${!n.isRead ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                                            onClick={() => {
+                                                handleMarkAsRead(n.id);
+                                                if (n.link) window.location.href = n.link;
+                                            }}
+                                            className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-l-4 ${!n.isRead ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500' : 'border-transparent'
                                                 }`}
                                         >
                                             <div className="flex items-start gap-3">
-                                                <div className={`p-2 rounded-lg ${n.type === 'ALERT' ? 'bg-red-50 dark:bg-red-900/10 text-red-600' :
-                                                    n.type === 'SUCCESS' ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' :
-                                                        'bg-blue-50 dark:bg-blue-900/10 text-blue-600'
-                                                    }`}>
-                                                    <Bell className="w-4 h-4" />
+                                                <div className="text-xl">
+                                                    {getNotificationIcon(n.type)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">
-                                                        {n.title}
-                                                    </p>
+                                                    <div className="flex justify-between items-start">
+                                                        <p className={`text-sm font-semibold truncate ${!n.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                            {n.title}
+                                                        </p>
+                                                        {!n.isRead && (
+                                                            <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                                                         {n.message}
                                                     </p>
-                                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
+                                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
                                                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                                                     </p>
                                                 </div>
