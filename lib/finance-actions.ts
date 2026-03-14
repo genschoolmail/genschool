@@ -14,8 +14,13 @@ export async function getFinancialSummary() {
             _sum: { amount: true }
         });
 
-        const feeCollectedAmount = incomeStats.find(i => i.source === 'FEE_PAYMENT' || i.source === 'FEE')?._sum.amount || 0;
-        const otherIncomeAmount = incomeStats.filter(i => i.source !== 'FEE_PAYMENT' && i.source !== 'FEE').reduce((sum, i) => sum + (i._sum.amount || 0), 0);
+        const feeCollectedAmount = incomeStats
+            .filter(i => i.source === 'FEE_PAYMENT' || i.source === 'FEE')
+            .reduce((sum, i) => sum + (i._sum.amount || 0), 0);
+
+        const otherIncomeAmount = incomeStats
+            .filter(i => i.source !== 'FEE_PAYMENT' && i.source !== 'FEE')
+            .reduce((sum, i) => sum + (i._sum.amount || 0), 0);
 
         // Get salaries paid
         const salariesPaid = await prisma.salary.aggregate({
